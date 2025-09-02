@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Additional Info </title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+</head>
+<body>
+    
+    <!-- Header Section -->
+    <header>
+        <h1>Additional Info</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li> <!-- Link back to homepage -->
+                <li><a href="section1.html">Convoy Machine Learning</a></li> <!-- Link to Section 1 Page -->
+                <li><a href="section2.html">Convoy Data Visualization</a></li> <!-- Link to Section 2 Page -->
+                <li><a href="section3.html">Convoy History</a></li> <!-- Link to Section 3 Page -->
+                <li><a href="section4.html">Original Project</a></li> <!-- Link to Section 4 Page -->
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content Section (Image Gallery) -->
+    <main>
+        <!-- <h2 style="text-align: center;"> </strong>Additional Information:</h2> -->
+        <h3><strong> This section outlines the sources, research, and other factors that went into the project:</strong></h3>
+        <p class="centered-paragraph">
+            <strong>Source for the Convoy Data:</strong> All data pertaining to the specific convoys comes from Arnold Hague Convoy Database 
+            which can be found <a href="http://www.convoyweb.org.uk/hague/index.html" target="_blank">here</a>. A naval historian, Hague collected
+            and recorded convoy data in collaboration with John K. Burgess and Don Kindell. The Hague Convoy Database is the most complete available
+            record of WWII convoys and includes many records missing from the National Archives. The specific convoy data relevant 
+            to this project was web-scraped from the website using the code found on my <a href="https://github.com/MAP9900/Modeling-The-Convoy-System/tree/main/Code/Web%20Scrape%20Files
+            "target="_blank">Github</a>. Currently, the convoy routes examined are HX, SC, OB, ON, and ONS. An outline of these routes is provided 
+            further down this page. <br><br>
+            <strong>Validation of the Convoy Data:</strong> The convoy data in the Hague Convoy Database is recorded at the ship level noting ships
+            sunk sometimes noting buy a specific U-Boat or another reason. My code looks for "sunk" or "sank" in counting instances of sinkings and thus counts
+            all cases of sinking regardless if they occurred because of German U-Boat or not. Therefore, a secondary source was used to validate
+            ships marked as sunk. To do this, I compared the Hague Convoy Database to data on U-Boat Net which can be found 
+            <a href="https://uboat.net/ops/convoys/convoys.php?convoy=ON-134#google_vignette" target="_blank">here</a>. U-Boat Net contains records
+            on all German U-Boats including allied merchant and war ships sunk by the U-Boats. The number of ships sunk by U-Boat by each specific 
+            convoy (<a href="https://uboat.net/ops/convoys/convoys.php?convoy=ON-134" target="_blank">Link</a>) was web-scraped. This data was then
+            compared to the Hague Convoy Database noting convoys with an inconsistent number of sinkings. Inconsistent convoys were then checked manually 
+            to identify ships not sunk by U-Boat or other anomalies. Ships sunk by other reasons were removed from the sink count but remained in the data.
+            The total number of ships variable is determined from when the convoy departs and thus the inclusion of these ships has no affect towards this. 
+            Although, it is worth noting the convoys changes size while en route due these other sinkings, U-Boat sinkings, ships which straggle behind, return 
+            to port, or other reasons. The true size of each convoy, therefore, is dynamic and changes as the convoy sails. However, this is not able to be 
+            captured and it is assumed convoy size is consistent in the research. <br><br>
+            <strong>The Number of U-Boats at Sea Data:</strong> An additional feature added to help refine the models and classification was the estimated
+            number of U-Boats in the North Atlantic by month data. This data comes from a May 23, 1945  British report and can be found 
+            <a href="https://www.churchillarchive.com/catalogue-item?docid=CHAR20_238_2" target="_blank">here</a>. It is worth noting this for both 
+            German & Italian U-Boats and therefore is higher than the true number of just German U-Boats. However, the number of ocean going Italian 
+            U-Boats is limited and is assumed to be negligible for the purpose of this research. <br><br></p>
+            <p class="centered-paragraph">
+            <h3><strong> Outline of the Current Convoy Routes Examined:</strong></h3>
+            <strong>HX:</strong> Eastward travel from Halifax, Nova Scotia to Liverpool, England. Active from September 1939 to the end of the War. Note:
+            After September 1942, convoys departed from New York City, New York. <br>
+            <strong>SC:</strong> Eastward travel from Sydney, Nova Scotia to the UK. Active from August 1940 until May 1945. Note: Departure port switched later to 
+            Halifax or New York depending on the season. <br>
+            <strong>OB:</strong> Westward from Liverpool, England dispersing 750 miles west of North America to various ports. Active from September 1939 
+            to July 1941. Replaced by the OS & ON series. Note: As OB convoys dispersed, this makes their inclusion in the research debatable. <br>
+            <strong>ON:</strong> Westward from Liverpool, England to dispersing 750 miles west of North America to various ports until March 1942 where 
+            the convoy remained until arriving in ports in Canada and America. Active from July 1941 to May 1945. Note: Southend-on-Sea, England added
+            as departure port in October 1944 and would meet at sea with ships from Liverpool. Additionally, same debate as convoys dispersed. <br> 
+            <strong>ONS:</strong> Westward from Liverpool, England to Halifax, Nova Scotia. Active from March 1943 until June 1945. Note: Carried 
+            slower vessels and was suspended from March to September 1944 because of the Normandy landings.
+
+
+
+            
+            
+            
+            
+
+            
+        </p>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 Matthew Plambeck</p>
+    </footer>
+
+</body>
+</html>

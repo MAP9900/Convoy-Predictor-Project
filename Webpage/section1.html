@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Convoy Machine Learning</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+</head>
+<body>
+    
+    <!-- Header Section -->
+    <header>
+        <h1>Convoy Machine Learning</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li> <!-- Link back to homepage -->
+                <li><a href="section2.html">Convoy Data Visualization</a></li> <!-- Link to Section 2 Page -->
+                <li><a href="section3.html">Convoy History</a></li> <!-- Link to Section 3 Page -->
+                <li><a href="section4.html">Original Project</a></li> <!-- Link to Section 4 Page -->
+                <li><a href="section5.html">Additional Info</a></li> <!-- Link to Section 5 Page -->
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2 style="text-align: center;"> </strong>Original Models:</h2>
+        <p class="centered-paragraph">
+            The original attempt aimed to use machine learning models to predict the precise sink percentage for each convoy. Linear 
+            Regression, Random Forest Regressor, and Gradient Boosting Regressor models were deemed the most applicable models in this first
+            approach. Link to the initial model testing code can be found 
+            <a href="https://github.com/MAP9900/Modeling-The-Convoy-System/blob/main/Code/Machine%20Learning/Convoy_Model.ipynb" target="_blank">here</a>.
+            Below is the first attempt at refining the models based off these preliminary tests. Despite employing some optimization methods, all the models 
+            yielded low test scores (R<sup>2</sup>). <br> 
+        </p>
+    
+        <div class="table-container">
+            <!-- Linear Regression Table -->
+            <table>
+                <tr><th colspan="2">Linear Regression</th></tr>
+                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.4253521196075005</td></tr>
+                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.4182577923968136</td></tr>
+                <tr><td>Intercept</td><td>1.1144472022457077</td></tr>
+                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.42692364080872397</td></tr>
+                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>0.3860106343568942</td></tr>
+            </table>
+    
+            <!-- Random Forest Table -->
+            <table>
+                <tr><th colspan="2">Random Forest Regressor</th></tr>
+                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.9084429952687048</td></tr>
+                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.3737543493369251</td></tr>
+                <tr><td>Mean Squared Error</td><td>8.976407583255757</td></tr>
+                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.907216313534982</td></tr>
+                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>0.14177016659921754</td></tr>
+            </table>
+    
+            <!-- Gradient Boosting Table -->
+            <table>
+                <tr><th colspan="2">Gradient Boosting Regressor</th></tr>
+                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.8108159645821675</td></tr>
+                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.06908893514660186</td></tr>
+                <tr><td>Mean Squared Error</td><td>13.343385511802069</td></tr>
+                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.7650187716574124</td></tr>
+                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>-0.2242567375852599</td></tr>
+            </table>
+        </div>
+     <!-- Images container -->
+    <div class="image-container">
+        <img src="Images/L_R_T_P.png" alt="Linear Regression Visualization">
+        <img src="Images/R_F_R_T_P.png" alt="Random Forest Visualization">
+        <img src="Images/G_B_R_T_P.png" alt="Gradient Boosting Visualization">
+    </div>
+    <p class="centered-paragraph">
+        All three models are unable to produce accurate results as seen in their test scores. Additionally, the graphs 
+        compare true versus predicted sink rates visualizing the models inability to accurately predict sink rates. Predicting
+        an exact sink percentage appears to be unrealistic. Despite the many attributes used in the models, there are a number of 
+        uncontrollable factors which led to convoys experience sinkings including weather, sea state, evasive maneuvers, night vs day attack, 
+        number of U-Boats attacking, etc. The instances of convoys with a high number of ships sunk also make it harder for the 
+        models to preform accurately as they stray far from the mean sink percentage of about 0.20. Thus, sink percentage will be changed 
+        to a binary value of 0 (no ships sunk) or 1 (at least one ship sunk). The aim of this is to alleviate the complexity of predicting
+        an exact sink percentage for each convoy. Additionally, by switching to classification, it provides a more realistic approach as 
+        identifying convoys at risk is more generalized and scalable approach to predicting specific convoys sink rates. The initial results 
+        of classification are below:  
+    </p>
+    <div class="table-container">
+        <!-- Logistic Regression Results -->
+        <table>
+            <tr><th colspan="2">Logistic Regression</th></tr>
+            <tr><td>Train Score (Mean Accuracy)</td><td>0.811965811965812</td></tr>
+            <tr><td>Test Score (Mean Accuracy)</td><td>0.8068181818181818</td></tr>
+            <tr><td>Mean Squared Error</td><td>0.19318181818181818</td></tr>
+            <tr><td>K-Fold Train Score</td><td>0.8071378962697434</td></tr>
+            <tr><td>K-Fold Test Score</td><td>0.8075365726227796</td></tr>
+        </table>
+
+        <!-- Random Forest Results -->
+        <table>
+            <tr><th colspan="2">Random Forest Classifier</th></tr>
+            <tr><td>Train Score (Mean Accuracy)</td><td>1.0</td></tr>
+            <tr><td>Test Score (Mean Accuracy)</td><td>0.8579545454545454</td></tr>
+            <tr><td>Mean Squared Error</td><td>0.14204545454545456</td></tr>
+            <tr><td>K-Fold Train Score</td><td>1.0</td></tr>
+            <tr><td>K-Fold Test Score</td><td>0.8370950888192269</td></tr>
+        </table>
+
+        <!-- Gradient Boosting Results -->
+        <table>
+            <tr><th colspan="2">Gradient Boosting</th></tr>
+            <tr><td>Train Score (Mean Accuracy)</td><td>0.9487179487179487</td></tr>
+            <tr><td>Test Score (Mean Accuracy)</td><td>0.8693181818181818</td></tr>
+            <tr><td>Mean Squared Error</td><td>0.13068181818181818</td></tr>
+            <tr><td>K-Fold Train Score</td><td>0.9383702731680776</td></tr>
+            <tr><td>K-Fold Test Score</td><td>0.8336729362591433</td></tr>
+        </table>
+    </div>
+
+    <div class="table-container">
+        <!-- Random Forest Classifier Report -->
+        <table border="1">
+            <tr><th colspan="5">Random Forest Classification Report</th></tr>
+            <tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
+            <tr><td>0 (No Risk)</td><td>0.87</td><td>0.97</td><td>0.92</td><td>141</td></tr>
+            <tr><td>1 (At Risk)</td><td>0.78</td><td>0.40</td><td>0.53</td><td>35</td></tr>
+            <tr><td>Macro Avg</td><td>0.82</td><td>0.69</td><td>0.72</td><td>176</td></tr>
+            <tr><td>Weighted Avg</td><td>0.85</td><td>0.86</td><td>0.84</td><td>176</td></tr>
+            <tr><td>Accuracy</td><td colspan="4">0.86 (176 total)</td></tr>
+        </table>
+        
+        <!-- Logistic Regression Classification Report -->
+        <table border="1">
+            <tr><th colspan="5">Logistic Regression Classification Report</th></tr>
+            <tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
+            <tr><td>0 (No Risk)</td><td>0.81</td><td>0.99</td><td>0.89</td><td>141</td></tr>
+            <tr><td>1 (At Risk)</td><td>0.60</td><td>0.09</td><td>0.15</td><td>35</td></tr>
+            <tr><td>Macro Avg</td><td>0.71</td><td>0.54</td><td>0.52</td><td>176</td></tr>
+            <tr><td>Weighted Avg</td><td>0.77</td><td>0.81</td><td>0.74</td><td>176</td></tr>
+            <tr><td>Accuracy</td><td colspan="4">0.81 (176 total)</td></tr>
+        </table>
+    
+        <!-- Gradient Boosting Classification Report -->
+        <table border="1">
+            <tr><th colspan="5">Gradient Boosting Classifier Classification Report</th></tr>
+            <tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
+            <tr><td>0 (No Risk)</td><td>0.88</td><td>0.97</td><td>0.92</td><td>141</td></tr>
+            <tr><td>1 (At Risk)</td><td>0.80</td><td>0.46</td><td>0.58</td><td>35</td></tr>
+            <tr><td>Macro Avg</td><td>0.84</td><td>0.71</td><td>0.75</td><td>176</td></tr>
+            <tr><td>Weighted Avg</td><td>0.86</td><td>0.87</td><td>0.85</td><td>176</td></tr>
+            <tr><td>Accuracy</td><td colspan="4">0.87 (176 total)</td></tr>
+        </table>
+    </div>
+    
+    <p class="centered-paragraph">
+        The results indicate classification to be the better approach. Predicting an exact sink percentage is simply too unrealistic and 
+        arguably not very valuable in a real world setting. The best classifier, currently, the the gradient boosting classifier with a 
+        recall score of 0.46 for at risk convoys and a precision score of 0.88 for no risk convoys. These two metrics, I deem, are the most
+        import in protecting convoys. My aim is the maximize the number of true positives for convoys at risk and minimize the number false positives
+        for convoys at no risk. In the real world context of convoys, lives, ships, and cargo at are stake and thus, correctly predicting convoys at 
+        risk is the most important. The instances of false positives for convoys at risk (precision for at risk), although not ideal, lends to
+        a level of caution in protecting convoys. If a convoy may be at risk, than, I believe, it is better to classify it as an at risk convoy
+        than not as a precautionary measure. Although, in the real world, this approach may be limited/unrealistic if a finite number of resources
+        (escort ships, air-cover, etc) can be allocated to convoys and thus only convoys truly at risk can afford to have more protection resources. 
+        Regardless, precision and recall for convoys at risk and not a risk will be optimized in further refinements of the classifiers. The link 
+        to the code for all of the results above (regressors and classifications) can be found 
+        <a href="https://github.com/MAP9900/Modeling-The-Convoy-System/blob/main/Code/Machine%20Learning/Convoy_Model_2.ipynb" target="_blank">here</a>. <br>
+        
+    </p>
+
+    <h2 style="text-align: center;"> </strong>Optimizing Classification:</h2>
+    <li><a href="section1_1.html">Convoy ML (OLD)</a></li> <!-- Link to Section 2 Page -->
+    
+    </main>
+    
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 Matthew Plambeck</p>
+    </footer>
+
+</body>
+</html>
