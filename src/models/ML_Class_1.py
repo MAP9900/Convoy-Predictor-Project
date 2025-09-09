@@ -1,5 +1,5 @@
 #Imports
-from sklearn.model_selection import train_test_split, KFold, GridSearchCV
+from sklearn.model_selection import train_test_split, KFold, GridSearchCV, StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
@@ -87,15 +87,21 @@ class Model_Tester:
             self.feature_names = [f"Feature_{i}" for i in range(X.shape[1])]
         return
         
-    def k_folds(self, K = None, random_state= 1945):
+    def k_folds(self, K = None, random_state= 1945, stratified: bool = True):
         """
         Perform K-Fold Cross-Validation
+        
+        If stratified=True (default), uses StratifiedKFold to preserve High/Low Risk class ratios
+        in each fold — recommended for imbalanced WWII convoy risk data.
         """
         K = K if K else self.cv_folds
 
         X_train_array = np.array(self.X_train)
         y_train_array = np.array(self.y_train)
-        kf = KFold(n_splits=K, random_state=random_state, shuffle=True)
+        if stratified:
+            kf = StratifiedKFold(n_splits=K, random_state=random_state, shuffle=True)
+        else:
+            kf = KFold(n_splits=K, random_state=random_state, shuffle=True)
         train_scores, test_scores = [], []
         
         for idxTrain, idxTest in kf.split(X_train_array):
@@ -114,6 +120,102 @@ class Model_Tester:
 
         return train_scores, test_scores
     
+    def optimize_with_early_stopping(self, early_stopping_rounds: int = 50, validation_size: float = 0.2,
+                                     random_state: int = 1945, eval_metric: str = 'auc', verbose: bool = False):
+        """
+        Optimization using Early Stopping (especially effective for XGBoost).
+        
+        This method splits the training data into train/validation, finds the optimal number
+        of boosting rounds via early stopping, and then refits the final estimator on the
+        full training data using the discovered best iteration.
+        
+        Parameters:
+            early_stopping_rounds: Number of rounds with no improvement to trigger stop
+            validation_size: Fraction of training data used as validation for early stopping
+            random_state: Random seed for reproducibility
+            eval_metric: Metric for XGBoost during early stopping (e.g., 'auc' for risk ranking)
+            verbose: Whether to print early stopping progress from the underlying model
+        
+        Notes:
+            - Works best with XGBoost (`XGBClassifier`). If a scaler is provided, scaling is
+              applied consistently. After determining the best iteration, the model is refit
+              on the full training data (with the scaler) to produce `self.best_model`.
+            - For non-XGBoost estimators, this will simply fit the pipeline/model on the full
+              training data (no early stopping available).
+        """
+        if self.X_train is None or self.y_train is None:
+            raise ValueError("Call train_test_split() before optimize_with_early_stopping().")
+
+        base_estimator = self._build_estimator()
+        if base_estimator is None:
+            raise ValueError("No model provided. Please initialize with a valid scikit-learn classifier.")
+
+        #If not XGBoost, fall back to standard fit on the full data
+        underlying = self.model
+        is_xgb = isinstance(underlying, XGBClassifier)
+
+        if not is_xgb:
+            #Fit directly (Pipeline if present)
+            base_estimator.fit(self.X_train, self.y_train)
+            self.best_model = base_estimator
+            return
+
+        #Early stopping path for XGBoost
+        X_tr, X_val, y_tr, y_val = train_test_split(
+            self.X_train, self.y_train,
+            test_size=validation_size,
+            random_state=random_state,
+            stratify=self.y_train)
+
+        #Prepare data according to presence of scaler
+        if self.scaler is not None:
+            # Fit scaler on the early-stopping training split only
+            scaler = clone(self.scaler)
+            X_tr_t = scaler.fit_transform(X_tr)
+            X_val_t = scaler.transform(X_val)
+            #Clone the underlying XGBClassifier and fit with early stopping
+            xgb_model = clone(underlying)
+            xgb_model.set_params(eval_metric=eval_metric)
+            xgb_model.fit(
+                X_tr_t, y_tr,
+                eval_set=[(X_val_t, y_val)],
+                early_stopping_rounds=early_stopping_rounds,
+                verbose=verbose
+            )
+            best_iter = getattr(xgb_model, 'best_iteration', None)
+            if best_iter is None:
+                #Fallback if attribute not present
+                best_iter = xgb_model.get_booster().best_ntree_limit if hasattr(xgb_model, 'get_booster') else xgb_model.n_estimators
+
+            #Refit on full training with best n_estimators
+            final_estimator = self._build_estimator()
+            if isinstance(final_estimator, Pipeline):
+                final_estimator.set_params(model__n_estimators=best_iter)
+            else:
+                final_estimator.set_params(n_estimators=best_iter)
+            final_estimator.fit(self.X_train, self.y_train)
+            self.best_model = final_estimator
+            return
+        else:
+            #No scaler: fit XGB directly with early stopping
+            xgb_model = clone(underlying)
+            xgb_model.set_params(eval_metric=eval_metric)
+            xgb_model.fit(
+                X_tr, y_tr,
+                eval_set=[(X_val, y_val)],
+                early_stopping_rounds=early_stopping_rounds,
+                verbose=verbose
+            )
+            best_iter = getattr(xgb_model, 'best_iteration', None)
+            if best_iter is None:
+                best_iter = xgb_model.get_booster().best_ntree_limit if hasattr(xgb_model, 'get_booster') else xgb_model.n_estimators
+
+            #Refit on full training with best n_estimators
+            final_model = clone(underlying).set_params(n_estimators=best_iter, eval_metric=eval_metric)
+            final_model.fit(self.X_train, self.y_train)
+            self.best_model = final_model
+            return
+        
     def optimize(self):
         """
         Optimization of model/classifier through Grid Search Cross-Validation
@@ -293,6 +395,5 @@ class Model_Tester:
             spine.set_visible(False)
         plt.show()
         return
-
 
 
