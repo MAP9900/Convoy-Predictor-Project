@@ -155,7 +155,7 @@ class Model_Tester:
             self.best_model.fit(self.X_train, self.y_train)
         return
 
-    def evaluate(self):
+    def evaluate(self, show_plots: bool = False):
         """
         Evaluate the fitted model using the held-out test data and generate reports/plots.
 
@@ -222,24 +222,28 @@ class Model_Tester:
         balanced_acc = balanced_accuracy_score(self.y_test, y_predict)
         print(f"Balanced Accuracy: {balanced_acc:.4f}")
 
-        print(f"\n{model_name} Plots:\n")
-
-        if fpr is not None and tpr is not None:
-            self.plot_roc_curve(fpr, tpr, ROC_AUC)
-
-        print(f"{model_name} Confusion Matrix:")
         cm = confusion_matrix(self.y_test, y_predict, labels=class_labels) if class_labels is not None else confusion_matrix(self.y_test, y_predict)
-        self.plot_confusion_matrix(cm, class_labels=class_labels)
 
-        final_estimator = self.best_model
-        if isinstance(final_estimator, Pipeline):
-            final_estimator = final_estimator.named_steps.get("model", final_estimator)
+        if show_plots:
+            print(f"\n{model_name} Plots:\n")
 
-        if hasattr(final_estimator, "feature_importances_") or hasattr(final_estimator, "coef_"):
-            print(f"{model_name} Feature Importance Plot:")
-            self.plot_feature_importance()
+            if fpr is not None and tpr is not None:
+                self.plot_roc_curve(fpr, tpr, ROC_AUC)
+
+            print(f"{model_name} Confusion Matrix:")
+            self.plot_confusion_matrix(cm, class_labels=class_labels)
+
+            final_estimator = self.best_model
+            if isinstance(final_estimator, Pipeline):
+                final_estimator = final_estimator.named_steps.get("model", final_estimator)
+
+            if hasattr(final_estimator, "feature_importances_") or hasattr(final_estimator, "coef_"):
+                print(f"{model_name} Feature Importance Plot:")
+                self.plot_feature_importance()
+            else:
+                print('Model has no attribute: Feature Importances')
         else:
-            print('Model has no attribute: Feature Importances')
+            print(f"{model_name} Confusion Matrix (values only):\n{cm}")
 
         results = {
             "model_name": model_name,
