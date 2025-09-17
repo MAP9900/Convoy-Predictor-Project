@@ -24,67 +24,40 @@
     </header>
 
     <main>
-        <h2 style="text-align: center;"> </strong>Original Models:</h2>
+        
+<!-- Original Classification Results -->
+        <h2 style="text-align: center;"> </strong>Exploring Classification Algorithms</h2>
         <p class="centered-paragraph">
-            The original attempt aimed to use machine learning models to predict the precise sink percentage for each convoy. Linear 
-            Regression, Random Forest Regressor, and Gradient Boosting Regressor models were deemed the most applicable models in this first
-            approach. Link to the initial model testing code can be found 
-            <a href="https://github.com/MAP9900/Modeling-The-Convoy-System/blob/main/Code/Machine%20Learning/Convoy_Model.ipynb" target="_blank">here</a>.
-            Below is the first attempt at refining the models based off these preliminary tests. Despite employing some optimization methods, all the models 
-            yielded low test scores (R<sup>2</sup>). <br> 
+        The original scope of this project aimed to predict a convoy's precise sink percentage. The results for these 
+        test can be found <a href="section1_1.html">here.</a>
+        
+        This method quickly proved to be far too difficult largely due to limited data and widely varying sink percentages.
+        Instead, sink percentages were converted to binary values of 0 (no ships sunk) or 1 (at least one ship sunk). 
+        This new method aims to alleviate the complexity of predicting an exact sink percentage while also providing
+        a more realistic approach of classifying convoys as at risk vs. not as risk. 
+        
+    
         </p>
+        
+
     
-        <div class="table-container">
-            <!-- Linear Regression Table -->
-            <table>
-                <tr><th colspan="2">Linear Regression</th></tr>
-                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.4253521196075005</td></tr>
-                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.4182577923968136</td></tr>
-                <tr><td>Intercept</td><td>1.1144472022457077</td></tr>
-                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.42692364080872397</td></tr>
-                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>0.3860106343568942</td></tr>
-            </table>
+    </main>
     
-            <!-- Random Forest Table -->
-            <table>
-                <tr><th colspan="2">Random Forest Regressor</th></tr>
-                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.9084429952687048</td></tr>
-                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.3737543493369251</td></tr>
-                <tr><td>Mean Squared Error</td><td>8.976407583255757</td></tr>
-                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.907216313534982</td></tr>
-                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>0.14177016659921754</td></tr>
-            </table>
-    
-            <!-- Gradient Boosting Table -->
-            <table>
-                <tr><th colspan="2">Gradient Boosting Regressor</th></tr>
-                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.8108159645821675</td></tr>
-                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.06908893514660186</td></tr>
-                <tr><td>Mean Squared Error</td><td>13.343385511802069</td></tr>
-                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.7650187716574124</td></tr>
-                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>-0.2242567375852599</td></tr>
-            </table>
-        </div>
-     <!-- Images container -->
-    <div class="image-container">
-        <img src="images/L_R_T_P.png" alt="Linear Regression Visualization">
-        <img src="images/R_F_R_T_P.png" alt="Random Forest Visualization">
-        <img src="images/G_B_R_T_P.png" alt="Gradient Boosting Visualization">
-    </div>
-    <p class="centered-paragraph">
-        All three models are unable to produce accurate results as seen in their test scores. Additionally, the graphs 
-        compare true versus predicted sink rates visualizing the models inability to accurately predict sink rates. Predicting
-        an exact sink percentage appears to be unrealistic. Despite the many attributes used in the models, there are a number of 
-        uncontrollable factors which led to convoys experience sinkings including weather, sea state, evasive maneuvers, night vs day attack, 
-        number of U-Boats attacking, etc. The instances of convoys with a high number of ships sunk also make it harder for the 
-        models to preform accurately as they stray far from the mean sink percentage of about 0.20. Thus, sink percentage will be changed 
-        to a binary value of 0 (no ships sunk) or 1 (at least one ship sunk). The aim of this is to alleviate the complexity of predicting
-        an exact sink percentage for each convoy. Additionally, by switching to classification, it provides a more realistic approach as 
-        identifying convoys at risk is more generalized and scalable approach to predicting specific convoys sink rates. The initial results 
-        of classification are below:  
-    </p>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 Matthew Plambeck</p>
+    </footer>
+
+</body>
+</html>
+
+
+<!-- Old HTML Code, used to reference how tables were made
+
+</p>
     <div class="table-container">
-        <!-- Logistic Regression Results -->
+        Logistic Regression Results 
         <table>
             <tr><th colspan="2">Logistic Regression</th></tr>
             <tr><td>Train Score (Mean Accuracy)</td><td>0.811965811965812</td></tr>
@@ -94,7 +67,7 @@
             <tr><td>K-Fold Test Score</td><td>0.8075365726227796</td></tr>
         </table>
 
-        <!-- Random Forest Results -->
+        Random Forest Results
         <table>
             <tr><th colspan="2">Random Forest Classifier</th></tr>
             <tr><td>Train Score (Mean Accuracy)</td><td>1.0</td></tr>
@@ -104,7 +77,7 @@
             <tr><td>K-Fold Test Score</td><td>0.8370950888192269</td></tr>
         </table>
 
-        <!-- Gradient Boosting Results -->
+        Gradient Boosting Results 
         <table>
             <tr><th colspan="2">Gradient Boosting</th></tr>
             <tr><td>Train Score (Mean Accuracy)</td><td>0.9487179487179487</td></tr>
@@ -116,7 +89,7 @@
     </div>
 
     <div class="table-container">
-        <!-- Random Forest Classifier Report -->
+        Random Forest Classifier Report
         <table border="1">
             <tr><th colspan="5">Random Forest Classification Report</th></tr>
             <tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
@@ -127,7 +100,7 @@
             <tr><td>Accuracy</td><td colspan="4">0.86 (176 total)</td></tr>
         </table>
         
-        <!-- Logistic Regression Classification Report -->
+        Logistic Regression Classification Report 
         <table border="1">
             <tr><th colspan="5">Logistic Regression Classification Report</th></tr>
             <tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
@@ -138,7 +111,7 @@
             <tr><td>Accuracy</td><td colspan="4">0.81 (176 total)</td></tr>
         </table>
     
-        <!-- Gradient Boosting Classification Report -->
+        Gradient Boosting Classification Report
         <table border="1">
             <tr><th colspan="5">Gradient Boosting Classifier Classification Report</th></tr>
             <tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
@@ -164,18 +137,4 @@
         to the code for all of the results above (regressors and classifications) can be found 
         <a href="https://github.com/MAP9900/Modeling-The-Convoy-System/blob/main/Code/Machine%20Learning/Convoy_Model_2.ipynb" target="_blank">here</a>. <br>
         
-    </p>
-
-    <h2 style="text-align: center;"> </strong>Optimizing Classification:</h2>
-    <li><a href="section1_1.html">Convoy ML (OLD)</a></li> <!-- Link to Section 2 Page -->
-    
-    </main>
-    
-
-    <!-- Footer Section -->
-    <footer>
-        <p>&copy; 2025 Matthew Plambeck</p>
-    </footer>
-
-</body>
-</html>
+    </p> -->
