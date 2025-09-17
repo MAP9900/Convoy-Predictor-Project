@@ -1,3 +1,11 @@
+#Currently a copy of Ml_Class_1.py   <-----> Will refine when finsihed with testing varoius algorithms. My prediction is xgboost will be the best -- 9/16 
+
+
+
+
+
+
+
 #Imports
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV, StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
