@@ -29,18 +29,90 @@
         <h2 style="text-align: center;"> </strong>Exploring Classification Algorithms</h2>
         <p class="centered-paragraph">
         The original scope of this project aimed to predict a convoy's precise sink percentage. The results for these 
-        test can be found <a href="section1_1.html">here.</a>
-        
+        tests can be found <a href="section1_1.html">here.</a>
+
         This method quickly proved to be far too difficult largely due to limited data and widely varying sink percentages.
         Instead, sink percentages were converted to binary values of 0 (no ships sunk) or 1 (at least one ship sunk). 
         This new method aims to alleviate the complexity of predicting an exact sink percentage while also providing
-        a more realistic approach of classifying convoys as at risk vs. not as risk. 
+        a more realistic approach of classifying convoys as at risk vs. not at risk. Various algorithms were tested to 
+        determine the one best suited for the challenge.
         
     
         </p>
         
+        <div class="table-container">
+            <table>
+                <caption>Classification Algorithm Comparison:</caption>
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Acc</th>
+                        <th>ROC_AUC</th>
+                        <th>MCC</th>
+                        <th>Bal_Acc</th>
+                        <th>Recall1</th>
+                        <th>F1_1</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>LogisticRegression</td><td>0.79</td><td>0.786</td><td>0.193</td><td>0.554</td><td>0.14</td><td>0.22</td></tr>
+                    <tr><td>SGDClassifier</td><td>0.79</td><td>0.728</td><td>0.148</td><td>0.537</td><td>0.10</td><td>0.17</td></tr>
+                    <tr><td>LinearSVC</td><td>0.79</td><td>0.535</td><td>0.000</td><td>0.500</td><td>0.00</td><td>0.00</td></tr>
+                    <tr><td>SVC</td><td>0.80</td><td>0.768</td><td>0.215</td><td>0.545</td><td>0.10</td><td>0.18</td></tr>
+                    <tr><td>NuSVC</td><td>0.77</td><td>0.667</td><td>0.241</td><td>0.606</td><td>0.32</td><td>0.37</td></tr>
+                    <tr><td>KNeighborsClassifier</td><td>0.80</td><td>0.740</td><td>0.265</td><td>0.588</td><td>0.22</td><td>0.32</td></tr>
+                    <tr><td>RadiusNeighborsClassifier</td><td>0.78</td><td>0.567</td><td>-0.034</td><td>0.497</td><td>0.00</td><td>0.00</td></tr>
+                    <tr><td>DecisionTreeClassifier</td><td>0.74</td><td>0.621</td><td>0.235</td><td>0.621</td><td>0.42</td><td>0.40</td></tr>
+                    <tr><td>RandomForestClassifier</td><td>0.84</td><td>0.815</td><td>0.461</td><td>0.674</td><td>0.38</td><td>0.51</td></tr>
+                    <tr><td>ExtraTreesClassifier</td><td>0.84</td><td>0.791</td><td>0.469</td><td>0.688</td><td>0.42</td><td>0.53</td></tr>
+                    <tr><td>BaggingClassifier</td><td>0.83</td><td>0.766</td><td>0.400</td><td>0.656</td><td>0.36</td><td>0.47</td></tr>
+                    <tr class="highlight-row"><td>GradientBoostingClassifier</td><td>0.84</td><td>0.835</td><td>0.473</td><td>0.696</td><td>0.44</td><td>0.54</td></tr>
+                    <tr><td>AdaBoostClassifier</td><td>0.82</td><td>0.790</td><td>0.368</td><td>0.631</td><td>0.30</td><td>0.42</td></tr>
+                    <tr><td>GaussianNB</td><td>0.77</td><td>0.670</td><td>0.096</td><td>0.530</td><td>0.12</td><td>0.18</td></tr>
+                    <tr><td>BernoulliNB</td><td>0.79</td><td>0.699</td><td>0.000</td><td>0.500</td><td>0.00</td><td>0.00</td></tr>
+                    <tr><td>ComplementNB</td><td>0.49</td><td>0.555</td><td>0.061</td><td>0.537</td><td>0.62</td><td>0.34</td></tr>
+                    <tr><td>LinearDiscriminantAnalysis</td><td>0.79</td><td>0.787</td><td>0.205</td><td>0.561</td><td>0.16</td><td>0.25</td></tr>
+                    <tr><td>QuadraticDiscriminantAnalysis</td><td>0.78</td><td>0.790</td><td>0.425</td><td>0.735</td><td>0.66</td><td>0.56</td></tr>
+                    <tr><td>MLPClassifier</td><td>0.67</td><td>0.542</td><td>-0.064</td><td>0.471</td><td>0.12</td><td>0.13</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="centered-paragraph">
+        The Gradient Boosting Classifier performs the best on this data and will be the foundation for all future tests. 
+        Other Gradient Boosting algorithms from the XGBoost library will be tested next. These results are below.
 
-    
+
+        </p>
+
+        <div class="table-container">
+            <table>
+                <caption>Gradient Boosting Family Comparison:</caption>
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Acc</th>
+                        <th>ROC_AUC</th>
+                        <th>MCC</th>
+                        <th>Bal_Acc</th>
+                        <th>Recall1</th>
+                        <th>F1_1</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="highlight-row"><td>GradientBoostingClassifier</td><td>0.84</td><td>0.835</td><td>0.473</td><td>0.696</td><td>0.44</td><td>0.54</td></tr>
+                    <tr><td>XGBClassifier</td><td>0.83</td><td>0.773</td><td>0.408</td><td>0.651</td><td>0.34</td><td>0.46</td></tr>
+                    <tr><td>LGBMClassifier</td><td>0.83</td><td>0.792</td><td>0.443</td><td>0.683</td><td>0.42</td><td>0.52</td></tr>
+                    <tr><td>CatBoostClassifier</td><td>0.84</td><td>0.832</td><td>0.457</td><td>0.659</td><td>0.34</td><td>0.48</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="centered-paragraph">
+            Gradient Boosting edges out the other boosted tree variants by pairing the top ROC-AUC 
+            and F1 scores with the strongest recall for at-risk convoys, giving it the best balance 
+            between catching threats and keeping false alarms low.
+        </p>
+
     </main>
     
 

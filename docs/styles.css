@@ -112,6 +112,11 @@ th {
     background-color: #f2f2f2;
 }
 
+.highlight-row {
+    background-color: #fff2cc;
+    font-weight: bold;
+}
+
 /* Flex container for images */
 .image-container {
     display: flex;
