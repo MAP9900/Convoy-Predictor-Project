@@ -1,12 +1,14 @@
-#TODO: Refine Class for Gradient Descent Optimzation params
 
 #Imports
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV, StratifiedKFold
-from sklearn.metrics import classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix
+from sklearn.metrics import (classification_report, roc_curve, auc, matthews_corrcoef,
+                             balanced_accuracy_score, confusion_matrix, recall_score,
+                             fbeta_score, precision_recall_curve, make_scorer)
 from sklearn.pipeline import Pipeline
 from sklearn.base import clone
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
+from sklearn.ensemble import GradientBoostingClassifier
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,7 +18,10 @@ import seaborn as sns
 
 class Model_Tester:
 
-    def __init__(self, model = None, scaler = None, parameter_grid = None, cv_folds:int = 5, feature_names:list = None):
+    def __init__(self, model = None, scaler = None, parameter_grid = None, cv_folds:int = 5,
+                 feature_names:list = No+ne, positive_label = 1, optimize_scoring = 'recall',
+                 auto_calibrate_threshold: bool = True, threshold_beta: float = 2.0,
+                 random_state: int = 1945):
         """
         Class Initializer
 
@@ -32,12 +37,19 @@ class Model_Tester:
         """
         if model is not None and not hasattr(model, "fit"):
             raise ValueError(f"Error: model must be a scikit-learn classifier, but got {type(model)}")
-        self.model = model
-
+        self.random_state = random_state
+        self.model = model if model is not None else GradientBoostingClassifier(random_state=self.random_state) 
+        #Default model at deafault random state (1945)
         self.scaler = scaler
         self.parameter_grid = parameter_grid
         self.cv_folds = cv_folds
         self.feature_names = feature_names
+        self.positive_label = positive_label
+        self.optimize_scoring = optimize_scoring
+        self.auto_calibrate_threshold = auto_calibrate_threshold
+        self.threshold_beta = threshold_beta
+        self.decision_threshold = None
+        self.threshold_metric = None
         self.best_model = None
         self.X_train = None
         self.X_test = None
@@ -75,6 +87,70 @@ class Model_Tester:
             else:
                 coerced[f"model__{k}"] = v
         return coerced
+
+    def _resolve_scoring(self, scoring):
+        if scoring is not None:
+            return scoring
+        if self.optimize_scoring == 'recall':
+            return make_scorer(recall_score, pos_label=self.positive_label)
+        return self.optimize_scoring
+
+    def _get_classes(self):
+        estimator = self.best_model
+        classes = getattr(estimator, "classes_", None)
+        if classes is None and isinstance(estimator, Pipeline):
+            model_step = estimator.named_steps.get("model")
+            if model_step is not None:
+                classes = getattr(model_step, "classes_", None)
+        return classes
+
+    def _calibrate_threshold(self):
+        if self.best_model is None or self.X_train is None or self.y_train is None:
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        if not hasattr(self.best_model, "predict_proba"):
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        class_labels = self._get_classes()
+        if class_labels is None or len(class_labels) != 2:
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        if self.positive_label not in class_labels:
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        probas = self.best_model.predict_proba(self.X_train)
+        pos_index = list(class_labels).index(self.positive_label)
+        pos_proba = probas[:, pos_index]
+        y_true = np.asarray(self.y_train)
+        precision, recall, thresholds = precision_recall_curve(y_true, pos_proba, pos_label=self.positive_label)
+        if thresholds.size == 0:
+            self.decision_threshold = 0.5
+            self.threshold_metric = None
+            return
+        beta = self.threshold_beta if self.threshold_beta and self.threshold_beta > 0 else 1.0
+        precision = precision[:-1]
+        recall = recall[:-1]
+        if precision.size == 0 or recall.size == 0 or thresholds.size == 0:
+            self.decision_threshold = 0.5
+            self.threshold_metric = None
+            return
+        numerator = (1 + beta ** 2) * precision * recall
+        denominator = (beta ** 2 * precision) + recall + 1e-12
+        fbeta_scores = numerator / denominator
+        best_idx = int(np.nanargmax(fbeta_scores))
+        self.decision_threshold = float(thresholds[best_idx])
+        self.threshold_metric = float(fbeta_scores[best_idx])
+
+    def set_decision_threshold(self, threshold = None):
+        """Manually set the decision threshold for probability-to-class conversion."""
+        if threshold is None:
+            self.decision_threshold = None
+        else:
+            self.decision_threshold = float(threshold)
 
     def train_test_split(self, X, y, train_size = 0.8, random_state = 1945):
         """
@@ -126,7 +202,7 @@ class Model_Tester:
 
         return train_scores, test_scores
     
-    def optimize(self):
+    def optimize(self, scoring = None, fit_params = None):
         """
         Optimization of model/classifier through Grid Search Cross-Validation
         """
@@ -137,20 +213,27 @@ class Model_Tester:
         estimator = self._build_estimator()
         if estimator is None:
             raise ValueError("No model provided. Please initialize with a valid scikit-learn classifier.")
+        scoring_to_use = self._resolve_scoring(scoring)
+        fit_params = fit_params or {}
 
         if self.parameter_grid:
             #Ensure parameter grid works with a Pipeline
             param_grid = self._coerce_param_grid(estimator, self.parameter_grid)
-            grid_search = GridSearchCV(estimator, param_grid, cv=self.cv_folds, scoring='accuracy', n_jobs=-1)
+            grid_search = GridSearchCV(estimator, param_grid, cv=self.cv_folds, scoring=scoring_to_use, n_jobs=-1)
             #n_jobs = -1 uses all available CPUs (Parallel Execution). Switch to -2 to avoid freezing (ex: running server side)
-            grid_search.fit(self.X_train, self.y_train)
+            grid_search.fit(self.X_train, self.y_train, **fit_params)
             self.best_model = grid_search.best_estimator_
             print(f"\nBest Hyperparameters Found:\n{grid_search.best_params_}")
-            print(f"Best Cross-Validation Accuracy: {grid_search.best_score_:.4f}")
+            print(f"Best Cross-Validation Score: {grid_search.best_score_:.4f}")
         else:
             #Fit the estimator directly when no grid is provided
             self.best_model = estimator
-            self.best_model.fit(self.X_train, self.y_train)
+            self.best_model.fit(self.X_train, self.y_train, **fit_params)
+
+        if self.auto_calibrate_threshold:
+            self._calibrate_threshold()
+        else:
+            self.threshold_metric = None
         return
 
     def evaluate(self, show_plots: bool = False):
@@ -189,12 +272,24 @@ class Model_Tester:
         if class_labels is not None and len(class_labels) == 2:
             if hasattr(self.best_model, "predict_proba"):
                 probas = self.best_model.predict_proba(self.X_test)
-                positive_index = list(class_labels).index(class_labels[1])
+                if self.positive_label in class_labels:
+                    positive_index = list(class_labels).index(self.positive_label)
+                else:
+                    positive_index = 1
                 y_predict_probability = probas[:, positive_index]
             elif hasattr(self.best_model, "decision_function"):
                 scores = self.best_model.decision_function(self.X_test)
                 if scores.ndim == 1:
                     y_predict_probability = scores
+
+        if y_predict_probability is not None and self.decision_threshold is not None and class_labels is not None and len(class_labels) == 2:
+            if self.positive_label in class_labels:
+                positive_label = self.positive_label
+            else:
+                positive_label = class_labels[1]
+            negative_label = class_labels[0] if class_labels[0] != positive_label else class_labels[1]
+            y_predict = np.where(y_predict_probability >= self.decision_threshold, positive_label, negative_label)
+            print(f"Applied custom decision threshold: {self.decision_threshold:.3f}")
 
         print(f"\n{model_name} Evaluation:")
 
@@ -204,7 +299,10 @@ class Model_Tester:
 
         #ROC Curve and AUC Score (binary classification only)
         if y_predict_probability is not None:
-            pos_label = class_labels[1] if class_labels is not None else None
+            if class_labels is not None and self.positive_label in class_labels:
+                pos_label = self.positive_label
+            else:
+                pos_label = class_labels[1] if class_labels is not None else None
             fpr, tpr, _ = roc_curve(self.y_test, y_predict_probability, pos_label=pos_label)
             ROC_AUC = auc(fpr, tpr)
             print(f"\nROC AUC Score: {ROC_AUC:.4f}")
@@ -220,7 +318,23 @@ class Model_Tester:
         balanced_acc = balanced_accuracy_score(self.y_test, y_predict)
         print(f"Balanced Accuracy: {balanced_acc:.4f}")
 
+        recall_pos = None
+        f2_score = None
+        if class_labels is not None and self.positive_label in class_labels:
+            recall_pos = recall_score(self.y_test, y_predict, pos_label=self.positive_label)
+            f2_score = fbeta_score(self.y_test, y_predict, beta=2.0, pos_label=self.positive_label)
+            print(f"Recall (positive={self.positive_label}): {recall_pos:.4f}")
+            print(f"F2 Score: {f2_score:.4f}")
+
         cm = confusion_matrix(self.y_test, y_predict, labels=class_labels) if class_labels is not None else confusion_matrix(self.y_test, y_predict)
+
+        if class_labels is not None and self.positive_label in class_labels and len(class_labels) == 2:
+            pos_idx = list(class_labels).index(self.positive_label)
+            neg_idx = 0 if pos_idx == 1 else 1
+            false_negatives = cm[pos_idx, neg_idx]
+            print(f"False Negatives: {false_negatives}")
+        else:
+            false_negatives = None
 
         if show_plots:
             print(f"\n{model_name} Plots:\n")
@@ -250,6 +364,11 @@ class Model_Tester:
             "roc_auc": ROC_AUC,
             "mcc": mcc,
             "balanced_accuracy": balanced_acc,
+            "recall": recall_pos,
+            "f2_score": f2_score,
+            "decision_threshold": self.decision_threshold,
+            "threshold_metric": self.threshold_metric,
+            "false_negatives": false_negatives,
         }
         return results
 
@@ -330,3 +449,25 @@ class Model_Tester:
             spine.set_visible(False)
         plt.show()
         return
+
+# Set up Model_Tester so gradient boosting is the default and recall remains the primary optimisation target, 
+# with optional threshold tuning to squeeze down false negatives.
+
+# Default GB config and recall knobs: src/models/Gradient_Boosting_Optimization.py:22-54 now instantiates a GradientBoostingClassifier
+#  when no model is supplied and lets you record the positive class, preferred scorer, auto-threshold toggle, and beta weight.
+
+# Scoring + fit extras: src/models/Gradient_Boosting_Optimization.py:92-238 introduces _resolve_scoring, manual scorer override,
+#  and optimize(scoring=None, fit_params=None) so you can pass recall-weighted scorers or early-stopping kwargs (e.g., XGBoost’s 
+# model__early_stopping_rounds).
+
+# Recall-focused thresholding: src/models/Gradient_Boosting_Optimization.py:99-154 adds helper utilities that (optionally) 
+# sweep the training probabilities with an F2 objective to select self.decision_threshold, plus set_decision_threshold() for manual tweaks.
+
+# Evaluation updates: src/models/Gradient_Boosting_Optimization.py:271-372 applies any calibrated/manual threshold before scoring, 
+# prints recall/F2/false-negative counts, and returns those values alongside the confusion matrix and MCC so you can compare 
+# experiments at a glance.
+
+# No automated tests were run (not requested).
+
+# In your convoy notebook, call optimizer = Model_Tester(positive_label='sunk', optimize_scoring='recall'), then optimizer.optimize() and confirm the reported recall/F2 beat the baseline.
+# If you tune with XGBoost, pass its params through model__ keys and supply fit_params={'model__eval_set': [(X_val, y_val)], 'model__early_stopping_rounds': 25} to keep the same recall-first workflow.
