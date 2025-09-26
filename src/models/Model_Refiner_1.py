@@ -1,3 +1,5 @@
+#TODO: Further examine class 
+
 """Utilities for optimizing gradient-descent classifiers with recall-focused evaluation."""
 
 from __future__ import annotations

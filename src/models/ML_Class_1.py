@@ -59,15 +59,15 @@ class Model_Tester:
 
     def _coerce_param_grid(self, estimator, param_grid):
         """
-        If using a Pipeline, ensure parameters are namespaced (e.g., 'model__C').
+        If using a Pipeline, ensure parameters are namespaced (e.g., 'model__C'). Needed for GridSearchCV
         If keys are already namespaced, leave as-is.
         """
-        if not isinstance(estimator, Pipeline):
+        if not isinstance(estimator, Pipeline): #If a pipeline is NOT used, no need to edit param_grid
             return param_grid
-        if param_grid is None:
+        if param_grid is None: #For empty param grid
             return None
         coerced = {}
-        for k, v in param_grid.items():
+        for k, v in param_grid.items(): #Construct {"model__C": [0.1, 1, 10]} (example)
             if "__" in k:
                 coerced[k] = v
             else:
@@ -157,6 +157,7 @@ class Model_Tester:
 
         Returns a dictionary containing key metrics for downstream comparison.
         """
+        #Checks to make sure function will run:
         if self.X_test is None or self.y_test is None:
             raise ValueError("Call train_test_split() before evaluate().")
         if self.best_model is None:
