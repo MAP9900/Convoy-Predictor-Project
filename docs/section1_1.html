@@ -1,6 +1,6 @@
 <!--  index1_1 used to showcase the original models which focused on prediction rather than classification-->
 
-<!--  TODO update with correct values. (RE-Run Regression Test 2)-->
+<!-- Updated 9/26 with Re-Ran results from Regression_Test_2-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,62 +28,63 @@
     </header>
     <!-- Main Section --- Original Models -->
      <main>
-        <h2 style="text-align: center;"> </strong>Original Models:</h2>
+        <h2 style="text-align: center;"> </strong>Original Regression Approach:</h2>
         <p class="centered-paragraph">
-            The original attempt aimed to use machine learning models to predict the precise sink percentage for each convoy. Linear 
-            Regression, Random Forest Regressor, and Gradient Boosting Regressor models were deemed the most applicable models in this first
-            approach. Link to the initial model testing code can be found 
-            <a href="https://github.com/MAP9900/Modeling-The-Convoy-System/blob/main/Code/Machine%20Learning/Convoy_Model.ipynb" target="_blank">here</a>.
-            Below is the first attempt at refining the models based off these preliminary tests. Despite employing some optimization methods, all the models 
-            yielded low test scores (R<sup>2</sup>). <br> 
+            The original goal of the project was to predict convoy's exact sink percentages through machine learning regression techniques. 
+            Linear Regression, Random Forest Regressor, and Gradient Boosting Regressor models were deemed the most applicable models in this first
+            approach. Link to the initial the notebook with these preliminary results can be found
+            <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/exploration/Regression_Test_2.ipynb" target="_blank">here</a>.
+            Below are the results for the three models first tested. Although no optimization was done to improve the models, the extremely low test score results 
+            indicate a regression approach is likely not feasible. 
+
         </p>
     
         <div class="table-container">
             <!-- Linear Regression Table -->
             <table>
                 <tr><th colspan="2">Linear Regression</th></tr>
-                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.4253521196075005</td></tr>
-                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.4182577923968136</td></tr>
-                <tr><td>Intercept</td><td>1.1144472022457077</td></tr>
-                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.42692364080872397</td></tr>
-                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>0.3860106343568942</td></tr>
+                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.1197</td></tr>
+                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.0947</td></tr>
+                <!-- <tr><td>Coefficients</td><td>[1.1196, 0.2562, 0.6230, -1.5004, 0.1397, -0.5358, 0.0087, 0.1338, 0.0369, 0.7472, 0.0465]</td></tr> -->
+                <tr><td>Intercept</td><td>1.1144</td></tr>
+                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.1189</td></tr>
+                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>0.0480</td></tr>
             </table>
     
             <!-- Random Forest Table -->
             <table>
                 <tr><th colspan="2">Random Forest Regressor</th></tr>
-                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.9084429952687048</td></tr>
-                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.3737543493369251</td></tr>
-                <tr><td>Mean Squared Error</td><td>8.976407583255757</td></tr>
-                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.907216313534982</td></tr>
-                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>0.14177016659921754</td></tr>
+                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.8609</td></tr>
+                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.0282</td></tr>
+                <tr><td>Mean Squared Error</td><td>13.9292</td></tr>
+                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.8615</td></tr>
+                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>-0.1785</td></tr>
             </table>
     
             <!-- Gradient Boosting Table -->
             <table>
                 <tr><th colspan="2">Gradient Boosting Regressor</th></tr>
-                <tr><td>Train Score (R<sup>2</sup>)</td><td>0.8108159645821675</td></tr>
-                <tr><td>Test Score (R<sup>2</sup>)</td><td>0.06908893514660186</td></tr>
-                <tr><td>Mean Squared Error</td><td>13.343385511802069</td></tr>
-                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.7650187716574124</td></tr>
-                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>-0.2242567375852599</td></tr>
+                <tr><td>Train Score (Mean Accuracy)</td><td>0.8108</td></tr>
+                <tr><td>Test Score (Mean Accuracy)</td><td>0.0707</td></tr>
+                <tr><td>Mean Squared Error</td><td>13.3208</td></tr>
+                <tr><td>K-Fold Train Score (Mean R<sup>2</sup>)</td><td>0.7650</td></tr>
+                <tr><td>K-Fold Test Score (Mean R<sup>2</sup>)</td><td>-0.2243</td></tr>
             </table>
         </div>
      <!-- Images container -->
     <div class="image-container">
-        <img src="images/L_R_T_P.png" alt="Linear Regression Visualization">
-        <img src="images/R_F_R_T_P.png" alt="Random Forest Visualization">
-        <img src="images/G_B_R_T_P.png" alt="Gradient Boosting Visualization">
+        <img src="images/LinReg_TP.png" alt="Linear Regression Visualization">
+        <img src="images/RanFor_TP.png" alt="Random Forest Visualization">
+        <img src="images/GB_TP.png" alt="Gradient Boosting Visualization">
     </div>
     <p class="centered-paragraph">
-        All three models are unable to produce accurate results as seen in their test scores. Additionally, the graphs 
-        compare true versus predicted sink rates visualizing the models inability to accurately predict sink rates. Predicting
-        an exact sink percentage appears to be unrealistic. Despite the many attributes used in the models, there are a number of 
-        uncontrollable factors which led to convoys experience sinkings including weather, sea state, evasive maneuvers, night vs day attack, 
-        number of U-Boats attacking, etc. The instances of convoys with a high number of ships sunk also make it harder for the 
-        models to perform accurately as they stray far from the mean sink percentage of about 0.20. Thus, sink percentage will be changed 
-        to a binary value of 0 (no ships sunk) or 1 (at least one ship sunk). The aim of this is to alleviate the complexity of predicting
-        an exact sink percentage for each convoy. Additionally, by switching to classification, it provides a more realistic approach as 
-        identifying convoys at risk is more generalized and scalable approach to predicting specific convoys sink rates. 
+        All three regression models underperformed on the test data highlighting their weak predictive power. 
+        Linear Regression barely improved over a naive baseline (train R² 0.1197 vs. test R² 0.0947), while Random Forest 
+        and Gradient Boosting appeared to overfit the data (train R² ≈0.86 and mean accuracy ≈0.81 vs test R² 0.0282 and mean accuracy 0.0707)
+        Combined with outliers where convoys suffered heavy losses and the many un-modeled wartime factors (weather, night/day, U-boat tactics, etc.)
+        make predicting a precise sink percentage unrealistic. Going forward, the target variable will be switched to a binary value of 0 
+        (no ships sunk) or 1 (at least one ship sunk). This new focus will aim on identifying high risk convoys rather than estimating exact sink percentages. 
     </p>
     </main>
+
+    
