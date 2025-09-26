@@ -346,9 +346,6 @@ class Gradient_Boosting_Optimization:
             if fpr is not None and tpr is not None:
                 self.plot_roc_curve(fpr, tpr, ROC_AUC)
 
-            print(f"{model_name} Confusion Matrix:")
-            self.plot_confusion_matrix(cm, class_labels=class_labels)
-
             final_estimator = self.best_model
 
             if hasattr(final_estimator, "feature_importances_") or hasattr(final_estimator, "coef_"):
@@ -356,8 +353,7 @@ class Gradient_Boosting_Optimization:
                 self.plot_feature_importance()
             else:
                 print('Model has no attribute: Feature Importances')
-        else:
-            print(f"{model_name} Confusion Matrix (values only):\n{cm}")
+
 
         #Save results in a dictionary for later use if needed
         results = {
