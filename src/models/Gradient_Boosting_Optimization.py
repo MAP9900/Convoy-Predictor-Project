@@ -244,6 +244,8 @@ class Gradient_Boosting_Optimization:
             self._calibrate_threshold() #Call threshold optimization function
         else:
             self.threshold_metric = None
+            if self.decision_threshold is None:
+                self.decision_threshold = 0.5
         return
 
     def evaluate(self, show_plots: bool = False, print_results: bool = True):
@@ -278,19 +280,23 @@ class Gradient_Boosting_Optimization:
                 positive_index = 1
             y_predict_probability = probas[:, positive_index]
         #When custom threshold is defined, override default 0.5 threshold.  
-        if y_predict_probability is not None and self.decision_threshold is not None and class_labels is not None and len(class_labels) == 2:
-            if self.positive_label in class_labels:
-                positive_label = self.positive_label
-            else:
-                positive_label = class_labels[1]
-            negative_label = class_labels[0] if class_labels[0] != positive_label else class_labels[1] #Simply picks other class as the negative label
-            #Recompute predictions using the custom decision threshold:
-            y_predict = np.where(y_predict_probability >= self.decision_threshold, positive_label, negative_label) 
-            if print_results:
-                message = f"Applied decision threshold: {self.decision_threshold:.4f}"
-                if self.threshold_metric is not None:
-                    message += f" (F-beta: {self.threshold_metric:.4f})"
-                print(message)
+        if y_predict_probability is not None and class_labels is not None and len(class_labels) == 2:
+            if self.decision_threshold is not None:
+                if self.positive_label in class_labels:
+                    positive_label = self.positive_label
+                else:
+                    positive_label = class_labels[1]
+                negative_label = class_labels[0] if class_labels[0] != positive_label else class_labels[1] #Simply picks other class as the negative label
+                #Recompute predictions using the custom decision threshold:
+                y_predict = np.where(y_predict_probability >= self.decision_threshold, positive_label, negative_label)
+                if print_results:
+                    message = f"Applied decision threshold: {self.decision_threshold:.4f}"
+                    if self.threshold_metric is not None:
+                        message += f" (F-beta: {self.threshold_metric:.4f})"
+                    print(message)
+            elif print_results:
+                # scikit-learn classifiers default to a 0.5 cutoff when no custom threshold is supplied
+                print("Applied decision threshold: 0.5000 (default)")
 
         #Start of Model Evaluation 
         print(f"\n{model_name} Evaluation:")
