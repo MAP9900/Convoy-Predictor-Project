@@ -1,11 +1,11 @@
 #Imports
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV, StratifiedKFold
-from sklearn.metrics import (classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix, recall_score,
-                             fbeta_score, precision_recall_curve, make_scorer)
+from sklearn.metrics import (classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix, 
+                             recall_score, fbeta_score, precision_recall_curve, make_scorer)
 from sklearn.base import clone
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import GradientBoostingClassifier #Default classifier 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -91,7 +91,8 @@ class Gradient_Boosting_Optimization:
         Calibrate the model's decision threshold based on training data. Set up to focus on the positive class (1) (Use case is for Convoy Porject)
 
         This method finds an optimal probability cutoff for binary classification
-        by maximizing the F-beta score on the training set. It works by:
+        by maximizing the F-beta score (weighted harmonic mean of precision and recall) on the training set. 
+        It works by:
 
         - Ensuring the model and data are valid (must support `predict_proba`,
           must be binary classification, and must contain the designated positive label). (Checks)
@@ -150,6 +151,7 @@ class Gradient_Boosting_Optimization:
         #Save optimal cutoff (decision_threshold) and its associated F-beta score (threshold_metric)
         self.decision_threshold = float(thresholds[best_idx])
         self.threshold_metric = float(fbeta_scores[best_idx])
+        print(f"Optimized Decision Threshold: {self.decision_threshold:.4f} with F-beta score: {self.threshold_metric:.4f}")
 
     def set_decision_threshold(self, threshold = None):
         """
@@ -157,9 +159,10 @@ class Gradient_Boosting_Optimization:
         Way to err on the side of false-positives so use 0.3 for example
         """
         if threshold is None:
-            self.decision_threshold = None #Defaults to 0.5 
+            self.decision_threshold = 0.5 #Defaults to 0.5 
         else:
             self.decision_threshold = float(threshold)
+            # print(f"Using Decision Threshold: {self.decision_threshold:.4f}") #No longer needed, since evals prints decision threshold 
 
     def train_test_split(self, X, y, train_size = 0.8, random_state = 1945):
         """
@@ -238,7 +241,7 @@ class Gradient_Boosting_Optimization:
             self.best_model.fit(self.X_train, self.y_train, **fit_params)
 
         if self.auto_calibrate_threshold:
-            self._calibrate_threshold()
+            self._calibrate_threshold() #Call threshold optimization function
         else:
             self.threshold_metric = None
         return
@@ -274,7 +277,7 @@ class Gradient_Boosting_Optimization:
             else:
                 positive_index = 1
             y_predict_probability = probas[:, positive_index]
-        #When custom threshold is defined, override default 05 threshold.  
+        #When custom threshold is defined, override default 0.5 threshold.  
         if y_predict_probability is not None and self.decision_threshold is not None and class_labels is not None and len(class_labels) == 2:
             if self.positive_label in class_labels:
                 positive_label = self.positive_label
@@ -284,15 +287,17 @@ class Gradient_Boosting_Optimization:
             #Recompute predictions using the custom decision threshold:
             y_predict = np.where(y_predict_probability >= self.decision_threshold, positive_label, negative_label) 
             if print_results:
-                print(f"Applied custom decision threshold: {self.decision_threshold:.3f}")
+                message = f"Applied decision threshold: {self.decision_threshold:.4f}"
+                if self.threshold_metric is not None:
+                    message += f" (F-beta: {self.threshold_metric:.4f})"
+                print(message)
 
         #Start of Model Evaluation 
-        if print_results:
-            print(f"\n{model_name} Evaluation:")
+        print(f"\n{model_name} Evaluation:")
 
-            #Classification Report
-            print('\nClassification Report:')
-            print(classification_report(self.y_test, y_predict))
+        #Classification Report
+        print('\nClassification Report:')
+        print(classification_report(self.y_test, y_predict))
 
         #ROC Curve and AUC Score (binary classification only)
         if y_predict_probability is not None:
