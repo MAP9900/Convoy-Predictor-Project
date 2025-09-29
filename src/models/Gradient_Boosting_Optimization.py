@@ -151,7 +151,7 @@ class Gradient_Boosting_Optimization:
         #Save optimal cutoff (decision_threshold) and its associated F-beta score (threshold_metric)
         self.decision_threshold = float(thresholds[best_idx])
         self.threshold_metric = float(fbeta_scores[best_idx])
-        print(f"Optimized Decision Threshold: {self.decision_threshold:.4f} with F-beta score: {self.threshold_metric:.4f}")
+        # print(f"Optimized Decision Threshold: {self.decision_threshold:.4f} with F-beta score: {self.threshold_metric:.4f}")
 
     def set_decision_threshold(self, threshold = None):
         """
@@ -290,20 +290,19 @@ class Gradient_Boosting_Optimization:
                 #Recompute predictions using the custom decision threshold:
                 y_predict = np.where(y_predict_probability >= self.decision_threshold, positive_label, negative_label)
                 if print_results:
-                    message = f"Applied decision threshold: {self.decision_threshold:.4f}"
+                    message = f"Applied decision threshold: {self.decision_threshold:.4f}" #Print decision threshold to keep track of models
                     if self.threshold_metric is not None:
                         message += f" (F-beta: {self.threshold_metric:.4f})"
                     print(message)
-            elif print_results:
-                # scikit-learn classifiers default to a 0.5 cutoff when no custom threshold is supplied
-                print("Applied decision threshold: 0.5000 (default)")
+
 
         #Start of Model Evaluation 
-        print(f"\n{model_name} Evaluation:")
+        if print_results ==True:
+            print(f"\n{model_name} Evaluation:")
 
-        #Classification Report
-        print('\nClassification Report:')
-        print(classification_report(self.y_test, y_predict))
+            #Classification Report
+            print('\nClassification Report:')
+            print(classification_report(self.y_test, y_predict))
 
         #ROC Curve and AUC Score (binary classification only)
         if y_predict_probability is not None:
