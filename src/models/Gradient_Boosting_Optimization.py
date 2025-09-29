@@ -243,7 +243,7 @@ class Gradient_Boosting_Optimization:
             self.threshold_metric = None
         return
 
-    def evaluate(self, show_plots: bool = False):
+    def evaluate(self, show_plots: bool = False, print_results: bool = True):
         """
         Evaluate the fitted model using the held-out test data and generate reports/plots.
         Returns a dictionary containing key metrics for later comparison.
@@ -283,14 +283,16 @@ class Gradient_Boosting_Optimization:
             negative_label = class_labels[0] if class_labels[0] != positive_label else class_labels[1] #Simply picks other class as the negative label
             #Recompute predictions using the custom decision threshold:
             y_predict = np.where(y_predict_probability >= self.decision_threshold, positive_label, negative_label) 
-            print(f"Applied custom decision threshold: {self.decision_threshold:.3f}")
+            if print_results:
+                print(f"Applied custom decision threshold: {self.decision_threshold:.3f}")
 
         #Start of Model Evaluation 
-        print(f"\n{model_name} Evaluation:")
+        if print_results:
+            print(f"\n{model_name} Evaluation:")
 
-        #Classification Report
-        print('\nClassification Report:')
-        print(classification_report(self.y_test, y_predict))
+            #Classification Report
+            print('\nClassification Report:')
+            print(classification_report(self.y_test, y_predict))
 
         #ROC Curve and AUC Score (binary classification only)
         if y_predict_probability is not None:
@@ -300,27 +302,32 @@ class Gradient_Boosting_Optimization:
                 pos_label = class_labels[1] if class_labels is not None else None
             fpr, tpr, _ = roc_curve(self.y_test, y_predict_probability, pos_label=pos_label)
             ROC_AUC = auc(fpr, tpr)
-            print(f"\nROC AUC Score: {ROC_AUC:.4f}")
+            if print_results:
+                print(f"\nROC AUC Score: {ROC_AUC:.4f}")
         else:
             fpr, tpr, ROC_AUC = None, None, None
-            print("\nROC AUC Score: N/A (requires binary classification with probability or decision scores)")
+            if print_results:
+                print("\nROC AUC Score: N/A (requires binary classification with probability or decision scores)")
 
         #Matthews Correlation Coefficient
         mcc = matthews_corrcoef(self.y_test, y_predict)
-        print(f"Matthews Correlation Coefficient (MCC): {mcc:.4f}")
+        if print_results:
+            print(f"Matthews Correlation Coefficient (MCC): {mcc:.4f}")
 
         #Balanced Accuracy Score
         balanced_acc = balanced_accuracy_score(self.y_test, y_predict)
-        print(f"Balanced Accuracy: {balanced_acc:.4f}")
+        if print_results:
+            print(f"Balanced Accuracy: {balanced_acc:.4f}")
 
         #Confusion Matrix
         cm = confusion_matrix(self.y_test, y_predict, labels=class_labels) if class_labels is not None else confusion_matrix(self.y_test, y_predict)
-        print("Confusion Matrix:")
-        if class_labels is not None: #prints a nicer looking cm that just print(cm)
-            cm_df = pd.DataFrame(cm, index=[f"Actual {c}" for c in class_labels], columns=[f"Predicted {c}" for c in class_labels])
-            print(cm_df)
-        else:
-            print(cm)
+        if print_results:
+            print("Confusion Matrix:")
+            if class_labels is not None: #prints a nicer looking cm that just print(cm)
+                cm_df = pd.DataFrame(cm, index=[f"Actual {c}" for c in class_labels], columns=[f"Predicted {c}" for c in class_labels])
+                print(cm_df)
+            else:
+                print(cm)
 
         #Recall and F2 Scores (F2 score is a weighted harmonic mean of precision and recall)
         recall_pos = None
@@ -328,15 +335,17 @@ class Gradient_Boosting_Optimization:
         if class_labels is not None and self.positive_label in class_labels:
             recall_pos = recall_score(self.y_test, y_predict, pos_label=self.positive_label)
             f2_score = fbeta_score(self.y_test, y_predict, beta=2.0, pos_label=self.positive_label) #beta of 2 means recall gets 4x the importance of precision
-            print(f"Recall (positive={self.positive_label}): {recall_pos:.4f}")
-            print(f"F2 Score: {f2_score:.4f}")
+            if print_results:
+                print(f"Recall (positive={self.positive_label}): {recall_pos:.4f}")
+                print(f"F2 Score: {f2_score:.4f}")
 
         #Examine False Negatives
         if class_labels is not None and self.positive_label in class_labels and len(class_labels) == 2:
             pos_idx = list(class_labels).index(self.positive_label)
             neg_idx = 0 if pos_idx == 1 else 1
             false_negatives = cm[pos_idx, neg_idx] #Extract false negative cases
-            print(f"False Negatives: {false_negatives}")
+            if print_results:
+                print(f"False Negatives: {false_negatives}")
         else:
             false_negatives = None
 
