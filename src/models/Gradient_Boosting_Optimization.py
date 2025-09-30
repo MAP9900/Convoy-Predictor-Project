@@ -229,7 +229,13 @@ class Gradient_Boosting_Optimization:
         #Optimize with given param grid
         if self.parameter_grid:
             param_grid = self.parameter_grid
-            grid_search = GridSearchCV(estimator, param_grid, cv=self.cv_folds, scoring=scoring_to_use, n_jobs=-1)
+            cv_strategy = self.cv_folds
+            #Switch to StratifiedKFold instead of default KFold for CV
+            if cv_strategy is None:
+                cv_strategy = StratifiedKFold(n_splits=5, shuffle=True, random_state=self.random_state)
+            elif isinstance(cv_strategy, int):
+                cv_strategy = StratifiedKFold(n_splits=cv_strategy, shuffle=True, random_state=self.random_state)
+            grid_search = GridSearchCV(estimator, param_grid, cv=cv_strategy, scoring=scoring_to_use, n_jobs=-1)
             #n_jobs = -1 uses all available CPUs (Parallel Execution). Switch to -2 to avoid freezing (ex: running server side)
             grid_search.fit(self.X_train, self.y_train, **fit_params)
             self.best_model = grid_search.best_estimator_

@@ -82,6 +82,7 @@
         </div>
         <p class="centered-paragraph">
         The Gradient Boosting Classifier performs the best on this data and will be the foundation for all future tests. <br>
+         Notably, the ComplementNB and QuadraticDiscriminantAnalysis algorithms performed comparable, even resulting in higher recall scores.  <br>
         Other Gradient Boosting algorithms from the XGBoost library will be tested next. These results are below.
 
 
@@ -112,8 +113,117 @@
 
         <p class="centered-paragraph">
             The regular Scikit-Learn Gradient Boosting edges out the other boosted tree variants by pairing the top ROC-AUC 
-            and F1 scores with the strongest recall for at-risk convoys
+            and F1 scores with the strongest recall for at-risk convoys. Further optimization will now be done with focus put on recall and false negatives. 
         </p>
+
+        <!-- Gradient Boosting Classifier Detailed Results -->
+    <h2 style="text-align: center;">Gradient Boosting Classifier Results</h2>
+    <div class="table-container">
+        <table>
+            <tr><th colspan="2">Gradient Boosting Evaluation</th></tr>
+            <tr><td>ROC AUC Score</td><td>0.7955</td></tr>
+            <tr><td>Matthews Correlation Coefficient (MCC)</td><td>0.4605</td></tr>
+            <tr><td>Balanced Accuracy</td><td>0.6930</td></tr>
+            <tr><td>Recall (positive=1)</td><td>0.4400</td></tr>
+            <tr><td>F2 Score</td><td>0.4741</td></tr>
+            <tr><td>False Negatives</td><td>28</td></tr>
+        </table>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <caption>Gradient Boosting Classification Report</caption>
+            <thead>
+                <tr>
+                    <th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>0 (No Risk)</td><td>0.86</td><td>0.95</td><td>0.90</td><td>185</td></tr>
+                <tr><td>1 (At Risk)</td><td>0.69</td><td>0.44</td><td>0.54</td><td>50</td></tr>
+                <tr><td>Macro Avg</td><td>0.77</td><td>0.69</td><td>0.72</td><td>235</td></tr>
+                <tr><td>Weighted Avg</td><td>0.82</td><td>0.84</td><td>0.82</td><td>235</td></tr>
+                <tr><td>Accuracy</td><td colspan="4">0.84</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <caption>Gradient Boosting Threshold Comparison</caption>
+            <thead>
+                <tr>
+                    <th>Threshold</th><th>Recall</th><th>Precision</th><th>False Negatives</th><th>F1-Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>0.00</td><td>1.00</td><td>0.2128</td><td>0</td><td>0.1754</td></tr>
+                <tr><td>0.05</td><td>0.82</td><td>0.3761</td><td>9</td><td>0.6341</td></tr>
+                <tr><td>0.10</td><td>0.74</td><td>0.4512</td><td>13</td><td>0.6945</td></tr>
+                <tr><td>0.20</td><td>0.64</td><td>0.5517</td><td>18</td><td>0.7355</td></tr>
+                <tr><td>0.50</td><td>0.44</td><td>0.6875</td><td>28</td><td>0.7193</td></tr>
+                <tr><td>0.95</td><td>0.14</td><td>0.7778</td><td>43</td><td>0.5639</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="centered-paragraph">
+       ____
+    </p>
+
+
+    <!-- XGBoost Classifier Detailed Results -->
+    <h2 style="text-align: center;">XGBoost Classifier Results</h2>
+    <div class="table-container">
+        <table>
+            <tr><th colspan="2">XGBoost Evaluation</th></tr>
+            <tr><td>ROC AUC Score</td><td>0.8082</td></tr>
+            <tr><td>Matthews Correlation Coefficient (MCC)</td><td>0.4937</td></tr>
+            <tr><td>Balanced Accuracy</td><td>0.7735</td></tr>
+            <tr><td>Recall (positive=1)</td><td>0.7200</td></tr>
+            <tr><td>F2 Score</td><td>0.6716</td></tr>
+            <tr><td>False Negatives</td><td>14</td></tr>
+        </table>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <caption>XGBoost Classification Report</caption>
+            <thead>
+                <tr>
+                    <th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>0 (No Risk)</td><td>0.92</td><td>0.83</td><td>0.87</td><td>185</td></tr>
+                <tr><td>1 (At Risk)</td><td>0.53</td><td>0.72</td><td>0.61</td><td>50</td></tr>
+                <tr><td>Macro Avg</td><td>0.72</td><td>0.77</td><td>0.74</td><td>235</td></tr>
+                <tr><td>Weighted Avg</td><td>0.83</td><td>0.80</td><td>0.81</td><td>235</td></tr>
+                <tr><td>Accuracy</td><td colspan="4">0.80</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <caption>XGBoost Threshold Comparison</caption>
+            <thead>
+                <tr>
+                    <th>Threshold</th><th>Recall</th><th>Precision</th><th>False Negatives</th><th>F1-Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>0.00</td><td>1.00</td><td>0.2128</td><td>0</td><td>0.1754</td></tr>
+                <tr><td>0.10</td><td>0.94</td><td>0.2423</td><td>3</td><td>0.3608</td></tr>
+                <tr><td>0.25</td><td>0.86</td><td>0.3282</td><td>7</td><td>0.5732</td></tr>
+                <tr><td>0.40</td><td>0.72</td><td>0.4800</td><td>14</td><td>0.7112</td></tr>
+                <tr><td>0.55</td><td>0.64</td><td>0.5614</td><td>18</td><td>0.7398</td></tr>
+                <tr><td>0.95</td><td>0.04</td><td>0.6667</td><td>48</td><td>0.4790</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="centered-paragraph">
+        _____
+    </p>
 
     </main>
     
