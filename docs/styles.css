@@ -95,6 +95,19 @@ footer {
     padding: 20px;
 }
 
+.table-pair {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.table-pair table {
+    flex: 1 1 320px;
+    max-width: 360px;
+}
+
 /* Table Styles */
 table {
     width: 300px;
