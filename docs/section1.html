@@ -137,66 +137,68 @@
         optimized are learning_rate, n_estimators, max_depth, min_samples_leaf, min_samples_split, subsample, and max_features. To learn more about these hyperparameters
         see Scikit-Learn's docs <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html" target="_blank">here</a>. 
         After Gris Search CV, a threshold comparison is done to examine the affect on recall, precision, and accuracy. Threshold, which defaults to 0.5, is the value used to 
-        convert the model's probability output into a discrete class (0 or 1). With the default value of 0.5, any output below 0.5 will be classified as 0 and above 0.5, a 1.
+        convert the model's probability output into a discrete class (0 or 1). With the default value of 0.5, any output below 0.5 will be classified as 0 and above 0.5, will be aThreshold ComparisonThreshold ComparisonThreshold ComparisonThreshold Comparison 1.
         By manipulating the threshold, more weight can be onto recall and limiting the number of false negatives at the expense of decreasing precision and increasing the number of
         false positives. The results for the optimized classifier and threshold comparison are below. 
 
         </p>
         <br>
-
-        <div class="table-pair">
-            <table>
-                <caption>Optimized GB Classifier Threshold Comparison (0.00 – 0.50)</caption>
-                <thead>
-                    <tr>
-                        <th>Threshold</th>
-                        <th>Recall</th>
-                        <th>Precision</th>
-                        <th>False Negatives</th>
-                        <th>Accuracy</th>
-                        <th>F1-Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>0.00</td><td>1.00</td><td>0.212766</td><td>0</td><td>0.212766</td><td>0.175439</td></tr>
-                    <tr><td>0.05</td><td>0.86</td><td>0.361345</td><td>7</td><td>0.646809</td><td>0.616564</td></tr>
-                    <tr><td>0.10</td><td>0.80</td><td>0.449438</td><td>10</td><td>0.748936</td><td>0.698646</td></tr>
-                    <tr><td>0.15</td><td>0.72</td><td>0.480000</td><td>14</td><td>0.774468</td><td>0.711188</td></tr>
-                    <tr><td>0.20</td><td>0.68</td><td>0.523077</td><td>16</td><td>0.800000</td><td>0.729455</td></tr>
-                    <tr><td>0.25</td><td>0.64</td><td>0.551724</td><td>18</td><td>0.812766</td><td>0.735523</td></tr>
-                    <tr><td>0.30</td><td>0.64</td><td>0.592593</td><td>18</td><td>0.829787</td><td>0.753047</td></tr>
-                    <tr><td>0.35</td><td>0.60</td><td>0.600000</td><td>20</td><td>0.829787</td><td>0.745946</td></tr>
-                    <tr><td>0.40</td><td>0.54</td><td>0.600000</td><td>23</td><td>0.825532</td><td>0.729544</td></tr>
-                    <tr><td>0.45</td><td>0.46</td><td>0.575000</td><td>27</td><td>0.812766</td><td>0.697661</td></tr>
-                    <tr><td>0.50</td><td>0.42</td><td>0.567568</td><td>29</td><td>0.808511</td><td>0.682633</td></tr>
-                </tbody>
-            </table>
-            <table>
-                <caption>Optimized GB Classifier Threshold Comparison (0.55 – 1.00)</caption>
-                <thead>
-                    <tr>
-                        <th>Threshold</th>
-                        <th>Recall</th>
-                        <th>Precision</th>
-                        <th>False Negatives</th>
-                        <th>Accuracy</th>
-                        <th>F1-Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>0.55</td><td>0.40</td><td>0.555556</td><td>30</td><td>0.804255</td><td>0.672662</td></tr>
-                    <tr><td>0.60</td><td>0.36</td><td>0.620690</td><td>32</td><td>0.817021</td><td>0.672861</td></tr>
-                    <tr><td>0.65</td><td>0.34</td><td>0.653846</td><td>33</td><td>0.821277</td><td>0.670385</td></tr>
-                    <tr><td>0.70</td><td>0.32</td><td>0.640000</td><td>34</td><td>0.817021</td><td>0.658903</td></tr>
-                    <tr><td>0.75</td><td>0.32</td><td>0.695652</td><td>34</td><td>0.825532</td><td>0.667541</td></tr>
-                    <tr><td>0.80</td><td>0.30</td><td>0.714286</td><td>35</td><td>0.825532</td><td>0.659889</td></tr>
-                    <tr><td>0.85</td><td>0.24</td><td>0.705882</td><td>38</td><td>0.817021</td><td>0.625755</td></tr>
-                    <tr><td>0.90</td><td>0.14</td><td>0.700000</td><td>43</td><td>0.804255</td><td>0.560569</td></tr>
-                    <tr><td>0.95</td><td>0.12</td><td>0.857143</td><td>44</td><td>0.808511</td><td>0.550784</td></tr>
-                    <tr><td>1.00</td><td>0.00</td><td>0.000000</td><td>50</td><td>0.787234</td><td>0.440476</td></tr>
-                </tbody>
-            </table>
-        </div>
+        <section class="table-section">
+            <!-- <h3>Threshold Comparison</h3> -->
+            <div class="table-block table-pair">
+                <table>
+                    <caption>Optimized GB Classifier Threshold Comparison (0.00 – 0.50)</caption>
+                    <thead>
+                        <tr>
+                            <th>Threshold</th>
+                            <th>Recall</th>
+                            <th>Precision</th>
+                            <th>False Negatives</th>
+                            <th>Accuracy</th>
+                            <th>F1-Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>0.00</td><td>1.00</td><td>0.21</td><td>0</td><td>0.21</td><td>0.18</td></tr>
+                        <tr><td>0.05</td><td>0.86</td><td>0.36</td><td>7</td><td>0.65</td><td>0.62</td></tr>
+                        <tr><td>0.10</td><td>0.80</td><td>0.45</td><td>10</td><td>0.75</td><td>0.70</td></tr>
+                        <tr><td>0.15</td><td>0.72</td><td>0.48</td><td>14</td><td>0.77</td><td>0.71</td></tr>
+                        <tr><td>0.20</td><td>0.68</td><td>0.52</td><td>16</td><td>0.80</td><td>0.73</td></tr>
+                        <tr><td>0.25</td><td>0.64</td><td>0.55</td><td>18</td><td>0.81</td><td>0.74</td></tr>
+                        <tr><td>0.30</td><td>0.64</td><td>0.59</td><td>18</td><td>0.83</td><td>0.75</td></tr>
+                        <tr><td>0.35</td><td>0.60</td><td>0.60</td><td>20</td><td>0.83</td><td>0.75</td></tr>
+                        <tr><td>0.40</td><td>0.54</td><td>0.60</td><td>23</td><td>0.83</td><td>0.73</td></tr>
+                        <tr><td>0.45</td><td>0.46</td><td>0.58</td><td>27</td><td>0.81</td><td>0.70</td></tr>
+                        <tr><td>0.50</td><td>0.42</td><td>0.57</td><td>29</td><td>0.81</td><td>0.68</td></tr>
+                    </tbody>
+                </table>
+                <table>
+                    <caption>Optimized GB Classifier Threshold Comparison (0.55 – 1.00)</caption>
+                    <thead>
+                        <tr>
+                            <th>Threshold</th>
+                            <th>Recall</th>
+                            <th>Precision</th>
+                            <th>False Negatives</th>
+                            <th>Accuracy</th>
+                            <th>F1-Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>0.55</td><td>0.40</td><td>0.56</td><td>30</td><td>0.80</td><td>0.67</td></tr>
+                        <tr><td>0.60</td><td>0.36</td><td>0.62</td><td>32</td><td>0.82</td><td>0.67</td></tr>
+                        <tr><td>0.65</td><td>0.34</td><td>0.65</td><td>33</td><td>0.82</td><td>0.67</td></tr>
+                        <tr><td>0.70</td><td>0.32</td><td>0.64</td><td>34</td><td>0.82</td><td>0.66</td></tr>
+                        <tr><td>0.75</td><td>0.32</td><td>0.70</td><td>34</td><td>0.83</td><td>0.67</td></tr>
+                        <tr><td>0.80</td><td>0.30</td><td>0.71</td><td>35</td><td>0.83</td><td>0.66</td></tr>
+                        <tr><td>0.85</td><td>0.24</td><td>0.71</td><td>38</td><td>0.82</td><td>0.63</td></tr>
+                        <tr><td>0.90</td><td>0.14</td><td>0.70</td><td>43</td><td>0.80</td><td>0.56</td></tr>
+                        <tr><td>0.95</td><td>0.12</td><td>0.86</td><td>44</td><td>0.81</td><td>0.55</td></tr>
+                        <tr><td>1.00</td><td>0.00</td><td>0.00</td><td>50</td><td>0.79</td><td>0.44</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         <figure>
                 <h4>Visualization of Different Thresholds</h4>
