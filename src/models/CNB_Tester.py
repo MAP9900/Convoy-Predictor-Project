@@ -218,29 +218,85 @@ class CNB_Class:
         return 
 
     def _calibrate_threshold(self):
-        self.decision_threshold = 0.5
-        self.threshold_metric = None
-        if self.best_model is None:
+        """
+        *Pulled directly from Gradient_Boosting_Optimization.py*
+
+        Calibrate the model's decision threshold based on training data. Set up to focus on the positive class (1) (Use case is for Convoy Porject)
+
+        This method finds an optimal probability cutoff for binary classification
+        by maximizing the F-beta score (weighted harmonic mean of precision and recall) on the training set. 
+        It works by:
+
+        - Ensuring the model and data are valid (must support `predict_proba`,
+          must be binary classification, and must contain the designated positive label). (Checks)
+        - Computing predicted probabilities for the positive class.
+        - Evaluating precision and recall across candidate thresholds.
+        - Calculating F-beta scores (default F1 if beta=1).
+        - Selecting the threshold that maximizes this score.
+
+        The chosen threshold is stored in `self.decision_threshold`,
+        and the corresponding F-beta score is stored in `self.threshold_metric`.
+
+        If conditions are not met or no valid thresholds exist, defaults to 0.5
+        or sets values to None.
+        """
+        #Checks to make sure model is setup properly:
+        if self.best_model is None or self.X_train is None or self.y_train is None: #Check to prevent invalid calibration attempts if model has yet to be 
+            self.decision_threshold = None
+            self.threshold_metric = None
             return
-        if self.positive_label is None:
+        if not hasattr(self.best_model, "predict_proba"): #Check to ensure model has "predict_proba" as an output. Will not work without "predict_proba"
+            self.decision_threshold = None
+            self.threshold_metric = None
             return
-        if not hasattr(self.best_model, "predict_proba"):
+        class_labels = self._get_classes()
+        if class_labels is None or len(class_labels) != 2: #Check to ensure binary classification is being performed
+            self.decision_threshold = None
+            self.threshold_metric = None
             return
-        y_train_binary = (self.y_train == self.positive_label).astype(int)
-        probabilities = self.best_model.predict_proba(self.X_train)
-        positive_index = list(self.best_model.classes_).index(self.positive_label)
-        y_scores = probabilities[:, positive_index]
-        precision, recall, thresholds = precision_recall_curve(y_train_binary, y_scores)
-        f1_scores = (2 * precision * recall) / np.maximum((precision + recall), np.finfo(float).eps)
-        best_index = np.argmax(f1_scores)
-        if best_index < len(thresholds):
-            self.decision_threshold = thresholds[best_index]
-            self.threshold_metric = float(f1_scores[best_index])
-        else:
+        if self.positive_label not in class_labels: #Check to ensure model has postive labels 
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        #Start threshold optimzation: 
+        probas = self.best_model.predict_proba(self.X_train)
+        pos_index = list(class_labels).index(self.positive_label) 
+        pos_proba = probas[:, pos_index] #Gets probas for the postive class (Focus on postive class is for use on Convoy Prject)
+        y_true = np.asarray(self.y_train)
+        precision, recall, thresholds = precision_recall_curve(y_true, pos_proba, pos_label=self.positive_label)
+        if thresholds.size == 0: #Edge case if model only only predicts one unique probability so default back to 0.5 decision_threshold
             self.decision_threshold = 0.5
             self.threshold_metric = None
-        print(f"Tuned decision threshold for positive class ({self.positive_label}): {self.decision_threshold:.3f}")
-        return
+            return
+        beta = self.threshold_beta if self.threshold_beta and self.threshold_beta > 0 else 1.0 #Default to 1 = F1 Score unless threshold_beta is given
+        #beta decides how much to weigh recall vs precision here. beta = 1, weigh equally. beta > 1, recall focused. beta < 1, precision focused
+        precision = precision[:-1] #Drop last point as it doesn't correspond to a real threshold 
+        recall = recall[:-1] #Drop last point as it doesn't correspond to a real threshold 
+        if precision.size == 0 or recall.size == 0 or thresholds.size == 0: #Double checks emptiness after trimming last point
+            self.decision_threshold = 0.5
+            self.threshold_metric = None
+            return
+        #Compute F-beta Scores:
+        numerator = (1 + beta ** 2) * precision * recall
+        denominator = (beta ** 2 * precision) + recall + 1e-12
+        fbeta_scores = numerator / denominator
+        best_idx = int(np.nanargmax(fbeta_scores))
+        #Save optimal cutoff (decision_threshold) and its associated F-beta score (threshold_metric)
+        self.decision_threshold = float(thresholds[best_idx])
+        self.threshold_metric = float(fbeta_scores[best_idx])
+        # print(f"Optimized Decision Threshold: {self.decision_threshold:.4f} with F-beta score: {self.threshold_metric:.4f}")
+
+    
+    def set_decision_threshold(self, threshold = None):
+        """
+        Manual way to set the decision_threshold. 
+        Way to err on the side of false-positives so use 0.3 for example
+        """
+        if threshold is None:
+            self.decision_threshold = 0.5 #Defaults to 0.5 
+        else:
+            self.decision_threshold = float(threshold)
+            # print(f"Using Decision Threshold: {self.decision_threshold:.4f}") #No longer needed, since evals prints decision threshold 
 
     def evaluate(self, show_plots: bool = False, print_results: bool = True):
             """
