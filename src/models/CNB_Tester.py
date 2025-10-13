@@ -17,7 +17,7 @@ import seaborn as sns
 import inspect
 
 
-class CNB_Tester:
+class CNB_Class:
 
     def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds: int = 5, feature_names: list = None, random_state: int = 1945):
         if model is not None and not hasattr(model, "fit"):
@@ -35,6 +35,7 @@ class CNB_Tester:
         self.y_test = None
         self.positive_label = None
         self.decision_threshold = 0.5
+        self.threshold_metric = None
         self.k_fold_results = {"train_scores": [], "test_scores": []}
         return
 
@@ -84,6 +85,7 @@ class CNB_Tester:
                 self.feature_names = [f"Feature_{i}" for i in range(self.X_train.shape[1])]
         self.k_fold_results = {"train_scores": [], "test_scores": []}
         return
+    
     def _resolve_scoring(self, scoring):
         """
         Helper function to determine what scoring function to use when evalualting the model. Defaults to "recall"
@@ -163,12 +165,19 @@ class CNB_Tester:
             "recall_macro": "recall_macro",
             "recall_weighted": "recall_weighted",
             "f1_macro": "f1_macro",
-            "f1_weighted": "f1_weighted",}
-        refit_metric = refit or (primary_metric if isinstance(primary_metric, str) else "f1_weighted")
+            "f1_weighted": "f1_weighted",
+        }
 
-        #Check if a single scoring metric was passed in. If so, adds to scoring dictionary 
-        if isinstance(primary_metric, str) and primary_metric not in scoring_dict:
-            scoring_dict[primary_metric] = primary_metric
+        if isinstance(primary_metric, dict):
+            scoring_dict.update(primary_metric)
+            default_refit = next(iter(primary_metric.keys()), "f1_weighted")
+        else:
+            default_refit = primary_metric if isinstance(primary_metric, str) else "f1_weighted"
+            #Check if a single scoring metric was passed in. If so, adds to scoring dictionary 
+            if isinstance(primary_metric, str) and primary_metric not in scoring_dict:
+                scoring_dict[primary_metric] = primary_metric
+
+        refit_metric = refit or default_refit
         #param-grid
         if self.parameter_grid:
             if hasattr(self, "_coerce_param_grid"):
@@ -210,6 +219,7 @@ class CNB_Tester:
 
     def _calibrate_threshold(self):
         self.decision_threshold = 0.5
+        self.threshold_metric = None
         if self.best_model is None:
             return
         if self.positive_label is None:
@@ -225,88 +235,153 @@ class CNB_Tester:
         best_index = np.argmax(f1_scores)
         if best_index < len(thresholds):
             self.decision_threshold = thresholds[best_index]
+            self.threshold_metric = float(f1_scores[best_index])
         else:
             self.decision_threshold = 0.5
+            self.threshold_metric = None
         print(f"Tuned decision threshold for positive class ({self.positive_label}): {self.decision_threshold:.3f}")
         return
 
-    def evaluate(self, show_plots: bool = False):
-        if self.X_test is None or self.y_test is None:
-            raise ValueError("Call train_test_split() before evaluate().")
-        if self.best_model is None:
-            raise RuntimeError("Model is not fitted before evaluation. Call optimize() or fit the model first.")
+    def evaluate(self, show_plots: bool = False, print_results: bool = True):
+            """
+            Evaluate the fitted model using the held-out test data and generate reports/plots.
+            Returns a dictionary containing key metrics for later comparison.
+            show_plots: defaults to false so will not run any plotting functions. Useful when testing to not clutter notebook with plots
+            Legacy of ML_Class_1.py with some changes (Removed Pipeline aspects)
+            """
+            #Check steps prior to evaluation:
+            if self.X_test is None or self.y_test is None:
+                raise ValueError("Call train_test_split() before evaluate().")
+            if self.best_model is None:
+                raise RuntimeError("Model is not fitted before evaluation. Call optimize() or fit the model first.")
+            try:
+                check_is_fitted(self.best_model)
+            except NotFittedError as exc:
+                raise RuntimeError("Model is not fitted before evaluation. Call optimize() or fit the model first.") from exc
 
-        try:
-            check_is_fitted(self.best_model)
-        except NotFittedError as exc:
-            raise RuntimeError("Model is not fitted before evaluation. Call optimize() or fit the model first.") from exc
+            model_name = type(self.best_model).__name__ #For use in plotting
+            y_predict = self.best_model.predict(self.X_test) #y value predictions
+            #Determine class labels for downstream reporting
+            class_labels = getattr(self.best_model, "classes_", None) #Should be [0, 1] for Convoy Project
 
-        _name_estimator = self._final_estimator(self.best_model)
-        model_name = type(_name_estimator).__name__
+            #Probabilities/scores for ROC (only for binary classification which this is meant for) (legacy of ML_Class_1.py)
+            y_predict_probability = None
+            if class_labels is not None and len(class_labels) == 2 and hasattr(self.best_model, "predict_proba"):
+                probas = self.best_model.predict_proba(self.X_test)
+                if self.positive_label in class_labels:
+                    positive_index = list(class_labels).index(self.positive_label)
+                else:
+                    positive_index = 1
+                y_predict_probability = probas[:, positive_index]
+            #When custom threshold is defined, override default 0.5 threshold.  
+            if y_predict_probability is not None and class_labels is not None and len(class_labels) == 2:
+                if self.decision_threshold is not None:
+                    if self.positive_label in class_labels:
+                        positive_label = self.positive_label
+                    else:
+                        positive_label = class_labels[1]
+                    negative_label = class_labels[0] if class_labels[0] != positive_label else class_labels[1] #Simply picks other class as the negative label
+                    #Recompute predictions using the custom decision threshold:
+                    y_predict = np.where(y_predict_probability >= self.decision_threshold, positive_label, negative_label)
+                    if print_results:
+                        message = f"Applied decision threshold: {self.decision_threshold:.4f}" #Print decision threshold to keep track of models
+                        if self.threshold_metric is not None:
+                            message += f" (F-beta: {self.threshold_metric:.4f})"
+                        print(message)
 
-        class_labels = getattr(self.best_model, "classes_", None)
-        y_predict_probability = None
-        if class_labels is not None and len(class_labels) == 2 and hasattr(self.best_model, "predict_proba"):
-            positive_index = list(class_labels).index(self.positive_label if self.positive_label is not None else class_labels[-1])
-            probabilities = self.best_model.predict_proba(self.X_test)
-            y_predict_probability = probabilities[:, positive_index]
-            threshold = self.decision_threshold if self.decision_threshold is not None else 0.5
-            y_predict = (y_predict_probability >= threshold).astype(class_labels.dtype)
-            y_predict = np.where(y_predict == 1, class_labels[positive_index], class_labels[0])
-        else:
-            y_predict = self.best_model.predict(self.X_test)
 
-        print(f"\n{model_name} Evaluation:")
+            #Start of Model Evaluation 
+            if print_results ==True:
+                print(f"\n{model_name} Evaluation:")
 
-        print("\nClassification Report:")
-        print(classification_report(self.y_test, y_predict))
+                #Classification Report
+                print('\nClassification Report:')
+                print(classification_report(self.y_test, y_predict))
 
-        if y_predict_probability is not None:
-            pos_label = self.positive_label if self.positive_label is not None else class_labels[-1]
-            fpr, tpr, _ = roc_curve(self.y_test, y_predict_probability, pos_label=pos_label)
-            ROC_AUC = auc(fpr, tpr)
-            print(f"\nROC AUC Score: {ROC_AUC:.4f}")
-        else:
-            fpr, tpr, ROC_AUC = None, None, None
-            print("\nROC AUC Score: N/A (requires binary classification with probability or decision scores)")
-
-        mcc = matthews_corrcoef(self.y_test, y_predict)
-        print(f"Matthews Correlation Coefficient (MCC): {mcc:.4f}")
-
-        balanced_acc = balanced_accuracy_score(self.y_test, y_predict)
-        print(f"Balanced Accuracy: {balanced_acc:.4f}")
-
-        cm = confusion_matrix(self.y_test, y_predict, labels=class_labels) if class_labels is not None else confusion_matrix(self.y_test, y_predict)
-        if show_plots:
-            print(f"\n{model_name} Plots:\n")
-
-            if fpr is not None and tpr is not None:
-                self.plot_roc_curve(fpr, tpr, ROC_AUC)
+            #ROC Curve and AUC Score (binary classification only)
             if y_predict_probability is not None:
-                self.plot_precision_recall_curve(y_predict_probability)
-
-            print(f"{model_name} Confusion Matrix:")
-            self.plot_confusion_matrix(cm, class_labels=class_labels)
-
-            final_estimator = self._final_estimator(self.best_model)
-            if hasattr(final_estimator, "feature_importances_") or hasattr(final_estimator, "coef_"):
-                print(f"{model_name} Feature Importance Plot:")
-                self.plot_feature_importance()
+                if class_labels is not None and self.positive_label in class_labels:
+                    pos_label = self.positive_label
+                else:
+                    pos_label = class_labels[1] if class_labels is not None else None
+                fpr, tpr, _ = roc_curve(self.y_test, y_predict_probability, pos_label=pos_label)
+                ROC_AUC = auc(fpr, tpr)
+                if print_results:
+                    print(f"\nROC AUC Score: {ROC_AUC:.4f}")
             else:
-                print("Model has no attribute: Feature Importances")
-        else:
-            print(f"{model_name} Confusion Matrix (values only):\n{cm}")
+                fpr, tpr, ROC_AUC = None, None, None
+                if print_results:
+                    print("\nROC AUC Score: N/A (requires binary classification with probability or decision scores)")
 
-        results = {
-            "model_name": model_name,
-            "classification_report": classification_report(self.y_test, y_predict, output_dict=True),
-            "confusion_matrix": cm,
-            "roc_auc": ROC_AUC,
-            "mcc": mcc,
-            "balanced_accuracy": balanced_acc,
-            "threshold": self.decision_threshold
-        }
-        return results
+            #Matthews Correlation Coefficient
+            mcc = matthews_corrcoef(self.y_test, y_predict)
+            if print_results:
+                print(f"Matthews Correlation Coefficient (MCC): {mcc:.4f}")
+
+            #Balanced Accuracy Score
+            balanced_acc = balanced_accuracy_score(self.y_test, y_predict)
+            if print_results:
+                print(f"Balanced Accuracy: {balanced_acc:.4f}")
+
+            #Confusion Matrix
+            cm = confusion_matrix(self.y_test, y_predict, labels=class_labels) if class_labels is not None else confusion_matrix(self.y_test, y_predict)
+            if print_results:
+                print("Confusion Matrix:")
+                if class_labels is not None: #prints a nicer looking cm that just print(cm)
+                    cm_df = pd.DataFrame(cm, index=[f"Actual {c}" for c in class_labels], columns=[f"Predicted {c}" for c in class_labels])
+                    print(cm_df)
+                else:
+                    print(cm)
+
+            #Recall and F2 Scores (F2 score is a weighted harmonic mean of precision and recall)
+            recall_pos = None
+            f2_score = None
+            if class_labels is not None and self.positive_label in class_labels:
+                recall_pos = recall_score(self.y_test, y_predict, pos_label=self.positive_label)
+                f2_score = fbeta_score(self.y_test, y_predict, beta=2.0, pos_label=self.positive_label) #beta of 2 means recall gets 4x the importance of precision
+                if print_results:
+                    print(f"Recall (positive={self.positive_label}): {recall_pos:.4f}")
+                    print(f"F2 Score: {f2_score:.4f}")
+
+            #Examine False Negatives
+            if class_labels is not None and self.positive_label in class_labels and len(class_labels) == 2:
+                pos_idx = list(class_labels).index(self.positive_label)
+                neg_idx = 0 if pos_idx == 1 else 1
+                false_negatives = cm[pos_idx, neg_idx] #Extract false negative cases
+                if print_results:
+                    print(f"False Negatives: {false_negatives}")
+            else:
+                false_negatives = None
+
+            if show_plots:
+                print(f"\n{model_name} Plots:\n")
+
+                if fpr is not None and tpr is not None:
+                    self.plot_roc_curve(fpr, tpr, ROC_AUC)
+
+                final_estimator = self.best_model
+
+                if hasattr(final_estimator, "feature_importances_") or hasattr(final_estimator, "coef_"):
+                    print(f"{model_name} Feature Importance Plot:")
+                    self.plot_feature_importance()
+                else:
+                    print('Model has no attribute: Feature Importances')
+
+
+            #Save results in a dictionary for later use if needed
+            results = {
+                "model_name": model_name,
+                "classification_report": classification_report(self.y_test, y_predict, output_dict=True),
+                "confusion_matrix": cm,
+                "roc_auc": ROC_AUC,
+                "mcc": mcc,
+                "balanced_accuracy": balanced_acc,
+                "recall": recall_pos,
+                "f2_score": f2_score,
+                "decision_threshold": self.decision_threshold,
+                "threshold_metric": self.threshold_metric,
+                "false_negatives": false_negatives,}
+            return results
 
     def plot_roc_curve(self, fpr, tpr, ROC_AUC):
         plt.figure(figsize=(6,4), facecolor="lightgrey")

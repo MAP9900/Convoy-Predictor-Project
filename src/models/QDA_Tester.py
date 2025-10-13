@@ -17,7 +17,7 @@ import seaborn as sns
 import inspect
 
 
-class QDA_Tester:
+class QDA_Class:
 
     def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds: int = 5, feature_names: list = None, random_state: int = 1945):
         if model is not None and not hasattr(model, "fit"):
@@ -36,6 +36,7 @@ class QDA_Tester:
         self.class_priors_ = None
         self.positive_label = None
         self.decision_threshold = 0.5
+        self.threshold_metric = None
         self.k_fold_results = {"train_scores": [], "test_scores": []}
         return
 
@@ -193,12 +194,19 @@ class QDA_Tester:
             "recall_macro": "recall_macro",
             "recall_weighted": "recall_weighted",
             "f1_macro": "f1_macro",
-            "f1_weighted": "f1_weighted",}
-        refit_metric = refit or (primary_metric if isinstance(primary_metric, str) else "f1_weighted")
+            "f1_weighted": "f1_weighted",
+        }
 
-        #Check if a single scoring metric was passed in. If so, adds to scoring dictionary 
-        if isinstance(primary_metric, str) and primary_metric not in scoring_dict:
-            scoring_dict[primary_metric] = primary_metric
+        if isinstance(primary_metric, dict):
+            scoring_dict.update(primary_metric)
+            default_refit = next(iter(primary_metric.keys()), "f1_weighted")
+        else:
+            default_refit = primary_metric if isinstance(primary_metric, str) else "f1_weighted"
+            #Check if a single scoring metric was passed in. If so, adds to scoring dictionary 
+            if isinstance(primary_metric, str) and primary_metric not in scoring_dict:
+                scoring_dict[primary_metric] = primary_metric
+
+        refit_metric = refit or default_refit
         #param-grid
         if self.parameter_grid:
             if hasattr(self, "_coerce_param_grid"):
