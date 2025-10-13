@@ -1,6 +1,7 @@
 #Imports
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV, StratifiedKFold
-from sklearn.metrics import classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix, precision_recall_curve
+from sklearn.metrics import (classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix, 
+                             recall_score, fbeta_score, precision_recall_curve, make_scorer) 
 from sklearn.pipeline import Pipeline
 from sklearn.base import clone
 from sklearn.exceptions import NotFittedError
@@ -22,7 +23,6 @@ class QDA_Tester:
         if model is not None and not hasattr(model, "fit"):
             raise ValueError(f"Error: model must be a scikit-learn classifier, but got {type(model)}")
         self.model = model if model is not None else QuadraticDiscriminantAnalysis()
-
         self.scaler = scaler if scaler is not None else StandardScaler()
         self.parameter_grid = parameter_grid
         self.cv_folds = cv_folds
@@ -79,8 +79,7 @@ class QDA_Tester:
         return {
             "model__reg_param": [0.0, 0.01, 0.05, 0.1, 0.2, 0.3],
             "model__store_covariance": [False, True],
-            "model__priors": priors
-        }
+            "model__priors": priors}
 
     def _biased_priors(self, boost):
         priors = self.class_priors_.copy()
@@ -93,24 +92,17 @@ class QDA_Tester:
         prior_array /= prior_array.sum()
         return prior_array.tolist()
 
-    def train_test_split(self, X, y, train_size=0.8, random_state=None):
-        random_state = random_state if random_state is not None else self.random_state
+    def train_test_split(self, X, y, train_size = 0.8, random_state = 1945):
+        """
+        Perform Train Test Split
+        """
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, train_size=train_size, random_state=random_state, stratify=y
-        )
+            X, y, train_size=train_size, random_state=random_state, stratify=y)
         if self.feature_names is None:
             if hasattr(X, "columns"):
                 self.feature_names = list(X.columns)
             else:
                 self.feature_names = [f"Feature_{i}" for i in range(self.X_train.shape[1])]
-        classes, counts = np.unique(self.y_train, return_counts=True)
-        self.class_priors_ = {cls: count / counts.sum() for cls, count in zip(classes, counts)}
-        if len(classes) == 2:
-            self.positive_label = classes[np.argmin(counts)]
-        else:
-            self.positive_label = None
-        if self.parameter_grid is None:
-            self.parameter_grid = self._default_parameter_grid()
         self.k_fold_results = {"train_scores": [], "test_scores": []}
         return
 
@@ -151,206 +143,344 @@ class QDA_Tester:
 
         return train_scores, test_scores
 
-    def optimize(self):
+    def optimize(self, scoring=None, refit=None, fit_params=None, use_sample_weight=True):
+        """
+        Hyperparameter optimization with Stratified CV, optional multi-metric scoring,
+        class-imbalance weighting, and optional threshold calibration. Modified from optimzation function in 
+        Gradient_Boosting_Optimization.py 
+        """
+        #Intial Checks 
         if self.X_train is None or self.y_train is None:
             raise ValueError("Call train_test_split() before optimize().")
-
         estimator = self._build_estimator()
         if estimator is None:
             raise ValueError("No model provided. Please initialize with a valid scikit-learn classifier.")
 
+        #Cross-Validation
+        cv_strategy = self.cv_folds
+        if cv_strategy is None:
+            cv_strategy = StratifiedKFold(n_splits=5, shuffle=True, random_state=self.random_state)
+        elif isinstance(cv_strategy, int):
+            cv_strategy = StratifiedKFold(n_splits=cv_strategy, shuffle=True, random_state=self.random_state)
+
+        #Primary scoring metric, defaults to recall
+        primary_metric = self._resolve_scoring(scoring) 
+        scoring_dict = {
+            "recall_macro": "recall_macro",
+            "recall_weighted": "recall_weighted",
+            "f1_macro": "f1_macro",
+            "f1_weighted": "f1_weighted",}
+        refit_metric = refit or (primary_metric if isinstance(primary_metric, str) else "f1_weighted")
+
+        #Check if a single scoring metric was passed in. If so, adds to scoring dictionary 
+        if isinstance(primary_metric, str) and primary_metric not in scoring_dict:
+            scoring_dict[primary_metric] = primary_metric
+        #param-grid
         if self.parameter_grid:
-            param_grid = self._coerce_param_grid(estimator, self.parameter_grid)
-            scoring = {
-                "recall_macro": "recall_macro",
-                "f1_macro": "f1_macro",
-                "recall_weighted": "recall_weighted",
-                "f1_weighted": "f1_weighted"
-            }
-            grid_search = GridSearchCV(
-                estimator,
-                param_grid,
-                cv=StratifiedKFold(n_splits=self.cv_folds, shuffle=True, random_state=self.random_state),
-                scoring=scoring,
-                refit="f1_weighted",
-                n_jobs=-1
-            )
+            if hasattr(self, "_coerce_param_grid"):
+                param_grid = self._coerce_param_grid(estimator, self.parameter_grid)
+            else:
+                param_grid = self.parameter_grid
             fit_kwargs = {}
-            if self._supports_sample_weight(estimator):
+            if use_sample_weight and hasattr(self, "_supports_sample_weight") and self._supports_sample_weight(estimator):
                 weights = compute_sample_weight(class_weight="balanced", y=self.y_train)
                 fit_kwargs["model__sample_weight"] = weights
+            if fit_params:
+                fit_kwargs.update(fit_params)
+
+            grid_search = GridSearchCV(estimator, param_grid, cv=cv_strategy, scoring=scoring_dict, refit=refit_metric, n_jobs=-1 )
             grid_search.fit(self.X_train, self.y_train, **fit_kwargs)
             self.best_model = grid_search.best_estimator_
+
             print(f"\nBest Hyperparameters Found:\n{grid_search.best_params_}")
-            print(f"Best Cross-Validation F1 (weighted): {grid_search.best_score_:.4f}")
+            print(f"Best CV ({refit_metric}): {grid_search.best_score_:.4f}")
+
         else:
+            #If no grid, fit model directly 
             self.best_model = estimator
             fit_kwargs = {}
-            if self._supports_sample_weight(estimator):
+            if use_sample_weight and hasattr(self, "_supports_sample_weight") and self._supports_sample_weight(estimator):
                 weights = compute_sample_weight(class_weight="balanced", y=self.y_train)
                 fit_kwargs["model__sample_weight"] = weights
+            if fit_params:
+                fit_kwargs.update(fit_params)
             self.best_model.fit(self.X_train, self.y_train, **fit_kwargs)
 
-        self._calibrate_threshold()
-        return
+        if getattr(self, "auto_calibrate_threshold", False):
+            self._calibrate_threshold()
+        else:
+            self.threshold_metric = None
+            if getattr(self, "decision_threshold", None) is None:
+                self.decision_threshold = 0.5
+        return 
 
     def _calibrate_threshold(self):
-        self.decision_threshold = 0.5
-        if self.best_model is None:
+        """
+        *Pulled directly from Gradient_Boosting_Optimization.py*
+
+        Calibrate the model's decision threshold based on training data. Set up to focus on the positive class (1) (Use case is for Convoy Porject)
+
+        This method finds an optimal probability cutoff for binary classification
+        by maximizing the F-beta score (weighted harmonic mean of precision and recall) on the training set. 
+        It works by:
+
+        - Ensuring the model and data are valid (must support `predict_proba`,
+          must be binary classification, and must contain the designated positive label). (Checks)
+        - Computing predicted probabilities for the positive class.
+        - Evaluating precision and recall across candidate thresholds.
+        - Calculating F-beta scores (default F1 if beta=1).
+        - Selecting the threshold that maximizes this score.
+
+        The chosen threshold is stored in `self.decision_threshold`,
+        and the corresponding F-beta score is stored in `self.threshold_metric`.
+
+        If conditions are not met or no valid thresholds exist, defaults to 0.5
+        or sets values to None.
+        """
+        #Checks to make sure model is setup properly:
+        if self.best_model is None or self.X_train is None or self.y_train is None: #Check to prevent invalid calibration attempts if model has yet to be 
+            self.decision_threshold = None
+            self.threshold_metric = None
             return
-        if self.positive_label is None:
+        if not hasattr(self.best_model, "predict_proba"): #Check to ensure model has "predict_proba" as an output. Will not work without "predict_proba"
+            self.decision_threshold = None
+            self.threshold_metric = None
             return
-        if not hasattr(self.best_model, "predict_proba"):
+        class_labels = self._get_classes()
+        if class_labels is None or len(class_labels) != 2: #Check to ensure binary classification is being performed
+            self.decision_threshold = None
+            self.threshold_metric = None
             return
-        y_train_binary = (self.y_train == self.positive_label).astype(int)
-        probabilities = self.best_model.predict_proba(self.X_train)
-        positive_index = list(self.best_model.classes_).index(self.positive_label)
-        y_scores = probabilities[:, positive_index]
-        precision, recall, thresholds = precision_recall_curve(y_train_binary, y_scores)
-        f1_scores = (2 * precision * recall) / np.maximum((precision + recall), np.finfo(float).eps)
-        best_index = np.argmax(f1_scores)
-        if best_index < len(thresholds):
-            self.decision_threshold = thresholds[best_index]
-        else:
+        if self.positive_label not in class_labels: #Check to ensure model has postive labels 
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        #Start threshold optimzation: 
+        probas = self.best_model.predict_proba(self.X_train)
+        pos_index = list(class_labels).index(self.positive_label) 
+        pos_proba = probas[:, pos_index] #Gets probas for the postive class (Focus on postive class is for use on Convoy Prject)
+        y_true = np.asarray(self.y_train)
+        precision, recall, thresholds = precision_recall_curve(y_true, pos_proba, pos_label=self.positive_label)
+        if thresholds.size == 0: #Edge case if model only only predicts one unique probability so default back to 0.5 decision_threshold
             self.decision_threshold = 0.5
-        print(f"Tuned decision threshold for positive class ({self.positive_label}): {self.decision_threshold:.3f}")
-        return
-
-    def evaluate(self, show_plots: bool = False):
-        if self.X_test is None or self.y_test is None:
-            raise ValueError("Call train_test_split() before evaluate().")
-        if self.best_model is None:
-            raise RuntimeError("Model is not fitted before evaluation. Call optimize() or fit the model first.")
-
-        try:
-            check_is_fitted(self.best_model)
-        except NotFittedError as exc:
-            raise RuntimeError("Model is not fitted before evaluation. Call optimize() or fit the model first.") from exc
-
-        _name_estimator = self._final_estimator(self.best_model)
-        model_name = type(_name_estimator).__name__
-
-        class_labels = getattr(self.best_model, "classes_", None)
-        y_predict_probability = None
-        if class_labels is not None and len(class_labels) == 2 and hasattr(self.best_model, "predict_proba"):
-            positive_index = list(class_labels).index(self.positive_label if self.positive_label is not None else class_labels[-1])
-            probabilities = self.best_model.predict_proba(self.X_test)
-            y_predict_probability = probabilities[:, positive_index]
-            threshold = self.decision_threshold if self.decision_threshold is not None else 0.5
-            y_predict = (y_predict_probability >= threshold).astype(class_labels.dtype)
-            y_predict = np.where(y_predict == 1, class_labels[positive_index], class_labels[0])
-        else:
-            y_predict = self.best_model.predict(self.X_test)
-
-        print(f"\n{model_name} Evaluation:")
-
-        print("\nClassification Report:")
-        print(classification_report(self.y_test, y_predict))
-
-        if y_predict_probability is not None:
-            pos_label = self.positive_label if self.positive_label is not None else class_labels[-1]
-            fpr, tpr, _ = roc_curve(self.y_test, y_predict_probability, pos_label=pos_label)
-            ROC_AUC = auc(fpr, tpr)
-            print(f"\nROC AUC Score: {ROC_AUC:.4f}")
-        else:
-            fpr, tpr, ROC_AUC = None, None, None
-            print("\nROC AUC Score: N/A (requires binary classification with probability or decision scores)")
-
-        mcc = matthews_corrcoef(self.y_test, y_predict)
-        print(f"Matthews Correlation Coefficient (MCC): {mcc:.4f}")
-
-        balanced_acc = balanced_accuracy_score(self.y_test, y_predict)
-        print(f"Balanced Accuracy: {balanced_acc:.4f}")
-
-        cm = confusion_matrix(self.y_test, y_predict, labels=class_labels) if class_labels is not None else confusion_matrix(self.y_test, y_predict)
-        if show_plots:
-            print(f"\n{model_name} Plots:\n")
-
-            if fpr is not None and tpr is not None:
-                self.plot_roc_curve(fpr, tpr, ROC_AUC)
-            if y_predict_probability is not None:
-                self.plot_precision_recall_curve(y_predict_probability)
-
-            print(f"{model_name} Confusion Matrix:")
-            self.plot_confusion_matrix(cm, class_labels=class_labels)
-
-            final_estimator = self._final_estimator(self.best_model)
-            if hasattr(final_estimator, "feature_importances_") or hasattr(final_estimator, "coef_"):
-                print(f"{model_name} Feature Importance Plot:")
-                self.plot_feature_importance()
-            else:
-                print("Model has no attribute: Feature Importances")
-        else:
-            print(f"{model_name} Confusion Matrix (values only):\n{cm}")
-
-        results = {
-            "model_name": model_name,
-            "classification_report": classification_report(self.y_test, y_predict, output_dict=True),
-            "confusion_matrix": cm,
-            "roc_auc": ROC_AUC,
-            "mcc": mcc,
-            "balanced_accuracy": balanced_acc,
-            "threshold": self.decision_threshold
-        }
-        return results
-
-    def plot_roc_curve(self, fpr, tpr, ROC_AUC):
-        plt.figure(figsize=(6,4), facecolor="lightgrey")
-        plt.plot(fpr, tpr, color="#06768d", label=f"ROC Curve (AUC = {ROC_AUC:.2f})")
-        plt.plot([0, 1], [0, 1], color="grey", linestyle="--")
-        plt.xlabel("False Positive Rate")
-        plt.ylabel("True Positive Rate")
-        plt.title("ROC Curve")
-        plt.legend(loc="lower right")
-        ax = plt.gca()
-        ax.set_facecolor("lightgrey")
-        for spine in plt.gca().spines.values():
-            spine.set_visible(False)
-        plt.show()
-
-    def plot_precision_recall_curve(self, y_scores):
-        if self.positive_label is None:
+            self.threshold_metric = None
             return
-        y_true = (self.y_test == self.positive_label).astype(int)
-        precision, recall, _ = precision_recall_curve(y_true, y_scores)
-        plt.figure(figsize=(6,4), facecolor="lightgrey")
-        plt.plot(recall, precision, color="#ff8c32")
-        plt.xlabel("Recall")
-        plt.ylabel("Precision")
-        plt.title("Precision-Recall Curve")
+        beta = self.threshold_beta if self.threshold_beta and self.threshold_beta > 0 else 1.0 #Default to 1 = F1 Score unless threshold_beta is given
+        #beta decides how much to weigh recall vs precision here. beta = 1, weigh equally. beta > 1, recall focused. beta < 1, precision focused
+        precision = precision[:-1] #Drop last point as it doesn't correspond to a real threshold 
+        recall = recall[:-1] #Drop last point as it doesn't correspond to a real threshold 
+        if precision.size == 0 or recall.size == 0 or thresholds.size == 0: #Double checks emptiness after trimming last point
+            self.decision_threshold = 0.5
+            self.threshold_metric = None
+            return
+        #Compute F-beta Scores:
+        numerator = (1 + beta ** 2) * precision * recall
+        denominator = (beta ** 2 * precision) + recall + 1e-12
+        fbeta_scores = numerator / denominator
+        best_idx = int(np.nanargmax(fbeta_scores))
+        #Save optimal cutoff (decision_threshold) and its associated F-beta score (threshold_metric)
+        self.decision_threshold = float(thresholds[best_idx])
+        self.threshold_metric = float(fbeta_scores[best_idx])
+        # print(f"Optimized Decision Threshold: {self.decision_threshold:.4f} with F-beta score: {self.threshold_metric:.4f}")
+
+    def set_decision_threshold(self, threshold = None):
+        """
+        Manual way to set the decision_threshold. 
+        Way to err on the side of false-positives so use 0.3 for example
+        """
+        if threshold is None:
+            self.decision_threshold = 0.5 #Defaults to 0.5 
+        else:
+            self.decision_threshold = float(threshold)
+            # print(f"Using Decision Threshold: {self.decision_threshold:.4f}") #No longer needed, since evals prints decision threshold 
+
+    def evaluate(self, show_plots: bool = False, print_results: bool = True):
+            """
+            Evaluate the fitted model using the held-out test data and generate reports/plots.
+            Returns a dictionary containing key metrics for later comparison.
+            show_plots: defaults to false so will not run any plotting functions. Useful when testing to not clutter notebook with plots
+            Legacy of ML_Class_1.py with some changes (Removed Pipeline aspects)
+            """
+            #Check steps prior to evaluation:
+            if self.X_test is None or self.y_test is None:
+                raise ValueError("Call train_test_split() before evaluate().")
+            if self.best_model is None:
+                raise RuntimeError("Model is not fitted before evaluation. Call optimize() or fit the model first.")
+            try:
+                check_is_fitted(self.best_model)
+            except NotFittedError as exc:
+                raise RuntimeError("Model is not fitted before evaluation. Call optimize() or fit the model first.") from exc
+
+            model_name = type(self.best_model).__name__ #For use in plotting
+            y_predict = self.best_model.predict(self.X_test) #y value predictions
+            #Determine class labels for downstream reporting
+            class_labels = getattr(self.best_model, "classes_", None) #Should be [0, 1] for Convoy Project
+
+            #Probabilities/scores for ROC (only for binary classification which this is meant for) (legacy of ML_Class_1.py)
+            y_predict_probability = None
+            if class_labels is not None and len(class_labels) == 2 and hasattr(self.best_model, "predict_proba"):
+                probas = self.best_model.predict_proba(self.X_test)
+                if self.positive_label in class_labels:
+                    positive_index = list(class_labels).index(self.positive_label)
+                else:
+                    positive_index = 1
+                y_predict_probability = probas[:, positive_index]
+            #When custom threshold is defined, override default 0.5 threshold.  
+            if y_predict_probability is not None and class_labels is not None and len(class_labels) == 2:
+                if self.decision_threshold is not None:
+                    if self.positive_label in class_labels:
+                        positive_label = self.positive_label
+                    else:
+                        positive_label = class_labels[1]
+                    negative_label = class_labels[0] if class_labels[0] != positive_label else class_labels[1] #Simply picks other class as the negative label
+                    #Recompute predictions using the custom decision threshold:
+                    y_predict = np.where(y_predict_probability >= self.decision_threshold, positive_label, negative_label)
+                    if print_results:
+                        message = f"Applied decision threshold: {self.decision_threshold:.4f}" #Print decision threshold to keep track of models
+                        if self.threshold_metric is not None:
+                            message += f" (F-beta: {self.threshold_metric:.4f})"
+                        print(message)
+
+
+            #Start of Model Evaluation 
+            if print_results ==True:
+                print(f"\n{model_name} Evaluation:")
+
+                #Classification Report
+                print('\nClassification Report:')
+                print(classification_report(self.y_test, y_predict))
+
+            #ROC Curve and AUC Score (binary classification only)
+            if y_predict_probability is not None:
+                if class_labels is not None and self.positive_label in class_labels:
+                    pos_label = self.positive_label
+                else:
+                    pos_label = class_labels[1] if class_labels is not None else None
+                fpr, tpr, _ = roc_curve(self.y_test, y_predict_probability, pos_label=pos_label)
+                ROC_AUC = auc(fpr, tpr)
+                if print_results:
+                    print(f"\nROC AUC Score: {ROC_AUC:.4f}")
+            else:
+                fpr, tpr, ROC_AUC = None, None, None
+                if print_results:
+                    print("\nROC AUC Score: N/A (requires binary classification with probability or decision scores)")
+
+            #Matthews Correlation Coefficient
+            mcc = matthews_corrcoef(self.y_test, y_predict)
+            if print_results:
+                print(f"Matthews Correlation Coefficient (MCC): {mcc:.4f}")
+
+            #Balanced Accuracy Score
+            balanced_acc = balanced_accuracy_score(self.y_test, y_predict)
+            if print_results:
+                print(f"Balanced Accuracy: {balanced_acc:.4f}")
+
+            #Confusion Matrix
+            cm = confusion_matrix(self.y_test, y_predict, labels=class_labels) if class_labels is not None else confusion_matrix(self.y_test, y_predict)
+            if print_results:
+                print("Confusion Matrix:")
+                if class_labels is not None: #prints a nicer looking cm that just print(cm)
+                    cm_df = pd.DataFrame(cm, index=[f"Actual {c}" for c in class_labels], columns=[f"Predicted {c}" for c in class_labels])
+                    print(cm_df)
+                else:
+                    print(cm)
+
+            #Recall and F2 Scores (F2 score is a weighted harmonic mean of precision and recall)
+            recall_pos = None
+            f2_score = None
+            if class_labels is not None and self.positive_label in class_labels:
+                recall_pos = recall_score(self.y_test, y_predict, pos_label=self.positive_label)
+                f2_score = fbeta_score(self.y_test, y_predict, beta=2.0, pos_label=self.positive_label) #beta of 2 means recall gets 4x the importance of precision
+                if print_results:
+                    print(f"Recall (positive={self.positive_label}): {recall_pos:.4f}")
+                    print(f"F2 Score: {f2_score:.4f}")
+
+            #Examine False Negatives
+            if class_labels is not None and self.positive_label in class_labels and len(class_labels) == 2:
+                pos_idx = list(class_labels).index(self.positive_label)
+                neg_idx = 0 if pos_idx == 1 else 1
+                false_negatives = cm[pos_idx, neg_idx] #Extract false negative cases
+                if print_results:
+                    print(f"False Negatives: {false_negatives}")
+            else:
+                false_negatives = None
+
+            if show_plots:
+                print(f"\n{model_name} Plots:\n")
+
+                if fpr is not None and tpr is not None:
+                    self.plot_roc_curve(fpr, tpr, ROC_AUC)
+
+                final_estimator = self.best_model
+
+                if hasattr(final_estimator, "feature_importances_") or hasattr(final_estimator, "coef_"):
+                    print(f"{model_name} Feature Importance Plot:")
+                    self.plot_feature_importance()
+                else:
+                    print('Model has no attribute: Feature Importances')
+
+
+            #Save results in a dictionary for later use if needed
+            results = {
+                "model_name": model_name,
+                "classification_report": classification_report(self.y_test, y_predict, output_dict=True),
+                "confusion_matrix": cm,
+                "roc_auc": ROC_AUC,
+                "mcc": mcc,
+                "balanced_accuracy": balanced_acc,
+                "recall": recall_pos,
+                "f2_score": f2_score,
+                "decision_threshold": self.decision_threshold,
+                "threshold_metric": self.threshold_metric,
+                "false_negatives": false_negatives,}
+            return results
+
+    #Plots to visualize the model. Legacy from ML_Class_1.py
+    def plot_roc_curve(self, fpr, tpr, ROC_AUC):
+        """
+        ROC Curve Plot
+        """
+        plt.figure(figsize=(6,4), facecolor='lightgrey')
+        plt.plot(fpr, tpr, color='#06768d', label=f'ROC Curve (AUC = {ROC_AUC:.2f})')
+        plt.plot([0, 1], [0, 1], color='grey', linestyle='--')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curve')
+        plt.legend(loc='lower right')
         ax = plt.gca()
-        ax.set_facecolor("lightgrey")
+        ax.set_facecolor('lightgrey')
         for spine in plt.gca().spines.values():
             spine.set_visible(False)
         plt.show()
 
     def plot_confusion_matrix(self, cm, class_labels=None):
+        """
+        Plot Confusion Matrix
+        """
         if class_labels is None:
             labels_to_use = [str(i) for i in range(cm.shape[0])]
         else:
             labels_to_use = [str(label) for label in class_labels]
 
-        plt.figure(figsize=(6,4), facecolor="lightgrey")
-        ax = sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=labels_to_use,
+        plt.figure(figsize=(6,4), facecolor='lightgrey')
+        ax = sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=labels_to_use, \
                     yticklabels=labels_to_use)
-        plt.xlabel("Predicted")
-        plt.ylabel("Actual")
-        plt.title("Confusion Matrix")
+        plt.xlabel('Predicted')
+        plt.ylabel('Actual')
+        plt.title('Confusion Matrix')
         plt.show()
 
-    def plot_feature_importance(self):
-        estimator = self._final_estimator(self.best_model)
 
+    def plot_feature_importance(self):
+        """
+        Feature Importance Plot
+        """
+        #Support feature importances for tree models 
+        estimator = self.best_model
         if hasattr(estimator, "feature_importances_"):
             importances = estimator.feature_importances_
-        elif hasattr(estimator, "coef_"):
-            coef = np.asarray(estimator.coef_)
-            if coef.ndim == 1:
-                importances = np.abs(coef)
-            else:
-                importances = np.mean(np.abs(coef), axis=0)
         else:
-            print("Model has no attribute: Feature Importances")
+            print('Model has no attribute: Feature Importances')
             return
 
         importances = np.asarray(importances)
@@ -362,15 +492,13 @@ class QDA_Tester:
         else:
             feature_labels = [f"Feature_{i}" for i in range(len(importances))]
 
-        feature_importance_df = pd.DataFrame({
-                                "Feature": feature_labels,
-                                "Importance": importances
-                                }).sort_values(by="Importance", ascending=False)
-        plt.figure(figsize=(8,4), facecolor="lightgrey")
-        ax = sns.barplot(x="Importance", y="Feature", data=feature_importance_df, palette="crest_r")
-        plt.title("Feature Importance")
-        ax.set_facecolor("lightgrey")
-        for spine in plt.gca().spines.values():
+        feature_importance_df = pd.DataFrame({'Feature': feature_labels,'Importance': importances}).sort_values\
+            (by='Importance', ascending=False)
+        plt.figure(figsize=(8,4), facecolor='lightgrey')
+        ax = sns.barplot(x='Importance', y='Feature', data=feature_importance_df, palette='crest_r')  
+        plt.title('Feature Importance')
+        ax.set_facecolor('lightgrey')
+        for spine in plt.gca().spines.values(): #Supines suck
             spine.set_visible(False)
         plt.show()
         return

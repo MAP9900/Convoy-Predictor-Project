@@ -152,6 +152,7 @@ class Gradient_Boosting_Optimization:
         self.decision_threshold = float(thresholds[best_idx])
         self.threshold_metric = float(fbeta_scores[best_idx])
         # print(f"Optimized Decision Threshold: {self.decision_threshold:.4f} with F-beta score: {self.threshold_metric:.4f}")
+        
 
     def set_decision_threshold(self, threshold = None):
         """

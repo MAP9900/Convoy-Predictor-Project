@@ -22,12 +22,8 @@ class CNB_Tester:
         if model is not None and not hasattr(model, "fit"):
             raise ValueError(f"Error: model must be a scikit-learn classifier, but got {type(model)}")
         self.model = model if model is not None else ComplementNB()
-
         self.scaler = scaler if scaler is not None else MaxAbsScaler()
-        self.parameter_grid = parameter_grid if parameter_grid is not None else {
-            "model__alpha": [0.1, 0.25, 0.5, 1.0],
-            "model__norm": [True, False]
-        }
+        self.parameter_grid = parameter_grid 
         self.cv_folds = cv_folds
         self.random_state = random_state
         self.feature_names = feature_names
@@ -73,21 +69,18 @@ class CNB_Tester:
         signature = inspect.signature(final_est.fit)
         return "sample_weight" in signature.parameters
 
-    def train_test_split(self, X, y, train_size=0.8, random_state=None):
-        random_state = random_state if random_state is not None else self.random_state
+    
+    def train_test_split(self, X, y, train_size = 0.8, random_state = 1945):
+        """
+        Perform Train Test Split
+        """
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, train_size=train_size, random_state=random_state, stratify=y
-        )
+            X, y, train_size=train_size, random_state=random_state, stratify=y)
         if self.feature_names is None:
             if hasattr(X, "columns"):
                 self.feature_names = list(X.columns)
             else:
                 self.feature_names = [f"Feature_{i}" for i in range(self.X_train.shape[1])]
-        classes, counts = np.unique(self.y_train, return_counts=True)
-        if len(classes) == 2:
-            self.positive_label = classes[np.argmin(counts)]
-        else:
-            self.positive_label = None
         self.k_fold_results = {"train_scores": [], "test_scores": []}
         return
 
@@ -128,48 +121,76 @@ class CNB_Tester:
 
         return train_scores, test_scores
 
-    def optimize(self):
+    def optimize(self, scoring=None, refit=None, fit_params=None, use_sample_weight=True):
+        """
+        Hyperparameter optimization with Stratified CV, optional multi-metric scoring,
+        class-imbalance weighting, and optional threshold calibration. Modified from optimzation function in 
+        Gradient_Boosting_Optimization.py 
+        """
+        #Intial Checks 
         if self.X_train is None or self.y_train is None:
             raise ValueError("Call train_test_split() before optimize().")
-
         estimator = self._build_estimator()
         if estimator is None:
             raise ValueError("No model provided. Please initialize with a valid scikit-learn classifier.")
 
+        #Cross-Validation
+        cv_strategy = self.cv_folds
+        if cv_strategy is None:
+            cv_strategy = StratifiedKFold(n_splits=5, shuffle=True, random_state=self.random_state)
+        elif isinstance(cv_strategy, int):
+            cv_strategy = StratifiedKFold(n_splits=cv_strategy, shuffle=True, random_state=self.random_state)
+
+        #Primary scoring metric, defaults to recall
+        primary_metric = self._resolve_scoring(scoring) 
+        scoring_dict = {
+            "recall_macro": "recall_macro",
+            "recall_weighted": "recall_weighted",
+            "f1_macro": "f1_macro",
+            "f1_weighted": "f1_weighted",}
+        refit_metric = refit or (primary_metric if isinstance(primary_metric, str) else "f1_weighted")
+
+        #Check if a single scoring metric was passed in. If so, adds to scoring dictionary 
+        if isinstance(primary_metric, str) and primary_metric not in scoring_dict:
+            scoring_dict[primary_metric] = primary_metric
+        #param-grid
         if self.parameter_grid:
-            param_grid = self._coerce_param_grid(estimator, self.parameter_grid)
-            scoring = {
-                "recall_macro": "recall_macro",
-                "f1_macro": "f1_macro",
-                "recall_weighted": "recall_weighted",
-                "f1_weighted": "f1_weighted"
-            }
-            grid_search = GridSearchCV(
-                estimator,
-                param_grid,
-                cv=StratifiedKFold(n_splits=self.cv_folds, shuffle=True, random_state=self.random_state),
-                scoring=scoring,
-                refit="f1_weighted",
-                n_jobs=-1
-            )
+            if hasattr(self, "_coerce_param_grid"):
+                param_grid = self._coerce_param_grid(estimator, self.parameter_grid)
+            else:
+                param_grid = self.parameter_grid
             fit_kwargs = {}
-            if self._supports_sample_weight(estimator):
+            if use_sample_weight and hasattr(self, "_supports_sample_weight") and self._supports_sample_weight(estimator):
                 weights = compute_sample_weight(class_weight="balanced", y=self.y_train)
                 fit_kwargs["model__sample_weight"] = weights
+            if fit_params:
+                fit_kwargs.update(fit_params)
+
+            grid_search = GridSearchCV(estimator, param_grid, cv=cv_strategy, scoring=scoring_dict, refit=refit_metric, n_jobs=-1 )
             grid_search.fit(self.X_train, self.y_train, **fit_kwargs)
             self.best_model = grid_search.best_estimator_
+
             print(f"\nBest Hyperparameters Found:\n{grid_search.best_params_}")
-            print(f"Best Cross-Validation F1 (weighted): {grid_search.best_score_:.4f}")
+            print(f"Best CV ({refit_metric}): {grid_search.best_score_:.4f}")
+
         else:
+            #If no grid, fit model directly 
             self.best_model = estimator
             fit_kwargs = {}
-            if self._supports_sample_weight(estimator):
+            if use_sample_weight and hasattr(self, "_supports_sample_weight") and self._supports_sample_weight(estimator):
                 weights = compute_sample_weight(class_weight="balanced", y=self.y_train)
                 fit_kwargs["model__sample_weight"] = weights
+            if fit_params:
+                fit_kwargs.update(fit_params)
             self.best_model.fit(self.X_train, self.y_train, **fit_kwargs)
 
-        self._calibrate_threshold()
-        return
+        if getattr(self, "auto_calibrate_threshold", False):
+            self._calibrate_threshold()
+        else:
+            self.threshold_metric = None
+            if getattr(self, "decision_threshold", None) is None:
+                self.decision_threshold = 0.5
+        return 
 
     def _calibrate_threshold(self):
         self.decision_threshold = 0.5
