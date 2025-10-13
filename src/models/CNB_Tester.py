@@ -1,6 +1,7 @@
 #Imports
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV, StratifiedKFold
-from sklearn.metrics import classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix, precision_recall_curve
+from sklearn.metrics import (classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix, 
+                             recall_score, fbeta_score, precision_recall_curve, make_scorer) 
 from sklearn.pipeline import Pipeline
 from sklearn.base import clone
 from sklearn.exceptions import NotFittedError
@@ -83,6 +84,21 @@ class CNB_Tester:
                 self.feature_names = [f"Feature_{i}" for i in range(self.X_train.shape[1])]
         self.k_fold_results = {"train_scores": [], "test_scores": []}
         return
+    def _resolve_scoring(self, scoring):
+        """
+        Helper function to determine what scoring function to use when evalualting the model. Defaults to "recall"
+        Scoring Options: "accuracy", "precision", "recall", "f1", "roc_auc"
+        Can use make_scorer() to add extra kwargs (like what is done for recall)
+
+        Can also pass in a dictionary of scoring metrics for use with GridSearchCV
+        ex: scoring = {"accuracy": "accuracy", "precision": make_scorer(precision_score, pos_label=1), "recall": "recall",}
+
+        """
+        if scoring is not None: 
+            return scoring #Evaluate based off given scor
+        if self.optimize_scoring == 'recall':
+            return make_scorer(recall_score, pos_label=self.positive_label) #Calculate recall in regards to the postive label (1) --(This is specifcally for the Convoy Project)--
+        return self.optimize_scoring
 
     def k_folds(self, K=None, random_state=None, stratified: bool = True):
         if self.X_train is None or self.y_train is None:
