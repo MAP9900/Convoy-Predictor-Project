@@ -19,7 +19,10 @@ import inspect
 
 class CNB_Class:
 
-    def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds: int = 5, feature_names: list = None, random_state: int = 1945):
+    def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds: int = 5,
+                 feature_names: list = None, random_state: int = 1945,
+                 optimize_scoring: str = "recall", auto_calibrate_threshold: bool = False,
+                 threshold_beta: float = 1.0):
         if model is not None and not hasattr(model, "fit"):
             raise ValueError(f"Error: model must be a scikit-learn classifier, but got {type(model)}")
         self.model = model if model is not None else ComplementNB()
@@ -28,12 +31,15 @@ class CNB_Class:
         self.cv_folds = cv_folds
         self.random_state = random_state
         self.feature_names = feature_names
+        self.optimize_scoring = optimize_scoring
         self.best_model = None
         self.X_train = None
         self.X_test = None
         self.y_train = None
         self.y_test = None
         self.positive_label = None
+        self.auto_calibrate_threshold = auto_calibrate_threshold
+        self.threshold_beta = threshold_beta
         self.decision_threshold = 0.5
         self.threshold_metric = None
         self.k_fold_results = {"train_scores": [], "test_scores": []}
@@ -101,6 +107,18 @@ class CNB_Class:
         if self.optimize_scoring == 'recall':
             return make_scorer(recall_score, pos_label=self.positive_label) #Calculate recall in regards to the postive label (1) --(This is specifcally for the Convoy Project)--
         return self.optimize_scoring
+
+    def _get_classes(self):
+        """
+        Helper to extract fitted class labels from the best estimator (handles Pipelines).
+        """
+        if self.best_model is None:
+            return None
+        classes = getattr(self.best_model, "classes_", None)
+        if classes is not None:
+            return classes
+        final_estimator = self._final_estimator(self.best_model)
+        return getattr(final_estimator, "classes_", None)
 
     def k_folds(self, K=None, random_state=None, stratified: bool = True):
         if self.X_train is None or self.y_train is None:
