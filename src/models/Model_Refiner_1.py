@@ -1,6 +1,6 @@
 #TODO Test is class works and is worthwile for the project
 
-#This file was built off ML_Class_1.py but heavily modified using Codex. No tests have been done yet with this. Seems overly complex...
+#This file was built off ML_Class_1.py but heavily modified using Codex. No tests have been done yet with this. Seems overly complex for my purposes but may be worth while in the future. 
 
 """Utilities for optimizing gradient-descent classifiers with recall-focused evaluation."""
 
