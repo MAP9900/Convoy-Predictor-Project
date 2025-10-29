@@ -40,6 +40,23 @@ nav ul li a {
     font-weight: bold;
 }
 
+.period-nav ul {
+    padding: 0;
+    display: inline-block;
+}
+
+.period-nav ul li {
+    margin: 0 8px;
+}
+
+.period-nav ul li a {
+    color: #061436;
+}
+
+.period-nav {
+    margin-bottom: 20px;
+}
+
 /* Main Content Styles */
 main {
     padding: 20px;
