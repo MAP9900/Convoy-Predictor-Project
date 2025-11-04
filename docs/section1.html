@@ -34,16 +34,12 @@
         
 
         Early experiments utilized a regression approach to predict exact sink percentages. The results for these initial attempts 
-        can be found <a href="section1_1.html">here.</a> The limited data, wide variability, and unmodeled factors 
-
-
-        This method quickly proved to be far too difficult largely due to limited data and widely varying sink percentages.
-        Instead, sink percentages were converted to binary values of 0 (no ships sunk) or 1 (at least one ship sunk). 
-        This new method aims to alleviate the complexity of predicting an exact sink percentage while also providing
-        a more realistic approach of identifying high-risk convoys. Various algorithms were tested to 
-        determine the one best suited for the challenge.
-        
-    
+        can be found <a href="section1_1.html">here.</a> The limited data, wide variability, and unmodeled factors, however, made this
+        approach unsuitable for the problem. Exact sink percentages of each convoy proved impossible to predict within the scope
+        of the project. Instead, sink percentages were converted to binary values of 0 (no ships sunk) or 1 (at least one ship sunk). 
+        This new method, based on classification, aims to alleviate the complexity of predicting an exact sink percentage while also
+        providing a more realistic approach of identifying high-risk convoys. Various algorithms were tested to determine the one 
+        best suited for the challenge.
         </p>
         
         <div class="table-container">
@@ -220,8 +216,36 @@
         From the results above and previous tests, other algorithms displayed strong abilities to have strong recall scores along with accuracy and f1-scores. 
         Those algorithms were the ComplementNB and QuadraticDiscriminantAnalysis along with other gradient boosting based algorithms from the XGBoost library.
         These algorithms will now be tested and optimized to see if they can outperform the gradient boosting classifier. 
-    </p> <br>
-    <p class="centered-paragraph">Results Coming Soon!</p>
+    </p>
+    <h4 style="text-align: center;">Optimized ComplementNB and QuadraticDiscriminantAnalysis Tests</h4>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>Acc</th>
+                <th>ROC_AUC</th>
+                <th>MCC</th>
+                <th>Bal_Acc</th>
+                <th>Recall1</th>
+                <th>F1_1</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>ComplementNB</td><td>0.65</td><td>0.706</td><td>0.274</td><td>0.666</td><td>0.70</td><td>0.46</td></tr>
+            <tr><td>QuadraticDiscriminantAnalysis</td><td>0.60</td><td>0.790</td><td>0.334</td><td>0.702</td><td>0.88</td><td>0.48</td></tr>
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+
+
+
 
 
     </main>
