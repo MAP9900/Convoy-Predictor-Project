@@ -478,7 +478,7 @@ class QDA_Class:
         plt.plot([0, 1], [0, 1], color='grey', linestyle='--')
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve')
+        plt.title('QuadraticDiscriminantAnalysis\nROC Curve')
         plt.legend(loc='lower right')
         ax = plt.gca()
         ax.set_facecolor('lightgrey')
@@ -496,7 +496,7 @@ class QDA_Class:
         plt.plot(recall, precision, color="#06768d")
         plt.xlabel("Recall")
         plt.ylabel("Precision")
-        plt.title("Precision-Recall Curve")
+        plt.title("QuadraticDiscriminantAnalysis\nPrecision-Recall Curve")
         ax = plt.gca()
         ax.set_facecolor("lightgrey")
         for spine in plt.gca().spines.values():
@@ -518,7 +518,7 @@ class QDA_Class:
                     yticklabels=labels_to_use)
         plt.xlabel('Predicted')
         plt.ylabel('Actual')
-        plt.title('Confusion Matrix')
+        plt.title('QuadraticDiscriminantAnalysis\nConfusion Matrix')
         plt.savefig("/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/QDA_Confusion_Matrix.png")
         plt.show()
 
