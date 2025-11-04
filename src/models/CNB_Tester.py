@@ -431,16 +431,16 @@ class CNB_Class:
                 print(f"\n{model_name} Plots:\n")
 
                 if fpr is not None and tpr is not None:
+                    print("ROC Curve:")
                     self.plot_roc_curve(fpr, tpr, ROC_AUC)
 
-                final_estimator = self.best_model
+                if y_predict_probability is not None:
+                    print("Precision-Recall Curve:")
+                    self.plot_precision_recall_curve(y_predict_probability)
 
-                if hasattr(final_estimator, "feature_importances_") or hasattr(final_estimator, "coef_"):
-                    print(f"{model_name} Feature Importance Plot:")
-                    self.plot_feature_importance()
-                else:
-                    print('Model has no attribute: Feature Importances')
-
+                if cm is not None:
+                    print("Confusion Matrix Heatmap:")
+                    self.plot_confusion_matrix(cm, class_labels)
 
             #Save results in a dictionary for later use if needed
             results = {
@@ -469,6 +469,7 @@ class CNB_Class:
         ax.set_facecolor("lightgrey")
         for spine in plt.gca().spines.values():
             spine.set_visible(False)
+        plt.savefig("/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/CNB_ROC_Curve.png")
         plt.show()
 
     def plot_precision_recall_curve(self, y_scores):
@@ -477,7 +478,7 @@ class CNB_Class:
         y_true = (self.y_test == self.positive_label).astype(int)
         precision, recall, _ = precision_recall_curve(y_true, y_scores)
         plt.figure(figsize=(6,4), facecolor="lightgrey")
-        plt.plot(recall, precision, color="#ff8c32")
+        plt.plot(recall, precision, color="#06768d")
         plt.xlabel("Recall")
         plt.ylabel("Precision")
         plt.title("Precision-Recall Curve")
@@ -485,6 +486,7 @@ class CNB_Class:
         ax.set_facecolor("lightgrey")
         for spine in plt.gca().spines.values():
             spine.set_visible(False)
+        plt.savefig("/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/CNB_PR_Curve.png")
         plt.show()
 
     def plot_confusion_matrix(self, cm, class_labels=None):
@@ -494,46 +496,10 @@ class CNB_Class:
             labels_to_use = [str(label) for label in class_labels]
 
         plt.figure(figsize=(6,4), facecolor="lightgrey")
-        ax = sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=labels_to_use,
+        ax = sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=labels_to_use, \
                     yticklabels=labels_to_use)
         plt.xlabel("Predicted")
         plt.ylabel("Actual")
         plt.title("Confusion Matrix")
+        plt.savefig("/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/CNB_Confusion_Matrix.png")
         plt.show()
-
-    def plot_feature_importance(self):
-        estimator = self._final_estimator(self.best_model)
-
-        if hasattr(estimator, "feature_importances_"):
-            importances = estimator.feature_importances_
-        elif hasattr(estimator, "coef_"):
-            coef = np.asarray(estimator.coef_)
-            if coef.ndim == 1:
-                importances = np.abs(coef)
-            else:
-                importances = np.mean(np.abs(coef), axis=0)
-        else:
-            print("Model has no attribute: Feature Importances")
-            return
-
-        importances = np.asarray(importances)
-        if importances.ndim > 1:
-            importances = importances.ravel()
-
-        if self.feature_names and len(self.feature_names) == len(importances):
-            feature_labels = self.feature_names
-        else:
-            feature_labels = [f"Feature_{i}" for i in range(len(importances))]
-
-        feature_importance_df = pd.DataFrame({
-                                "Feature": feature_labels,
-                                "Importance": importances
-                                }).sort_values(by="Importance", ascending=False)
-        plt.figure(figsize=(8,4), facecolor="lightgrey")
-        ax = sns.barplot(x="Importance", y="Feature", data=feature_importance_df, palette="crest_r")
-        plt.title("Feature Importance")
-        ax.set_facecolor("lightgrey")
-        for spine in plt.gca().spines.values():
-            spine.set_visible(False)
-        plt.show()
-        return

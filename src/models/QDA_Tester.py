@@ -441,15 +441,16 @@ class QDA_Class:
                 print(f"\n{model_name} Plots:\n")
 
                 if fpr is not None and tpr is not None:
+                    print("ROC Curve:")
                     self.plot_roc_curve(fpr, tpr, ROC_AUC)
 
-                final_estimator = self.best_model
+                if y_predict_probability is not None:
+                    print("Precision-Recall Curve:")
+                    self.plot_precision_recall_curve(y_predict_probability)
 
-                if hasattr(final_estimator, "feature_importances_") or hasattr(final_estimator, "coef_"):
-                    print(f"{model_name} Feature Importance Plot:")
-                    self.plot_feature_importance()
-                else:
-                    print('Model has no attribute: Feature Importances')
+                if cm is not None:
+                    print("Confusion Matrix Heatmap:")
+                    self.plot_confusion_matrix(cm, class_labels)
 
 
             #Save results in a dictionary for later use if needed
@@ -483,6 +484,24 @@ class QDA_Class:
         ax.set_facecolor('lightgrey')
         for spine in plt.gca().spines.values():
             spine.set_visible(False)
+        plt.savefig("/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/QDA_ROC_Curve.png")
+        plt.show()
+    
+    def plot_precision_recall_curve(self, y_scores):
+        if self.positive_label is None:
+            return
+        y_true = (self.y_test == self.positive_label).astype(int)
+        precision, recall, _ = precision_recall_curve(y_true, y_scores)
+        plt.figure(figsize=(6,4), facecolor="lightgrey")
+        plt.plot(recall, precision, color="#06768d")
+        plt.xlabel("Recall")
+        plt.ylabel("Precision")
+        plt.title("Precision-Recall Curve")
+        ax = plt.gca()
+        ax.set_facecolor("lightgrey")
+        for spine in plt.gca().spines.values():
+            spine.set_visible(False)
+        plt.savefig("/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/QDA_PR_Curve.png")
         plt.show()
 
     def plot_confusion_matrix(self, cm, class_labels=None):
@@ -500,37 +519,6 @@ class QDA_Class:
         plt.xlabel('Predicted')
         plt.ylabel('Actual')
         plt.title('Confusion Matrix')
+        plt.savefig("/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/QDA_Confusion_Matrix.png")
         plt.show()
 
-
-    def plot_feature_importance(self):
-        """
-        Feature Importance Plot
-        """
-        #Support feature importances for tree models 
-        estimator = self.best_model
-        if hasattr(estimator, "feature_importances_"):
-            importances = estimator.feature_importances_
-        else:
-            print('Model has no attribute: Feature Importances')
-            return
-
-        importances = np.asarray(importances)
-        if importances.ndim > 1:
-            importances = importances.ravel()
-
-        if self.feature_names and len(self.feature_names) == len(importances):
-            feature_labels = self.feature_names
-        else:
-            feature_labels = [f"Feature_{i}" for i in range(len(importances))]
-
-        feature_importance_df = pd.DataFrame({'Feature': feature_labels,'Importance': importances}).sort_values\
-            (by='Importance', ascending=False)
-        plt.figure(figsize=(8,4), facecolor='lightgrey')
-        ax = sns.barplot(x='Importance', y='Feature', data=feature_importance_df, palette='crest_r')  
-        plt.title('Feature Importance')
-        ax.set_facecolor('lightgrey')
-        for spine in plt.gca().spines.values(): #Supines suck
-            spine.set_visible(False)
-        plt.show()
-        return
