@@ -81,11 +81,12 @@
         </div>
         <p class="centered-paragraph">
         The Gradient Boosting Classifier performs the best on this data and will be the foundation for all future tests. 
-        Notably, the ComplementNB and QuadraticDiscriminantAnalysis algorithms performed comparable, even resulting in higher 
-        recall scores. However, ComplementNB is an algorithm developed for text classification and further tests done 
-        <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/exploration/CNB_and_QDA_Test.ipynb" target="_blank">here</a>.
-        prove this algorithm is not suited for this problem.
-        <br>
+        Notably, the RandomForestClassifier, QuadraticDiscriminantAnalysis, and ComplementNB algorithms performed comparable, even resulting in higher 
+        recall scores. However, ComplementNB is an algorithm developed for text classification and is best suited for imbalanced
+        and discrete datasets. Tests done in this 
+        <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/exploration/CNB_and_QDA_Test.ipynb" target="_blank">notebook</a>
+        reveal the ComplementNB algorithm fails to produce meaningful results. The model results in near binary behavior; 
+        at low thresholds everything is classified as positive and at high thresholds, everything is classified as negative. 
         Other Gradient Boosting algorithms from the XGBoost library will be tested next. These results are below.
 
 
@@ -115,14 +116,15 @@
         </div>
 
         <p class="centered-paragraph">
-            The regular Scikit-Learn Gradient Boosting edges out the other boosted tree variants by pairing the top ROC-AUC 
-            and F1 scores with the strongest recall for at-risk convoys. Further optimization will now be done with focus put on recall and false negatives. 
-            The emphasis on recall, which measures true positives over true positives plus false negatives, is done because detecting convoys at risk is more 
-            important than detecting not at risk convoys. False positive cases (where the model says a convoy is not a risk despite it being at risk) are particularly
-            dangerous for this problem especially with human life and crucial wartime supplies on the line. False positives, though not ideal, carry much less risk associated
-            with them. If a convoy is labeled as at risk but in actuality was not, no harms comes a result. Now limitations here do exist such as allocating defensive resources 
-            otherwise one would label every convoy at risk. However, some false positives are acceptable as a form of caution.  
-
+            The standard Scikit-Learn Gradient Boosting model outperforms the other boosted tree variants, achieving the highest 
+            ROC-AUC and F1 scores along with the strongest recall for at-risk convoys. Further optimization will focus on 
+            improving recall and reducing false negatives. The emphasis on recall (true positives divided by true positives plus 
+            false negatives) is necessary because identifying convoys at risk is more important than identifying those not at risk.
+            False negative (cases where the model predicts a convoy is not at risk when it actually is) are particularly dangerous, 
+            especially with human life and vital wartime supplies at stake. False positives, while not ideal, carry much less
+            associated risk. If a convoy is labeled as at risk but in reality is not, no harm results. There are limitations to
+            false negatives, such as the need to allocate defensive resources as otherwise, every convoy could simply be labeled at risk.
+            However, some false positives are acceptable as a form of caution.
         </p>
 
         <!-- Gradient Boosting Classifier Detailed Results -->
@@ -134,7 +136,7 @@
      <p class="centered-paragraph">
         To optimize the gradient boosting classifier, Grid Search Cross Validation will be used to test a predefined set of hyperparameters. The hyperparameters 
         optimized are learning_rate, n_estimators, max_depth, min_samples_leaf, min_samples_split, subsample, and max_features. To learn more about these hyperparameters
-        see Scikit-Learn's docs <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html" target="_blank">here</a>. 
+        see Scikit-Learn's <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html" target="_blank">docs</a>. 
         After Gris Search CV, a threshold comparison is done to examine the affect on recall, precision, and accuracy. Threshold, which defaults to 0.5, is the value used to 
         convert the model's probability output into a discrete class (0 or 1). With the default value of 0.5, any output below 0.5 will be classified as 0 and above 0.5, will be a 1.
         By manipulating the threshold, more weight can be onto recall and limiting the number of false negatives at the expense of decreasing precision and increasing the number of
@@ -210,19 +212,19 @@
         0.75 and so does accuracy at 0.83 given the best balance between recall and precision. However, the number of false negatives remains relatively high
         at 18 convoys classified as not a risk despite having ships sunk. So a recall focused best interval for threshold is instead at [0.05, 0.15]. At this interval.
         false negatives are 7, 10, & 14 respectively. These results are more in line with goal of producing a model with a high recall score. Accuracy and f1-score 
-        remain high at a threshold of 0.15 but quickly begin at thresholds of 0.10 and 0.05. Thus determining a single, optimal threshold is difficult with each value 
-        having trade offs between the different metrics. A good balance, however, between these two threshold intervals is 0.20. Recall, accuracy and f1-score 
-        remain high at 0.68, 0.80, 0.73 respectively with only 16 false negatives occurring. 
+        remain high at a threshold of 0.15 but quickly begin at thresholds of 0.10 and 0.05. Therefore, determining a single, optimal threshold is difficult with each value 
+        having trade offs between the different metrics. A good balance, however, is a threshold of 0.20 which sees recall, accuracy and f1-score 
+        remain high at 0.68, 0.80, & 0.73 respectively and only 16 false negatives occuring. 
      </p>
     
     <h2 style="text-align: center;">Exploring Other Promising Algorithms</h2>
     <p class="centered-paragraph">
-        From the results above and previous tests, other algorithms displayed strong abilities to have strong recall scores along with accuracy and f1-scores. 
-        Those algorithms were the ComplementNB and QuadraticDiscriminantAnalysis along with other gradient boosting based algorithms from the XGBoost library.
-        These algorithms will now be tested and optimized to see if they can outperform the gradient boosting classifier. 
+        Prior tests and the results above indicate multiple algorithms with potential to produce strong results. These other
+        models will now be optimized and tested to compare with the GradientBoostingClassifier. Then the best performing models
+        will combined through ensemble learning. 
     </p>
-    <h4 style="text-align: center;">Optimized ComplementNB and QuadraticDiscriminantAnalysis Results</h4>
-
+    <h4 style="text-align: center;">Optimized Results</h4>
+<!--TODO: Instead of testing just QuadraticDiscriminantAnalysis, optimize a few algorithms and then compare all the results. -->
 <div class="table-container">
     <table>
         <thead>
@@ -237,20 +239,11 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td>ComplementNB</td><td>0.65</td><td>0.706</td><td>0.274</td><td>0.666</td><td>0.70</td><td>0.46</td></tr>
             <tr><td>QuadraticDiscriminantAnalysis</td><td>0.60</td><td>0.790</td><td>0.334</td><td>0.702</td><td>0.88</td><td>0.48</td></tr>
         </tbody>
     </table>
 </div>
 
-<div class="figure-pair" style="display: flex; gap: 0rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem;">
-    <figure style="flex: 1 1 320px; max-width: 480px;">
-        <img src="images/CNB_Confusion_Matrix.png" alt="CNB CM" style="width: 100%; height: auto;">
-    </figure>
-    <figure style="flex: 1 1 320px; max-width: 480px;">
-        <img src="images/QDA_Confusion_Matrix.png" alt="QDA CM" style="width: 100%; height: auto;">
-    </figure>
-</div>
 <h4 style="text-align: center;">Threshold Comparison</h4>
 
 <section class="table-section" style="margin-top: 1.5rem;">
@@ -347,97 +340,8 @@
 
 <!-- Old HTML Code, used to reference how tables were made
 
-</p>
-    <div class="table-container">
-        Logistic Regression Results 
-        <table>
-            <tr><th colspan="2">Logistic Regression</th></tr>
-            <tr><td>Train Score (Mean Accuracy)</td><td>0.811965811965812</td></tr>
-            <tr><td>Test Score (Mean Accuracy)</td><td>0.8068181818181818</td></tr>
-            <tr><td>Mean Squared Error</td><td>0.19318181818181818</td></tr>
-            <tr><td>K-Fold Train Score</td><td>0.8071378962697434</td></tr>
-            <tr><td>K-Fold Test Score</td><td>0.8075365726227796</td></tr>
-        </table>
 
-        Random Forest Results
-        <table>
-            <tr><th colspan="2">Random Forest Classifier</th></tr>
-            <tr><td>Train Score (Mean Accuracy)</td><td>1.0</td></tr>
-            <tr><td>Test Score (Mean Accuracy)</td><td>0.8579545454545454</td></tr>
-            <tr><td>Mean Squared Error</td><td>0.14204545454545456</td></tr>
-            <tr><td>K-Fold Train Score</td><td>1.0</td></tr>
-            <tr><td>K-Fold Test Score</td><td>0.8370950888192269</td></tr>
-        </table>
-
-        Gradient Boosting Results 
-        <table>
-            <tr><th colspan="2">Gradient Boosting</th></tr>
-            <tr><td>Train Score (Mean Accuracy)</td><td>0.9487179487179487</td></tr>
-            <tr><td>Test Score (Mean Accuracy)</td><td>0.8693181818181818</td></tr>
-            <tr><td>Mean Squared Error</td><td>0.13068181818181818</td></tr>
-            <tr><td>K-Fold Train Score</td><td>0.9383702731680776</td></tr>
-            <tr><td>K-Fold Test Score</td><td>0.8336729362591433</td></tr>
-        </table>
-    </div>
-
-    <div class="table-container">
-        Random Forest Classifier Report
-        <table border="1">
-            <tr><th colspan="5">Random Forest Classification Report</th></tr>
-            <tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
-            <tr><td>0 (No Risk)</td><td>0.87</td><td>0.97</td><td>0.92</td><td>141</td></tr>
-            <tr><td>1 (At Risk)</td><td>0.78</td><td>0.40</td><td>0.53</td><td>35</td></tr>
-            <tr><td>Macro Avg</td><td>0.82</td><td>0.69</td><td>0.72</td><td>176</td></tr>
-            <tr><td>Weighted Avg</td><td>0.85</td><td>0.86</td><td>0.84</td><td>176</td></tr>
-            <tr><td>Accuracy</td><td colspan="4">0.86 (176 total)</td></tr>
-        </table>
-        
-        Logistic Regression Classification Report 
-        <table border="1">
-            <tr><th colspan="5">Logistic Regression Classification Report</th></tr>
-            <tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
-            <tr><td>0 (No Risk)</td><td>0.81</td><td>0.99</td><td>0.89</td><td>141</td></tr>
-            <tr><td>1 (At Risk)</td><td>0.60</td><td>0.09</td><td>0.15</td><td>35</td></tr>
-            <tr><td>Macro Avg</td><td>0.71</td><td>0.54</td><td>0.52</td><td>176</td></tr>
-            <tr><td>Weighted Avg</td><td>0.77</td><td>0.81</td><td>0.74</td><td>176</td></tr>
-            <tr><td>Accuracy</td><td colspan="4">0.81 (176 total)</td></tr>
-        </table>
-    
-        Gradient Boosting Classification Report
-        <table border="1">
-            <tr><th colspan="5">Gradient Boosting Classifier Classification Report</th></tr>
-            <tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
-            <tr><td>0 (No Risk)</td><td>0.88</td><td>0.97</td><td>0.92</td><td>141</td></tr>
-            <tr><td>1 (At Risk)</td><td>0.80</td><td>0.46</td><td>0.58</td><td>35</td></tr>
-            <tr><td>Macro Avg</td><td>0.84</td><td>0.71</td><td>0.75</td><td>176</td></tr>
-            <tr><td>Weighted Avg</td><td>0.86</td><td>0.87</td><td>0.85</td><td>176</td></tr>
-            <tr><td>Accuracy</td><td colspan="4">0.87 (176 total)</td></tr>
-        </table>
-    </div>
-    
-    <p class="centered-paragraph">
-        The results indicate classification to be the better approach. Predicting an exact sink percentage is simply too unrealistic and 
-        arguably not very valuable in a real world setting. The best classifier, currently, the the gradient boosting classifier with a 
-        recall score of 0.46 for at risk convoys and a precision score of 0.88 for no risk convoys. These two metrics, I deem, are the most
-        import in protecting convoys. My aim is the maximize the number of true positives for convoys at risk and minimize the number false positives
-        for convoys at no risk. In the real world context of convoys, lives, ships, and cargo at are stake and thus, correctly predicting convoys at 
-        risk is the most important. The instances of false positives for convoys at risk (precision for at risk), although not ideal, lends to
-        a level of caution in protecting convoys. If a convoy may be at risk, than, I believe, it is better to classify it as an at risk convoy
-        than not as a precautionary measure. Although, in the real world, this approach may be limited/unrealistic if a finite number of resources
-        (escort ships, air-cover, etc) can be allocated to convoys and thus only convoys truly at risk can afford to have more protection resources. 
-        Regardless, precision and recall for convoys at risk and not a risk will be optimized in further refinements of the classifiers. The link 
-        to the code for all of the results above (regressors and classifications) can be found 
-        <a href="https://github.com/MAP9900/Modeling-The-Convoy-System/blob/main/Code/Machine%20Learning/Convoy_Model_2.ipynb" target="_blank">here</a>. <br>
-        
-    </p> -->
-
-
-
-
-
-
-
-    <!-- Old gb_grid and Xgboost results (Archive)-->
+    <-- Old gb_grid and Xgboost results (Archive)-->
 
     <!-- <div class="table-container">
         <table>
@@ -547,3 +451,13 @@
     <p class="centered-paragraph">
         _____
     </p> -->
+
+<!-- FIGURE PAIR EXAMPLE:
+<div class="figure-pair" style="display: flex; gap: 0rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem;">
+    <figure style="flex: 1 1 320px; max-width: 480px;">
+        <img src="images/CNB_Confusion_Matrix.png" alt="CNB CM" style="width: 100%; height: auto;">
+    </figure>
+    <figure style="flex: 1 1 320px; max-width: 480px;">
+        <img src="images/QDA_Confusion_Matrix.png" alt="QDA CM" style="width: 100%; height: auto;">
+    </figure>
+</div> -->
