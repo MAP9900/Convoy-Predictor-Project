@@ -13,6 +13,8 @@ import seaborn as sns
 #Machine Learning Class Number 2 
 #(evolution of ML_Class_1 with light hooks designed to work with the 10 algorithms being further tested)
 
+#TODO Consider using HalvingGridSearchCV due to large param grids. 
+
 class Model_Tester_V2:
     def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds:int=5,
                  feature_names:list=None, model_config:dict=None):
