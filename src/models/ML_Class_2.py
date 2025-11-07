@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 #Machine Learning Class Number 2 
-# (evolution of ML_Class_1 with light hooks designed to work with the 10 algorithms being further tested)
+#(evolution of ML_Class_1 with light hooks designed to work with the 10 algorithms being further tested)
 
 class Model_Tester_V2:
     def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds:int=5,
@@ -330,6 +330,7 @@ class Model_Tester_V2:
         ax.set_facecolor('lightgrey')
         for spine in plt.gca().spines.values():
             spine.set_visible(False)
+        plt.savefig(f"/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/{self.model}_PR_Curve.png")
         plt.show()
 
     def plot_confusion_matrix(self, cm, class_labels=None):
@@ -347,6 +348,7 @@ class Model_Tester_V2:
         plt.xlabel('Predicted')
         plt.ylabel('Actual')
         plt.title('Confusion Matrix')
+        plt.savefig(f"/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/{self.model}_CM.png")
         plt.show()
 
     def plot_feature_importance(self):
@@ -388,25 +390,23 @@ class Model_Tester_V2:
         ax.set_facecolor('lightgrey')
         for spine in plt.gca().spines.values():
             spine.set_visible(False)
+        plt.savefig(f"/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/{self.model}_Feature_Importance.png")
         plt.show()
         return
 
 
-# --------------------------------------------
-# Summary of Changes (from ML_Class_1 to V2)
-# --------------------------------------------
-#
-# 1) Class renamed to Model_Tester_V2 (kept imports, plots, and evaluation flow the same).
-# 2) Added model_config (dict) in __init__ with optional keys:
+
+# 1 Class renamed to Model_Tester_V2 (kept imports, plots, and evaluation flow the same).
+# 2 Added model_config (dict) in __init__ with optional keys:
 #       - 'scoring' (default 'accuracy' for GridSearchCV)
 #       - 'use_val_split' (bool) and 'validation_size' (float) to enable a simple train/val refit stage
 #       - 'notes' (free text; echoed in evaluate() results)
-# 3) Added three light hooks for model-specific behavior:
+# 3 Added three light hooks for model-specific behavior:
 #       - preprocess_inputs(X, y): default pass-through; future models can check/modify inputs.
 #       - make_estimator(): replaces prior _build_estimator (same behavior, public for easy override).
 #       - fit_with_hooks(est, X, y, X_val=None, y_val=None): default est.fit; placeholder for early-stopping, etc.
-# 4) optimize(scoring=None): now lets you pass a scoring string; otherwise uses self.model_config['scoring'] or 'accuracy'.
-# 5) Optional validation refit: if model_config['use_val_split'] is True, refits best params on a small train/val split
+# 4 optimize(scoring=None): now lets you pass a scoring string; otherwise uses self.model_config['scoring'] or 'accuracy'.
+# 5 Optional validation refit: if model_config['use_val_split'] is True, refits best params on a small train/val split
 #    using fit_with_hooks. If not set, behavior matches ML_Class_1.
-# 6) evaluate(): unchanged except it returns 'notes' from model_config for easy experiment tracking.
-# 7) Kept naming, docstring tone, prints, and plotting style identical to your original for maximum continuity.
+# 6 evaluate(): unchanged except it returns 'notes' from model_config for easy experiment tracking.
+# 7 Kept naming, docstring tone, prints, and plotting style identical to your original for maximum continuity.
