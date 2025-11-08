@@ -1,5 +1,8 @@
 #Imports
-from sklearn.model_selection import train_test_split, KFold, GridSearchCV, StratifiedKFold
+from sklearn.model_selection import train_test_split, KFold, GridSearchCV, RandomizedSearchCV, StratifiedKFold
+from sklearn.experimental import enable_halving_search_cv 
+from sklearn.model_selection import HalvingGridSearchCV
+from skopt import BayesSearchCV
 from sklearn.metrics import classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix, precision_recall_curve
 from sklearn.pipeline import Pipeline
 from sklearn.base import clone
@@ -250,11 +253,16 @@ class Model_Tester_V2:
         print(f"Average Test Score: {np.mean(test_scores):.4f} ± {np.std(test_scores):.4f}")
         return train_scores, test_scores
 
-    def optimize(self, scoring=None):
+    def optimize(self, scoring=None, method="grid", n_iter=50):
         """
-        Optimization of model/classifier through Grid Search Cross-Validation
+        Optimization of model/classifier through Cross-Validation search.
 
-        scoring: Optional metric string for GridSearchCV (defaults to self.scoring; 'accuracy' if not set).
+        method: Optimization method to use. Options:
+                'grid'   - GridSearchCV (default)
+                'random' - RandomizedSearchCV (faster, samples parameter grid)
+                'halving' - HalvingGridSearchCV (progressively narrows candidates)
+                'bayes'  - BayesSearchCV (requires scikit-optimize)
+        n_iter: Number of parameter settings sampled for 'random' or 'bayes' search.
         """
         if self.X_train is None or self.y_train is None:
             raise ValueError("Call train_test_split() before optimize().")
@@ -263,44 +271,77 @@ class Model_Tester_V2:
         if estimator is None:
             raise ValueError("No model provided. Please initialize with a valid scikit-learn classifier.")
 
-        # Choose scoring (kept simple; user can override per call)
         scoring_to_use = scoring if scoring is not None else self.scoring
 
         if self.parameter_grid:
             #Ensure parameter grid works with a Pipeline
             param_grid = self._coerce_param_grid(estimator, self.parameter_grid)
+            #Select optimization method
+            search_method = method.lower()
+            if search_method == "grid":
+                searcher = GridSearchCV(
+                    estimator, param_grid,
+                    cv=self.cv_folds, scoring=scoring_to_use, n_jobs=-1,
+                    return_train_score=False)
 
-            #Simple GridSearchCV as in ML_Class_1.py
-            grid_search = GridSearchCV(estimator, param_grid, cv=self.cv_folds,
-                                       scoring=scoring_to_use, n_jobs=-1)
-            grid_search.fit(self.X_train, self.y_train)
-            self.best_model = grid_search.best_estimator_
-            print(f"\nBest Hyperparameters Found:\n{grid_search.best_params_}")
-            print(f"Best Cross-Validation {scoring_to_use.capitalize()}: {grid_search.best_score_:.4f}")
+            elif search_method == "random":
+                searcher = RandomizedSearchCV(
+                    estimator, param_distributions=param_grid,
+                    n_iter=n_iter, cv=self.cv_folds,
+                    scoring=scoring_to_use, n_jobs=-1,
+                    random_state=1945, return_train_score=False)
+            elif search_method == "halving":
+                try:
+                    from sklearn.model_selection import HalvingGridSearchCV
+                    searcher = HalvingGridSearchCV(
+                        estimator, param_grid,
+                        cv=self.cv_folds, scoring=scoring_to_use,
+                        n_jobs=-1, factor=3, aggressive_elimination=True)
+                except ImportError:
+                    raise ImportError("HalvingGridSearchCV not available in this sklearn version.")
+            elif search_method == "bayes":
+                try:
+                    from skopt import BayesSearchCV
+                    searcher = BayesSearchCV(
+                        estimator, search_spaces=param_grid,
+                        n_iter=n_iter, cv=self.cv_folds,
+                        scoring=scoring_to_use, n_jobs=-1,
+                        random_state=1945)
+                except ImportError:
+                    raise ImportError("BayesSearchCV requires scikit-optimize (skopt).")
+            else:
+                raise ValueError(f"Unknown optimization method: {method}") #Fall back 
 
-            #Optional: re-fit best model with a small validation split if the user requests
+            #Run Search
+            searcher.fit(self.X_train, self.y_train)
+            self.best_model = searcher.best_estimator_
+            print(f"\nOptimization Method: {method.capitalize()}")
+            print(f"Best Hyperparameters Found:\n{searcher.best_params_}")
+            print(f"Best Cross-Validation {scoring_to_use.capitalize()}: {searcher.best_score_:.4f}")
+
+            #Optional: re-fit with validation split if requested
             if self.model_config.get("use_val_split", False):
                 val_size = float(self.model_config.get("validation_size", 0.1))
                 X_fit, X_val, y_fit, y_val = train_test_split(
-                    self.X_train, self.y_train, test_size=val_size, stratify=self.y_train, random_state=1945)
-                #Rebuild with best params (ensures clean state)
+                    self.X_train, self.y_train, test_size=val_size,
+                    stratify=self.y_train, random_state=1945)
                 best = self.make_estimator()
-                #Apply best params onto the correct step (pipeline-safe)
+                #Apply best params (pipeline-safe)
                 if isinstance(best, Pipeline):
-                    best.set_params(**{k: v for k, v in self._coerce_param_grid(best, grid_search.best_params_).items()})
+                    best.set_params(**{k: v for k, v in self._coerce_param_grid(best, searcher.best_params_).items()})
                 else:
-                    for k, v in grid_search.best_params_.items():
+                    for k, v in searcher.best_params_.items():
                         setattr(best, k, v)
-                #Fit using hook (default is plain fit)
                 self.best_model = self.fit_with_hooks(best, X_fit, y_fit, X_val, y_val)
 
         else:
-            #Fit the estimator directly when no grid is provided
+            #Fit estimator directly (no grid)
             est = estimator
             if self.model_config.get("use_val_split", False):
                 val_size = float(self.model_config.get("validation_size", 0.1))
                 X_fit, X_val, y_fit, y_val = train_test_split(
-                    self.X_train, self.y_train, test_size=val_size, stratify=self.y_train, random_state=1945)
+                    self.X_train, self.y_train, test_size=val_size,
+                    stratify=self.y_train, random_state=1945)
                 self.best_model = self.fit_with_hooks(est, X_fit, y_fit, X_val, y_val)
             else:
                 est.fit(self.X_train, self.y_train)
