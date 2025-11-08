@@ -1,78 +1,43 @@
-"""
-perf_utils.py
-
-Simple decorator helpers for timing model routines while keeping the codebase lightweight.
-"""
-
 #Imports
-import functools
-import time
-import sys
-from typing import Optional
-try:
-    import psutil
-except ImportError:
-    psutil = None
+import time, functools, psutil, os, tracemalloc
 
-
-def _rss_bytes() -> Optional[float]:
-    """
-    Return current resident memory usage in bytes when possible.
-    Falls back to resource.getrusage on POSIX if psutil is unavailable.
-    """
-    if psutil is not None:
-        return psutil.Process().memory_info().rss
-    try:
-        import resource
-        usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        return usage
-    except Exception:
-        return None
-
-
-def track_perf(label: Optional[str] = None):
-    """
-    Decorator for logging wall-clock time and memory delta of a function call.
-
-    Example:
-        @track_perf("rf_grid_search")
-        def run_grid():
-            ...
-    """
-
+def track_performance(label=None, peak_py=False):
     def decorator(func):
-        pretty_label = label or func.__name__
+        name = label or func.__name__
+        proc = psutil.Process()
+        ncpu = os.cpu_count() or 1
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            start_time = time.perf_counter()
-            start_mem = _rss_bytes()
-            result = func(*args, **kwargs)
-            end_time = time.perf_counter()
-            end_mem = _rss_bytes()
-
-            duration = end_time - start_time
-            msg = f"{pretty_label} completed in {duration:.2f}s"
-
-            if start_mem is not None and end_mem is not None:
-                delta_mb = (end_mem - start_mem) / (1024 ** 2)
-                msg += f" | ΔRSS {delta_mb:.2f} MB"
-
-            if psutil is not None:
-                cpu = psutil.Process().cpu_percent(interval=None)
-                msg += f" | CPU {cpu:.1f}%"
-            print(msg)
-            return result
+            if peak_py: tracemalloc.start()
+            t0 = time.perf_counter()
+            u0, s0 = proc.cpu_times().user, proc.cpu_times().system
+            ru0 = sum(c.cpu_times().user for c in proc.children(recursive=True))
+            rs0 = sum(c.cpu_times().system for c in proc.children(recursive=True))
+            m0 = proc.memory_info().rss
+            out = func(*args, **kwargs)
+            t1 = time.perf_counter()
+            u1, s1 = proc.cpu_times().user, proc.cpu_times().system
+            ru1 = sum(c.cpu_times().user for c in proc.children(recursive=True))
+            rs1 = sum(c.cpu_times().system for c in proc.children(recursive=True))
+            m1 = proc.memory_info().rss
+            dur = t1 - t0
+            cpu_time = (u1 - u0) + (s1 - s0) + (ru1 - ru0) + (rs1 - rs0)
+            cpu_pct = 100.0 * cpu_time / (dur * ncpu) if dur > 0 else 0.0
+            dmb = (m1 - m0) / (1024**2)
+            if peak_py:
+                _, peak = tracemalloc.get_traced_memory()
+                tracemalloc.stop()
+                pmb = peak / (1024**2)
+                print(f"\nPerformance Stats: \n{name} completed in {dur:.2f}s | ΔRSS {dmb:.2f} MB | CPU {cpu_pct:.1f}% | PyPeak {pmb:.2f} MB \n")
+            else:
+                print(f"\nPerformance Stats: \n{name} completed in {dur:.2f}s | ΔRSS {dmb:.2f} MB | CPU {cpu_pct:.1f}% | PyPeak {pmb:.2f} MB \n")
+            return out
         return wrapper
     return decorator
 
+# from src.models.perf_utils import track_performance
 
-__all__ = ["track_perf"]
-
-
-
-# from src.models.perf_utils import track_perf
-
-# @track_perf("cnb.optimize")
+# @track_performance("cnb.optimize")
 # def run_cnb_opt():
 #     return cnb2.optimize(scoring=recall_scorers, refit="recall_pos")
 

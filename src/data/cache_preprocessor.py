@@ -1,16 +1,16 @@
-"""
-cache_preprocessor.py
+# --- cache_preprocessor.py ---
 
-Lightweight utility to materialize cached train/test (and optional validation) splits.
-Keeps Model_Tester_V2 runs snappy by avoiding repeated feature engineering.
-"""
+#Lightweight utility to materialize cached train/test (and optional validation) splits.
+#Keeps Model_Tester_V2 runs snappy by avoiding repeated feature engineering.
 
+#Not needed for the Convoy Project!
+
+
+#Imports
 import argparse
 from pathlib import Path
-
 import pandas as pd
 from sklearn.model_selection import train_test_split
-
 
 def load_frame(input_path: Path) -> pd.DataFrame:
     """
@@ -34,7 +34,6 @@ def write_frame(frame: pd.DataFrame, path: Path) -> None:
     else:
         frame.to_csv(path, index=False)
 
-
 def maybe_sample(df: pd.DataFrame, target: str, sample_frac: float, random_state: int) -> pd.DataFrame:
     """
     Optional down-sampling for fast exploratory passes while keeping stratification.
@@ -44,14 +43,12 @@ def maybe_sample(df: pd.DataFrame, target: str, sample_frac: float, random_state
     sampled, _ = train_test_split(df, train_size=sample_frac, random_state=random_state, stratify=df[target])
     return sampled.reset_index(drop=True)
 
-
 def persist_cache(X, y, cache_dir: Path, prefix: str) -> None:
     """
     Save features and targets with a shared prefix (e.g., X_train / y_train).
     """
     write_frame(pd.DataFrame(X), cache_dir / f"X_{prefix}.parquet")
     write_frame(pd.DataFrame({"target": y}), cache_dir / f"y_{prefix}.parquet")
-
 
 def build_cache(input_path: Path, target_col: str, cache_dir: Path, test_size: float,
                 val_size: float, sample_frac: float, random_state: int) -> None:
@@ -85,7 +82,6 @@ def build_cache(input_path: Path, target_col: str, cache_dir: Path, test_size: f
 
     (cache_dir / "feature_names.txt").write_text("\n".join(X.columns))
 
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Cache preprocessed train/test splits for faster experiments.")
     parser.add_argument("--input", required=True, help="Path to raw feature table (csv/parquet/pickle).")
@@ -105,7 +101,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=1945, help="Random seed for deterministic splits.")
     return parser.parse_args()
 
-
 def main():
     args = parse_args()
     build_cache(
@@ -118,97 +113,77 @@ def main():
         random_state=args.seed,)
     print(f"Cached splits written to {args.cache_dir}")
 
-
 if __name__ == "__main__":
     main()
 
 
-
 # Example Test Snippet:
 
-# from pathlib import Path
+# --- Cell One ---
 
-# import pandas as pd
-# from sklearn.preprocessing import StandardScaler
+PROJECT_ROOT = Path.cwd()
+CSV_PATH = Path("/Users/matthewplambeck/Desktop/Convoy Predictor/data/processed/Complete_Convoy_Data.csv")
+OUT_DIR = PROJECT_ROOT / "data" / "processed"
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+OUT_PARQUET = OUT_DIR / "features.parquet"
 
-# from src.data.cache_preprocessor import build_cache
-# from src.models.model_specs import MODEL_SPECS
-# from src.models.ML_Class_2 import Model_Tester_V2
-# from src.models.perf_utils import track_perf
+df = pd.read_csv(CSV_PATH)
+if "Unnamed: 0" in df.columns:
+    df = df.drop(columns=["Unnamed: 0"])
 
-# CACHE_DIR = Path("data/cache")
-# X_train_path = CACHE_DIR / "X_train.parquet"
-# y_train_path = CACHE_DIR / "y_train.parquet"
+cols_to_drop = [
+    "Convoy Number", "Number of Ships Sunk", "Depart_Date", "Arrival/Dispersal Date",
+    "Number of Escorts Sunk", "Number of Stragglers Sunk", "Total Tons of Ships Sunk",
+    "Escort Sink Percentage", "Straggler Sink Percentage"
+]
+df = df.drop(columns=[c for c in cols_to_drop if c in df.columns])
+df["Risk"] = (df["Overall Sink Percentage"] > 0).astype(int)
 
-# if not X_train_pat.exists():
-#     build_cache(
-#         input_path=Path("data/processed/features.parquet"),
-#         target_col="target",
-#         cache_dir=CACHE_DIR,
-#         test_size=0.2,
-#         val_size=0.1,
-#         sample_frac=0.4,
-#         random_state=1945,
-#     )
-
-# X_train = pd.read_parquet(X_train_path)
-# y_train = pd.read_parquet(y_train_path)["target"]
-
-# spec = MODEL_SPECS["gb"]
-# gb_model = Model_Tester_V2(
-#     model=spec["estimator"],
-#     scaler=StandardScaler(),
-#     parameter_grid=spec["grid_small"],
-#     cv_folds=3,
-#     feature_names=X_train.columns.tolist(),
-#     model_config=spec["config"],
-# )
-
-# gb_model.X_train = X_train
-# gb_model.y_train = y_train
-# gb_model.X_test = pd.read_parquet(CACHE_DIR / "X_test.parquet")
-# gb_model.y_test = pd.read_parquet(CACHE_DIR / "y_test.parquet")["target"]
-
-# @track_perf("gb_optimize")
-# def run_optimize():
-#     gb_model.optimize(scoring="recall")
-
-# run_optimize()
-# gb_results = gb_model.evaluate(show_plots=False)
+features_df = df.drop(columns=["Overall Sink Percentage", "Risk"])
+out_df = features_df.copy()
+out_df["target"] = df["Risk"].astype(int)
+out_df = out_df.reset_index(drop=True)
+out_df.to_parquet(OUT_PARQUET, index=False)
+print(f"Saved features with target to: {OUT_PARQUET}")
+print(f"Shape: {out_df.shape} | target positive rate: {out_df['target'].mean():.3f}")
 
 
-#Example that does not use cache_preprocessor:
+# --- Cell Two --- 
 
-# # 1. Load your raw features as usual (replace with your source)
-# df = pd.read_parquet("data/processed/features.parquet")
-# y = df["target"]
-# X = df.drop(columns=["target"])
+CACHE_DIR = Path("data/cache")
+X_train_path = CACHE_DIR / "X_train.parquet"
+y_train_path = CACHE_DIR / "y_train.parquet"
 
-# # 2. Standard split for a quick smoke test
-# X_train, X_test, y_train, y_test = train_test_split(
-#     X, y, train_size=0.8, random_state=1945, stratify=y
-# )
+if not X_train_path.exists():
+    build_cache(
+        input_path=Path("data/processed/features.parquet"),
+        target_col="target",
+        cache_dir=CACHE_DIR,
+        test_size=0.2,
+        val_size=0,
+        sample_frac=1.0,
+        random_state=1945,)
 
-# # 3. Pull the lean Gradient Boosting spec
-# spec = MODEL_SPECS["gb"]
+X_train = pd.read_parquet(X_train_path)
+y_train = pd.read_parquet(y_train_path)["target"]
 
-# gb = Model_Tester_V2(
-#     model=spec["estimator"],
-#     scaler=StandardScaler(),
-#     parameter_grid=spec["grid_small"],
-#     cv_folds=3,
-#     feature_names=X.columns.tolist(),
-#     model_config=spec["config"],
-# )
+spec = MODEL_SPECS["gb"]
+gb_model = Model_Tester_V2(
+    model=spec["estimator"],
+    scaler=StandardScaler(),
+    parameter_grid=spec["grid_small"],
+    cv_folds=5,
+    feature_names=feature_names,
+    model_config=spec["config"])
 
-# gb.X_train = X_train
-# gb.y_train = y_train
-# gb.X_test = X_test
-# gb.y_test = y_test
+gb_model.X_train = X_train
+gb_model.y_train = y_train
+gb_model.X_test = pd.read_parquet(CACHE_DIR / "X_test.parquet")
+gb_model.y_test = pd.read_parquet(CACHE_DIR / "y_test.parquet")["target"]
 
-# @track_perf("gb_optimize")
-# def run_gb_opt():
-#     gb.optimize(scoring="recall")
+# @track_performance("gb_optimize") #Decorator from perf_utils.py
+def run_optimize():
+    gb_model.optimize(scoring="recall")
 
-# run_gb_opt()
-# gb_results = gb.evaluate(show_plots=False)
+run_optimize()
+gb_results = gb_model.evaluate(show_plots=False)
