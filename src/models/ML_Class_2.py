@@ -1,6 +1,6 @@
 #Imports
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV, StratifiedKFold
-from sklearn.metrics import classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix
+from sklearn.metrics import classification_report, roc_curve, auc, matthews_corrcoef, balanced_accuracy_score, confusion_matrix, precision_recall_curve
 from sklearn.pipeline import Pipeline
 from sklearn.base import clone
 from sklearn.exceptions import NotFittedError
@@ -51,6 +51,10 @@ class Model_Tester_V2:
         self.y_train = None
         self.y_test = None
         self.k_fold_results = {"train_scores": [], "test_scores": []}
+        self.decision_threshold = 0.5
+        self.threshold_metric = None
+        self.threshold_beta = float(self.model_config.get("threshold_beta", 1.0))
+        self.positive_label = self.model_config.get("positive_label", 1)
         return
 
 
@@ -103,6 +107,94 @@ class Model_Tester_V2:
             else:
                 coerced[f"model__{k}"] = v
         return coerced
+
+    def _get_classes(self):
+        """Return class labels from the fitted estimator (handles Pipeline wrappers)."""
+        estimator = self.best_model
+        if estimator is None:
+            return None
+        if isinstance(estimator, Pipeline):
+            estimator = estimator.named_steps.get("model", estimator)
+        return getattr(estimator, "classes_", None)
+
+    def _calibrate_threshold(self):
+        """
+        Calibrate the model's decision threshold based on training data. Set up to focus on the positive class (1) (Use case is for Convoy Porject)
+
+        This method finds an optimal probability cutoff for binary classification
+        by maximizing the F-beta score (weighted harmonic mean of precision and recall) on the training set. 
+        It works by:
+
+        - Ensuring the model and data are valid (must support `predict_proba`,
+          must be binary classification, and must contain the designated positive label). (Checks)
+        - Computing predicted probabilities for the positive class.
+        - Evaluating precision and recall across candidate thresholds.
+        - Calculating F-beta scores (default F1 if beta=1).
+        - Selecting the threshold that maximizes this score.
+
+        The chosen threshold is stored in `self.decision_threshold`,
+        and the corresponding F-beta score is stored in `self.threshold_metric`.
+
+        If conditions are not met or no valid thresholds exist, defaults to 0.5
+        or sets values to None.
+        """
+        #Checks to make sure model is setup properly:
+        if self.best_model is None or self.X_train is None or self.y_train is None: #Check to prevent invalid calibration attempts if model has yet to be 
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        if not hasattr(self.best_model, "predict_proba"): #Check to ensure model has "predict_proba" as an output. Will not work without "predict_proba"
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        class_labels = self._get_classes()
+        if class_labels is None or len(class_labels) != 2: #Check to ensure binary classification is being performed
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        if self.positive_label not in class_labels: #Check to ensure model has postive labels 
+            self.decision_threshold = None
+            self.threshold_metric = None
+            return
+        #Start threshold optimzation: 
+        probas = self.best_model.predict_proba(self.X_train)
+        pos_index = list(class_labels).index(self.positive_label) 
+        pos_proba = probas[:, pos_index] #Gets probas for the postive class (Focus on postive class is for use on Convoy Prject)
+        y_true = np.asarray(self.y_train)
+        precision, recall, thresholds = precision_recall_curve(y_true, pos_proba, pos_label=self.positive_label)
+        if thresholds.size == 0: #Edge case if model only only predicts one unique probability so default back to 0.5 decision_threshold
+            self.decision_threshold = 0.5
+            self.threshold_metric = None
+            return
+        beta = self.threshold_beta if self.threshold_beta and self.threshold_beta > 0 else 1.0 #Default to 1 = F1 Score unless threshold_beta is given
+        #beta decides how much to weigh recall vs precision here. beta = 1, weigh equally. beta > 1, recall focused. beta < 1, precision focused
+        precision = precision[:-1] #Drop last point as it doesn't correspond to a real threshold 
+        recall = recall[:-1] #Drop last point as it doesn't correspond to a real threshold 
+        if precision.size == 0 or recall.size == 0 or thresholds.size == 0: #Double checks emptiness after trimming last point
+            self.decision_threshold = 0.5
+            self.threshold_metric = None
+            return
+        #Compute F-beta Scores:
+        numerator = (1 + beta ** 2) * precision * recall
+        denominator = (beta ** 2 * precision) + recall + 1e-12
+        fbeta_scores = numerator / denominator
+        best_idx = int(np.nanargmax(fbeta_scores))
+        #Save optimal cutoff (decision_threshold) and its associated F-beta score (threshold_metric)
+        self.decision_threshold = float(thresholds[best_idx])
+        self.threshold_metric = float(fbeta_scores[best_idx])
+        # print(f"Optimized Decision Threshold: {self.decision_threshold:.4f} with F-beta score: {self.threshold_metric:.4f}")
+        
+
+    def set_decision_threshold(self, threshold = None):
+        """
+        Manual way to set the decision_threshold. 
+        Way to err on the side of false-positives so use 0.3 for example
+        """
+        if threshold is None:
+            self.decision_threshold = 0.5 #Defaults to 0.5 
+        else:
+            self.decision_threshold = float(threshold)
+            # print(f"Using Decision Threshold: {self.decision_threshold:.4f}") #No longer needed, since evals prints decision threshold 
 
     def train_test_split(self, X, y, train_size=0.8, random_state=1945):
         """
@@ -213,6 +305,7 @@ class Model_Tester_V2:
             else:
                 est.fit(self.X_train, self.y_train)
                 self.best_model = est
+        self._calibrate_threshold()
         return
 
     def evaluate(self, show_plots: bool=False):
@@ -237,16 +330,17 @@ class Model_Tester_V2:
             _name_estimator = _name_estimator.named_steps.get("model", _name_estimator)
         model_name = type(_name_estimator).__name__
 
-        y_predict = self.best_model.predict(self.X_test)
-
         #Determine class labels for downstream reporting
-        class_labels = getattr(self.best_model, "classes_", None)
-        if class_labels is None and isinstance(self.best_model, Pipeline):
-            model_step = self.best_model.named_steps.get("model")
-            if model_step is not None:
-                class_labels = getattr(model_step, "classes_", None)
+        class_labels = self._get_classes()
+        if class_labels is None:
+            class_labels = getattr(self.best_model, "classes_", None)
+            if class_labels is None and isinstance(self.best_model, Pipeline):
+                model_step = self.best_model.named_steps.get("model")
+                if model_step is not None:
+                    class_labels = getattr(model_step, "classes_", None)
 
         #Probabilities/scores for ROC (only for binary problems)
+        probas = None
         y_predict_probability = None
         if class_labels is not None and len(class_labels) == 2:
             if hasattr(self.best_model, "predict_proba"):
@@ -257,6 +351,17 @@ class Model_Tester_V2:
                 scores = self.best_model.decision_function(self.X_test)
                 if scores.ndim == 1:
                     y_predict_probability = scores
+
+        #Apply calibrated threshold when available, fallback to model predictions otherwise
+        if (self.decision_threshold is not None and probas is not None and class_labels is not None
+                and len(class_labels) == 2 and self.positive_label in class_labels):
+            pos_index = list(class_labels).index(self.positive_label)
+            negative_label = [label for label in class_labels if label != self.positive_label][0]
+            y_predict = np.where(probas[:, pos_index] >= self.decision_threshold,
+                                 self.positive_label,
+                                 negative_label)
+        else:
+            y_predict = self.best_model.predict(self.X_test)
 
         print(f"\n{model_name} Evaluation:")
 
@@ -303,7 +408,7 @@ class Model_Tester_V2:
             else:
                 print('Model has no attribute: Feature Importances')
         else:
-            print(f"{model_name} Confusion Matrix (values only):\n{cm}")
+            print(f"{model_name} Confusion Matrix:\n{cm}")
 
         results = {
             "model_name": model_name,

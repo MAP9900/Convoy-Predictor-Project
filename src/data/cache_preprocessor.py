@@ -175,3 +175,40 @@ if __name__ == "__main__":
 
 # run_optimize()
 # gb_results = gb_model.evaluate(show_plots=False)
+
+
+#Example that does not use cache_preprocessor:
+
+# # 1. Load your raw features as usual (replace with your source)
+# df = pd.read_parquet("data/processed/features.parquet")
+# y = df["target"]
+# X = df.drop(columns=["target"])
+
+# # 2. Standard split for a quick smoke test
+# X_train, X_test, y_train, y_test = train_test_split(
+#     X, y, train_size=0.8, random_state=1945, stratify=y
+# )
+
+# # 3. Pull the lean Gradient Boosting spec
+# spec = MODEL_SPECS["gb"]
+
+# gb = Model_Tester_V2(
+#     model=spec["estimator"],
+#     scaler=StandardScaler(),
+#     parameter_grid=spec["grid_small"],
+#     cv_folds=3,
+#     feature_names=X.columns.tolist(),
+#     model_config=spec["config"],
+# )
+
+# gb.X_train = X_train
+# gb.y_train = y_train
+# gb.X_test = X_test
+# gb.y_test = y_test
+
+# @track_perf("gb_optimize")
+# def run_gb_opt():
+#     gb.optimize(scoring="recall")
+
+# run_gb_opt()
+# gb_results = gb.evaluate(show_plots=False)
