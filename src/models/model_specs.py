@@ -1,20 +1,3 @@
-"""
-model_specs.py
-Simple registry of model defaults and param grids for quick tests vs deeper optimization.
-
-Usage (with Model_Tester_V2):
-    from model_specs import MODEL_SPECS
-
-    spec = MODEL_SPECS["gb"]
-    model = spec["estimator"]
-    grid  = spec["grid_small"] 
-
-    #For XGB/LGBM/CatBoost you can optionally do:
-    grid = spec["grid_small"](y)   #injects scale_pos_weight if y provided
-
-    tester = Model_Tester_V2(model=model, parameter_grid=grid, cv_folds=5, model_config=spec["config"])
-"""
-
 #Imports
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import (RandomForestClassifier, ExtraTreesClassifier, BaggingClassifier, GradientBoostingClassifier, AdaBoostClassifier)
@@ -48,7 +31,7 @@ def _with_spw(grid, y):
     r = _class_ratio(y)
     if r is None:
         return grid
-    g = dict(grid)  # shallow copy
+    g = dict(grid)  #shallow copy
     g["scale_pos_weight"] = [0.5 * r, 1.0 * r, 1.5 * r]
     return g
 
@@ -312,3 +295,21 @@ def get_spec(key, grid_size="small", y=None):
     #For callables (GBMs) allow y to customize imbalance weight
     grid = g(y) if callable(g) else g
     return est, grid, cfg
+
+
+"""
+model_specs.py
+Simple registry of model defaults and param grids for quick tests vs deeper optimization.
+
+Usage (with Model_Tester_V2):
+    from model_specs import MODEL_SPECS
+
+    spec = MODEL_SPECS["gb"]
+    model = spec["estimator"]
+    grid  = spec["grid_small"] 
+
+    #For XGB/LGBM/CatBoost you can optionally do:
+    grid = spec["grid_small"](y)   #injects scale_pos_weight if y provided
+
+    tester = Model_Tester_V2(model=model, parameter_grid=grid, cv_folds=5, model_config=spec["config"])
+"""
