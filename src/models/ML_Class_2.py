@@ -360,7 +360,7 @@ class Model_Tester_V2:
             y_predict = np.where(probas[:, pos_index] >= self.decision_threshold,
                                  self.positive_label,
                                  negative_label)
-            print(f"Applied decision threshold: {self.decision_threshold:.4f}")
+            print(f"Applied decision threshold: {self.decision_threshold:.4f}") #To keep track of threshold used
         else:
             y_predict = self.best_model.predict(self.X_test)
 
