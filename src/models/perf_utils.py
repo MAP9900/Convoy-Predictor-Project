@@ -30,9 +30,9 @@ def track_performance(label=None, peak_py=False):
                 _, peak = tracemalloc.get_traced_memory()
                 tracemalloc.stop()
                 pmb = peak / (1024 ** 2)
-                print(f"\nPerformance Stats:\n{name} completed in {dur:.2f}s | ΔRSS {dmb:.2f} MB | CPU {cpu_pct:.1f}% | PyPeak {pmb:.2f} MB\n")
+                print(f"Performance Stats:\n{name} completed in {dur/60:.2f}mins | ΔRSS {dmb:.2f} MB | CPU {cpu_pct:.1f}% | PyPeak {pmb:.2f} MB")
             else:
-                print(f"\nPerformance Stats:\n{name} completed in {dur:.2f}s | ΔRSS {dmb:.2f} MB | CPU {cpu_pct:.1f}%\n")
+                print(f"Performance Stats:\n{name} completed in {dur/60:.2f}mins | ΔRSS {dmb:.2f} MB | CPU {cpu_pct:.1f}%")
             return out
         return wrapper
     return decorator

@@ -151,19 +151,19 @@ MODEL_SPECS = {
     #AdaBoost
     "ada": {
         "name": "AdaBoostClassifier",
-        "estimator": AdaBoostClassifier(random_state=1945),
+        "estimator": AdaBoostClassifier(estimator=DecisionTreeClassifier(max_depth=1, random_state=1945),
+                                        random_state=1945),
         "grid_small": {
             "n_estimators": [200, 600],
-            "learning_rate": [0.05, 0.1],
-        },
+            "learning_rate": [0.05, 0.1],},
         "grid_large": {
             "n_estimators": [200, 600, 1000],
             "learning_rate": [0.03, 0.1, 0.3],
-            "algorithm": ["SAMME.R"], #Binary Classification Algorithm
-            "estimator__max_depth": [1, 2, 3],},
+            "estimator__max_depth": [1, 2, 3],
+            "estimator__min_samples_leaf": [1, 2, 4],
+            "estimator__class_weight": [None, "balanced"],},
         "config": {"scoring": "recall", "notes": "Imbalance via base estimator if customized."},
     },
-
     #QDA
     "qda": {
         "name": "QuadraticDiscriminantAnalysis",
@@ -255,7 +255,7 @@ MODEL_SPECS = {
     "lgbm": {
         "name": "LGBMClassifier",
         "estimator": LGBMClassifier(
-            n_estimators=2000, learning_rate=0.05, random_state=1945, verbose=False #Stop training print lines
+            n_estimators=2000, learning_rate=0.05, random_state=1945, verbose=-1 #Stop training print lines
         ) if LGBMClassifier is not None else None,
         "grid_small": (lambda y=None: _with_spw({
             "num_leaves": [31, 63],
