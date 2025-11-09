@@ -36,6 +36,7 @@ def _with_spw(grid, y):
 
 
 #Dictionary entries (two grids per model: grid_small, grid_large)
+#Refined through multiple tests to determine sufficeint param grids
 
 MODEL_SPECS = {
     #Decision Tree
@@ -48,12 +49,13 @@ MODEL_SPECS = {
             "max_features": ["sqrt", None],
             "class_weight": [None, "balanced"],
         },
-        "grid_large": {
-            "max_depth": [3, 6, 10, None],
+            "grid_large": {
+            "criterion": ["gini", "entropy"],
+            "max_depth": [4, 8, 12, None],
+            "min_samples_split": [2, 5, 10],
             "min_samples_leaf": [1, 2, 4],
             "max_features": ["sqrt", 0.6, None],
-            "class_weight": [None, "balanced"],
-        },
+            "class_weight": [None, "balanced"],},
         "config": {"scoring": "recall", "notes": "Shallow depth + leaf sizes help recall."},
     },
 
@@ -66,15 +68,14 @@ MODEL_SPECS = {
             "min_samples_leaf": [1, 4],
             "min_samples_split": [2, 5],
             "max_features": ["sqrt", 0.6, None],
-            "class_weight": ["balanced", "balanced_subsample"],
-        },
+            "class_weight": ["balanced", "balanced_subsample"],},
         "grid_large": {
+            "n_estimators": [400, 800], 
             "max_depth": [None, 8, 14],
-            "min_samples_leaf": [1, 2, 4],
             "min_samples_split": [2, 5, 10],
+            "min_samples_leaf": [1, 2, 4],
             "max_features": ["sqrt", 0.6, None],
-            "class_weight": ["balanced", "balanced_subsample"],
-        },
+            "class_weight": ["balanced", "balanced_subsample"],},
         "config": {"scoring": "recall", "notes": "Use class_weight for imbalance; parallel fit."},
     },
 
@@ -89,11 +90,11 @@ MODEL_SPECS = {
             "class_weight": [None, "balanced"],
         },
         "grid_large": {
+            "n_estimators": [500, 900, 1300],  
             "max_depth": [None, 8, 14],
             "min_samples_leaf": [1, 2, 4],
             "max_features": ["sqrt", 0.6, None],
-            "class_weight": [None, "balanced"],
-        },
+            "class_weight": [None, "balanced"],},
         "config": {"scoring": "recall", "notes": "More randomness can help recall."},
     },
 
@@ -119,7 +120,8 @@ MODEL_SPECS = {
             "max_features": [0.6, 0.9, 1.0],
             "bootstrap": [True],
             "bootstrap_features": [False, True],
-        },
+            "estimator__max_depth": [None, 6, 12],
+            "estimator__min_samples_leaf": [1, 3, 5],},
         "config": {"scoring": "recall", "notes": "Importance not exposed at wrapper level."},
     },
 
@@ -139,10 +141,10 @@ MODEL_SPECS = {
             "learning_rate": [0.03, 0.05, 0.08],
             "n_estimators": [400, 800, 1200],
             "max_depth": [3, 4, 5],
+            "min_samples_split": [2, 5, 10],
             "min_samples_leaf": [1, 2, 4],
             "subsample": [0.7, 0.85, 1.0],
-            "max_features": ["sqrt", 0.5, None],
-        },
+            "max_features": ["sqrt", 0.5, None],},
         "config": {"scoring": "recall", "notes": "Classic sklearn GBM; no native early stopping."},
     },
 
@@ -157,7 +159,8 @@ MODEL_SPECS = {
         "grid_large": {
             "n_estimators": [200, 600, 1000],
             "learning_rate": [0.03, 0.1, 0.3],
-        },
+            "algorithm": ["SAMME.R"], #Binary Classification Algorithm
+            "estimator__max_depth": [1, 2, 3],},
         "config": {"scoring": "recall", "notes": "Imbalance via base estimator if customized."},
     },
 
@@ -170,7 +173,7 @@ MODEL_SPECS = {
         },
         "grid_large": {
             "reg_param": [0.0, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1],
-        },
+            "tol": [1e-4, 1e-3, 1e-2],},
         "config": {"scoring": "recall", "notes": "Regularization avoids singular covariance."},
     },
 
@@ -191,11 +194,13 @@ MODEL_SPECS = {
         }, y)),
         "grid_large": (lambda y=None: _with_spw({
             "max_depth": [3, 4, 6],
+            "min_child_weight": [1, 3, 6],
             "learning_rate": [0.03, 0.05, 0.08],
-            "subsample": [0.7, 0.9],
-            "colsample_bytree": [0.7, 1.0],
-            "reg_lambda": [0.0, 1.0, 3.0],
-            "reg_alpha": [0.0, 1.0],
+            "subsample": [0.7, 0.85, 1.0],
+            "colsample_bytree": [0.7, 0.85, 1.0],
+            "gamma": [0, 0.1, 0.3],
+            "reg_alpha": [0.0, 1e-3, 1e-2, 1e-1],
+            "reg_lambda": [0.5, 1.0, 2.0],
         }, y)),
         "config": {
             "scoring": "recall",
@@ -215,7 +220,7 @@ MODEL_SPECS = {
             colsample_bytree=1.0,
             random_state=1945,
             n_jobs=-1,
-            eval_metric="logloss"  # harmless; keeps metrics consistent in logs
+            eval_metric="logloss"  #Keep metrics consistent in logs
         ) if 'XGBRFClassifier' in globals() and XGBRFClassifier is not None else None,
         "grid_small": (lambda y=None: _with_spw({
             "n_estimators": [300, 600],
@@ -224,8 +229,7 @@ MODEL_SPECS = {
             "colsample_bynode": [0.6, 1.0],
             "colsample_bytree": [0.6, 1.0],
             "min_child_weight": [1, 5],
-            "reg_lambda": [0.0, 1.0],
-        }, y)),
+            "reg_lambda": [0.0, 1.0],}, y)),
         "grid_large": (lambda y=None: _with_spw({
             "n_estimators": [400, 800, 1200],
             "max_depth": [3, 6, 9],
@@ -234,8 +238,7 @@ MODEL_SPECS = {
             "colsample_bytree": [0.6, 0.8, 1.0],
             "min_child_weight": [1, 3, 6],
             "reg_lambda": [0.0, 1.0, 3.0],
-            "reg_alpha": [0.0, 1.0],
-        }, y)),
+            "reg_alpha": [0.0, 1e-3, 1e-2],}, y)),
 
         "config": {
             "scoring": "recall",
@@ -252,7 +255,7 @@ MODEL_SPECS = {
     "lgbm": {
         "name": "LGBMClassifier",
         "estimator": LGBMClassifier(
-            n_estimators=2000, learning_rate=0.05, random_state=1945, verbose=-1 #Stop training print lines
+            n_estimators=2000, learning_rate=0.05, random_state=1945, verbose=False #Stop training print lines
         ) if LGBMClassifier is not None else None,
         "grid_small": (lambda y=None: _with_spw({
             "num_leaves": [31, 63],
@@ -260,17 +263,18 @@ MODEL_SPECS = {
             "min_child_samples": [20, 40],
             "feature_fraction": [0.8, 1.0],
             "bagging_fraction": [0.8, 1.0],
-            "learning_rate": [0.03, 0.06],
-        }, y)),
+            "learning_rate": [0.03, 0.06],}, y)),
         "grid_large": (lambda y=None: _with_spw({
-            "num_leaves": [31, 63, 95],
+            "num_leaves": [31, 63, 127],
             "max_depth": [-1, 10],
-            "min_child_samples": [20, 60],
-            "feature_fraction": [0.75, 0.95, 1.0],
-            "bagging_fraction": [0.75, 0.95, 1.0],
+            "min_child_samples": [20, 40, 60],
+            "feature_fraction": [0.75, 0.9, 1.0],
+            "bagging_fraction": [0.75, 0.9, 1.0],
             "learning_rate": [0.03, 0.05, 0.08],
+            "lambda_l1": [0.0, 0.1],
             "lambda_l2": [0.0, 3.0],
-        }, y)),
+            "min_split_gain": [0.0, 0.01, 0.1],
+            "bagging_freq": [0, 1],}, y)),
         "config": {
             "scoring": "recall",
             "use_val_split": True,
@@ -283,18 +287,18 @@ MODEL_SPECS = {
     "cat": {
         "name": "CatBoostClassifier",
         "estimator": CatBoostClassifier(
-            iterations=3000, learning_rate=0.05, depth=6, random_state=1945, verbose=False
+            iterations=3000, learning_rate=0.05, depth=6, random_state=1945, verbose=False #Stop training print lines
         ) if CatBoostClassifier is not None else None,
         "grid_small": (lambda y=None: _with_spw({
             "depth": [4, 6],
             "l2_leaf_reg": [1.0, 4.0],
-            "learning_rate": [0.04, 0.07],
-        }, y)),
+            "learning_rate": [0.04, 0.07],}, y)),
         "grid_large": (lambda y=None: _with_spw({
             "depth": [4, 6, 8],
-            "l2_leaf_reg": [1.0, 5.0],
+            "l2_leaf_reg": [1.0, 3.0, 6.0],
             "learning_rate": [0.03, 0.05, 0.08],
-        }, y)),
+            "bagging_temperature": [0, 0.5, 1.0],
+            "border_count": [64, 128, 254],}, y)),
         "config": {
             "scoring": "recall",
             "use_val_split": True,

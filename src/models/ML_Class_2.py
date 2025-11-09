@@ -293,12 +293,23 @@ class Model_Tester_V2:
             elif search_method == "halving":
                 try:
                     from sklearn.model_selection import HalvingGridSearchCV
+                    y_arr = np.asarray(self.y_train)
+                    minority_share = max((y_arr == self.positive_label).mean(), 1e-6)
+                    min_resources = max(int(np.ceil(self.cv_folds / minority_share)), 200)
+                    cv = StratifiedKFold(n_splits=self.cv_folds, shuffle=True, random_state=1945)
                     searcher = HalvingGridSearchCV(
-                        estimator, param_grid,
-                        cv=self.cv_folds, scoring=scoring_to_use,
-                        n_jobs=-1, factor=3, aggressive_elimination=True)
+                        estimator,
+                        param_grid,
+                        cv=cv,
+                        scoring=scoring_to_use,
+                        n_jobs=-1,
+                        factor=3,
+                        verbose=False,
+                        aggressive_elimination=True,
+                        min_resources=min_resources,
+                        random_state=1945)
                 except ImportError:
-                    raise ImportError("HalvingGridSearchCV not available in this sklearn version.")
+                     raise ImportError("HalvingGridSearchCV not available in this sklearn version.")
             elif search_method == "bayes":
                 try:
                     from skopt import BayesSearchCV
