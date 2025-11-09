@@ -1,0 +1,8 @@
+{
+  "model_name": "bag",
+  "saved_at": "2025-11-09T21:32:12Z",
+  "scoring": "recall",
+  "notes": "Importance not exposed at wrapper level.",
+  "decision_threshold": 0.5320217799683117,
+  "threshold_metric": 0.7243735763092984
+}
