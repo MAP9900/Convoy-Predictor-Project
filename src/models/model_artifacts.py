@@ -52,7 +52,10 @@ def save_model(name, tester, directory=None, metadata=None):
         "model_name": name,
         "saved_at": _timestamp(),
         "scoring": tester.scoring,
-        "notes": tester.model_config.get("notes"),}
+        "notes": tester.model_config.get("notes"),
+        "decision_threshold": tester.decision_threshold,
+        "threshold_metric": tester.threshold_metric,
+    }
     if metadata:
         info.update(metadata)
     (directory / f"{name}.json").write_text(json.dumps(info, indent=2))
@@ -71,12 +74,16 @@ def load_model(name, directory=None, assign_to=None):
     """Load a saved estimator and optionally reattach it."""
     directory = _prep_directory(directory)
     artifact_path = directory / f"{name}.joblib"
+    info_path = directory / f"{name}.json"
     if not artifact_path.exists():
         raise FileNotFoundError(f"No saved model found for '{name}' at {artifact_path}")
 
     model = joblib.load(artifact_path)
+    metadata = json.loads(info_path.read_text()) if info_path.exists() else {}
     if assign_to is not None:
         assign_to.best_model = model
+        assign_to.decision_threshold = metadata.get("decision_threshold")
+        assign_to.threshold_metric = metadata.get("threshold_metric")
     return model
 
 def load_models(names=None, directory=None, tester_map=None):
@@ -86,12 +93,13 @@ def load_models(names=None, directory=None, tester_map=None):
     loaded = {}
     for name in names:
         try:
-            model = load_model(name, directory=directory)
+            if tester_map and name in tester_map:
+                model = load_model(name, directory=directory, assign_to=tester_map[name])
+            else:
+                model = load_model(name, directory=directory)
         except FileNotFoundError:
             continue
         loaded[name] = model
-        if tester_map and name in tester_map:
-            tester_map[name].best_model = model
     return loaded
 
 __all__ = [
