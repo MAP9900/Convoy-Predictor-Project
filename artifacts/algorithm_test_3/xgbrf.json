@@ -1,0 +1,8 @@
+{
+  "model_name": "xgbrf",
+  "saved_at": "2025-11-10T00:47:01Z",
+  "scoring": "recall",
+  "notes": "XGBRF = bagged (non-boosted) trees with XGBoost splits. No early-stopping; tune n_estimators directly. Focus on depth + (subsample, colsample_bynode/bytree) for recall; inject scale_pos_weight from y.",
+  "decision_threshold": 0.6253361701965332,
+  "threshold_metric": 0.6114649681523768
+}
