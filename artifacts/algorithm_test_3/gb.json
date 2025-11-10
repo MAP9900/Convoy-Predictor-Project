@@ -1,0 +1,8 @@
+{
+  "model_name": "gb",
+  "saved_at": "2025-11-09T22:20:57Z",
+  "scoring": "recall",
+  "notes": "Classic sklearn GBM; no native early stopping.",
+  "decision_threshold": 0.9906918603236865,
+  "threshold_metric": 0.9999999999995
+}
