@@ -255,31 +255,36 @@ MODEL_SPECS = {
     "lgbm": {
         "name": "LGBMClassifier",
         "estimator": LGBMClassifier(
-            n_estimators=2000, learning_rate=0.05, random_state=1945, verbose=-1 #Stop training print lines
+            n_estimators=600,
+            learning_rate=0.05,
+            n_jobs=-1,
+            random_state=1945,
+            verbose=-1,  #Stop training print lines
         ) if LGBMClassifier is not None else None,
         "grid_small": (lambda y=None: _with_spw({
             "num_leaves": [31, 63],
-            "max_depth": [-1, 8],
-            "min_child_samples": [20, 40],
-            "feature_fraction": [0.8, 1.0],
-            "bagging_fraction": [0.8, 1.0],
-            "learning_rate": [0.03, 0.06],}, y)),
-        "grid_large": (lambda y=None: _with_spw({
-            "num_leaves": [31, 63, 127],
             "max_depth": [-1, 10],
-            "min_child_samples": [20, 40, 60],
-            "feature_fraction": [0.75, 0.9, 1.0],
-            "bagging_fraction": [0.75, 0.9, 1.0],
-            "learning_rate": [0.03, 0.05, 0.08],
-            "lambda_l1": [0.0, 0.1],
-            "lambda_l2": [0.0, 3.0],
-            "min_split_gain": [0.0, 0.01, 0.1],
-            "bagging_freq": [0, 1],}, y)),
+            "min_child_samples": [20, 40],
+            "feature_fraction": [0.85, 1.0],
+            "bagging_fraction": [0.85, 1.0],
+            "bagging_freq": [0, 1],
+            "learning_rate": [0.04, 0.06],}, y)),
+        "grid_large": (lambda y=None: _with_spw({
+            "num_leaves": [31, 63, 95],
+            "max_depth": [-1, 8],
+            "min_child_samples": [20, 35],
+            "feature_fraction": [0.85, 1.0],
+            "bagging_fraction": [0.85, 1.0],
+            "bagging_freq": [0, 1],
+            "lambda_l1": [0.0, 0.2],
+            "lambda_l2": [0.0, 2.0],
+            "learning_rate": [0.04, 0.06],
+            "min_split_gain": [0.0, 0.05],}, y)),
         "config": {
             "scoring": "recall",
             "use_val_split": True,
             "validation_size": 0.1,
-            "notes": "Enable early stopping via fit_with_hooks; pass valid_sets with (X_val,y_val)."
+            "notes": "Lean grid + fewer estimators to keep runtimes <~2hrs; still supports early stopping via hooks."
         },
     },
 
