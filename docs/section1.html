@@ -224,8 +224,8 @@
         will combined through ensemble learning. 
     </p>
     <h4 style="text-align: center;">Optimized Results</h4>
-<!--TODO: Instead of testing just QuadraticDiscriminantAnalysis, optimize a few algorithms and then compare all the results. -->
-<div class="table-container">
+
+    <div class="table-container">
     <table>
         <thead>
             <tr>
@@ -239,7 +239,17 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td>QuadraticDiscriminantAnalysis</td><td>0.60</td><td>0.790</td><td>0.334</td><td>0.702</td><td>0.88</td><td>0.48</td></tr>
+            <tr><td>DecisionTreeClassifier</td><td>0.71</td><td>0.7449</td><td>0.3337</td><td>0.6949</td><td>0.66</td><td>0.50</td></tr>
+            <tr><td>RandomForestClassifier</td><td>0.84</td><td>0.8128</td><td>0.5199</td><td>0.7541</td><td>0.60</td><td>0.62</td></tr>
+            <tr><td>ExtraTreesClassifier</td><td>0.86</td><td>0.8123</td><td>0.5662</td><td>0.7722</td><td>0.62</td><td>0.65</td></tr>
+            <tr><td>BaggingClassifier</td><td>0.82</td><td>0.8214</td><td>0.4739</td><td>0.7451</td><td>0.62</td><td>0.59</td></tr>
+            <tr><td>GradientBoostingClassifier</td><td>0.81</td><td>0.7845</td><td>0.3084</td><td>0.5892</td><td>0.20</td><td>0.31</td></tr>
+            <tr><td>AdaBoostClassifier</td><td>0.81</td><td>0.7818</td><td>0.4578</td><td>0.7397</td><td>0.62</td><td>0.58</td></tr>
+            <tr><td>QuadraticDiscriminantAnalysis</td><td>0.77</td><td>0.7897</td><td>0.4374</td><td>0.7473</td><td>0.70</td><td>0.57</td></tr>
+            <tr><td>XGBClassifier</td><td>0.81</td><td>0.7670</td><td>0.3585</td><td>0.6522</td><td>0.38</td><td>0.46</td></tr>
+            <tr><td>XGBRFClassifier</td><td>0.80</td><td>0.7942</td><td>0.4586</td><td>0.7443</td><td>0.64</td><td>0.58</td></tr>
+            <tr><td>LGBMClassifier</td><td>0.82</td><td>0.7469</td><td>0.3474</td><td>0.6211</td><td>0.28</td><td>0.39</td></tr>
+            <tr><td>CatBoostClassifier</td><td>0.81</td><td>0.7717</td><td>0.3748</td><td>0.6668</td><td>0.42</td><td>0.48</td></tr>
         </tbody>
     </table>
 </div>
