@@ -140,7 +140,8 @@
         After Gris Search CV, a threshold comparison is done to examine the affect on recall, precision, and accuracy. Threshold, which defaults to 0.5, is the value used to 
         convert the model's probability output into a discrete class (0 or 1). With the default value of 0.5, any output below 0.5 will be classified as 0 and above 0.5, will be a 1.
         By manipulating the threshold, more weight can be onto recall and limiting the number of false negatives at the expense of decreasing precision and increasing the number of
-        false positives. The results for the optimized classifier and threshold comparison are below. 
+        false positives. It is also worth noting that overall accuracy has decreased from the algorithm comparison test but this is easily explained through the optimization techniques 
+        employed which prioritized recall and f1-score over accuracy. The results for the optimized classifier and threshold comparison are below. 
 
         </p>
         <br>
@@ -253,7 +254,9 @@
         </tbody>
     </table>
 </div>
-
+    <p class="centered-paragraph">
+        <!-- TODO: Write Analysis of Results!!!!!!!!!!!!!! -->
+    </p>
 
 
 
