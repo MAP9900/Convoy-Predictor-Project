@@ -221,8 +221,11 @@
     <h2 style="text-align: center;">Exploring Other Promising Algorithms</h2>
     <p class="centered-paragraph">
         Prior tests and the results above indicate multiple algorithms with potential to produce strong results. These other
-        models will now be optimized and tested to compare with the GradientBoostingClassifier. Then the best performing models
-        will combined through ensemble learning. 
+        models will now be optimized and tested to compare with the GradientBoostingClassifier. Optimization is done through
+        Halving Grid-Search on medium sized parameter grids. This will leave room for further, more in depth optimization
+        but allow for solid baseline triaging beyond the simple algorithm test. The best resulting models will move on to 
+        further optimization and potential use in a voting based ensemble model. 
+
     </p>
     <h4 style="text-align: center;">Optimized Results</h4>
 
@@ -255,9 +258,12 @@
     </table>
 </div>
     <p class="centered-paragraph">
-        <!-- TODO: Write Analysis of Results-->
-
-
+        Recall-optimized tunning now results in recall scores in the 0.60-0.70 range for the tree ensemble algorithms as well as 
+        the QuadraticDiscriminantAnalysis model. The XGBoost family of models outperform the original tests but still fall 
+        short of the recall scores seen in the classic bagging & forest models. These results indicate that more than just 
+        the Gradient Boosting Classifier can perform well in identifying at risk convoys. Though significant optimization, 
+        was done, it does appear there is still more room to improve recall and overall model accuracy. Additionally, further
+        threshold analysis can be do
     </p>
 
 
