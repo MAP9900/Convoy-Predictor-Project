@@ -137,14 +137,14 @@ MODEL_SPECS = {
             "subsample": [0.75, 1.0],
             "max_features": ["sqrt", None],
         },
-        "grid_large": {
-            "learning_rate": [0.03, 0.05, 0.08],
-            "n_estimators": [400, 800, 1200],
+        "grid_large" : {
+            "learning_rate": [0.05, 0.08, 0.1, 0.12, 0.15],
+            "n_estimators": [300, 320, 340, 360, 380],
             "max_depth": [3, 4, 5],
-            "min_samples_split": [2, 5, 10],
-            "min_samples_leaf": [1, 2, 4],
-            "subsample": [0.7, 0.85, 1.0],
-            "max_features": ["sqrt", 0.5, None],},
+            "min_samples_leaf": [1, 2, 3, 5],
+            "min_samples_split": [2, 3, 5],
+            "subsample": [0.7, 0.8, 0.9, 1.0],
+            "max_features": ["sqrt", "log2", None],},
         "config": {"scoring": "recall", "notes": "Classic sklearn GBM; no native early stopping."},
     },
 
