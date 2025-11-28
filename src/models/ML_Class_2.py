@@ -13,10 +13,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-#Machine Learning Class Number 2 
-#(evolution of ML_Class_1 with light hooks designed to work with the 10 algorithms being further tested)
+# --- Machine Learning Class Number 2 ---
+# --- (evolution of ML_Class_1 with light hooks designed to work with the 10 algorithms being further tested) ---
 
-#TODO Consider using HalvingGridSearchCV due to large param grids. 
+
+#Recent Addition: 
+#    Optional validation refit: if model_config['use_val_split'] is True, refits best params on a small train/val split
+#    using fit_with_hooks. If not set, behavior matches ML_Class_1.
 
 class Model_Tester_V2:
     def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds:int=5,
@@ -38,16 +41,13 @@ class Model_Tester_V2:
         if model is not None and not hasattr(model, "fit"):
             raise ValueError(f"Error: model must be a scikit-learn classifier, but got {type(model)}")
         self.model = model
-
         self.scaler = scaler
         self.parameter_grid = parameter_grid
         self.cv_folds = cv_folds
         self.feature_names = feature_names
-
         #Minimal, optional per-model settings
         self.model_config = model_config or {}
         self.scoring = self.model_config.get("scoring", "accuracy")
-
         self.best_model = None
         self.X_train = None
         self.X_test = None
@@ -59,7 +59,6 @@ class Model_Tester_V2:
         self.threshold_beta = float(self.model_config.get("threshold_beta", 1.0))
         self.positive_label = self.model_config.get("positive_label", 1)
         return
-
 
     def preprocess_inputs(self, X, y):
         """
@@ -470,8 +469,7 @@ class Model_Tester_V2:
             "roc_auc": ROC_AUC,
             "mcc": mcc,
             "balanced_accuracy": balanced_acc,
-            "notes": self.model_config.get("notes", None)
-        }
+            "notes": self.model_config.get("notes", None)}
         return results
 
     #Plots (unchanged from ML_Class_1.py)
@@ -553,20 +551,3 @@ class Model_Tester_V2:
         plt.savefig(f"/Users/matthewplambeck/Desktop/Convoy Predictor/Plots/{self.model}_Feature_Importance.png")
         plt.show()
         return
-
-
-
-# 1 Class renamed to Model_Tester_V2 (kept imports, plots, and evaluation flow the same).
-# 2 Added model_config (dict) in __init__ with optional keys:
-#       - 'scoring' (default 'accuracy' for GridSearchCV)
-#       - 'use_val_split' (bool) and 'validation_size' (float) to enable a simple train/val refit stage
-#       - 'notes' (free text; echoed in evaluate() results)
-# 3 Added three light hooks for model-specific behavior:
-#       - preprocess_inputs(X, y): default pass-through; future models can check/modify inputs.
-#       - make_estimator(): replaces prior _build_estimator (same behavior, public for easy override).
-#       - fit_with_hooks(est, X, y, X_val=None, y_val=None): default est.fit; placeholder for early-stopping, etc.
-# 4 optimize(scoring=None): now lets you pass a scoring string; otherwise uses self.model_config['scoring'] or 'accuracy'.
-# 5 Optional validation refit: if model_config['use_val_split'] is True, refits best params on a small train/val split
-#    using fit_with_hooks. If not set, behavior matches ML_Class_1.
-# 6 evaluate(): unchanged except it returns 'notes' from model_config for easy experiment tracking.
-# 7 Kept naming, docstring tone, prints, and plotting style identical to your original for maximum continuity.
