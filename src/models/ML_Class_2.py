@@ -22,7 +22,7 @@ import seaborn as sns
 #    using fit_with_hooks. If not set, behavior matches ML_Class_1.
 
 class Model_Tester_V2:
-    def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds:int=5,
+    def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds:int=5, threshold_beta: float = 2.0,
                  feature_names:list=None, model_config:dict=None):
         """
         Class Initializer
@@ -56,7 +56,7 @@ class Model_Tester_V2:
         self.k_fold_results = {"train_scores": [], "test_scores": []}
         self.decision_threshold = 0.5
         self.threshold_metric = None
-        self.threshold_beta = float(self.model_config.get("threshold_beta", 1.0))
+        self.threshold_beta = threshold_beta
         self.positive_label = self.model_config.get("positive_label", 1)
         return
 
@@ -297,16 +297,11 @@ class Model_Tester_V2:
                     min_resources = max(int(np.ceil(self.cv_folds / minority_share)), 200)
                     cv = StratifiedKFold(n_splits=self.cv_folds, shuffle=True, random_state=1945)
                     searcher = HalvingGridSearchCV(
-                        estimator,
-                        param_grid,
-                        cv=cv,
-                        scoring=scoring_to_use,
-                        n_jobs=-1,
-                        factor=3,
-                        verbose=False,
-                        aggressive_elimination=True,
-                        min_resources=min_resources,
-                        random_state=1945)
+                        estimator, param_grid,
+                        cv=cv, scoring=scoring_to_use,
+                        n_jobs=-1, factor=3,
+                        verbose=False, aggressive_elimination=True,
+                        min_resources=min_resources, random_state=1945)
                 except ImportError:
                      raise ImportError("HalvingGridSearchCV not available in this sklearn version.")
             elif search_method == "bayes":
