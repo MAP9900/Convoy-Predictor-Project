@@ -22,8 +22,9 @@ import seaborn as sns
 #    using fit_with_hooks. If not set, behavior matches ML_Class_1.
 
 class Model_Tester_V2:
-    def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds:int=5, threshold_beta: float = 2.0,
-                 feature_names:list=None, model_config:dict=None):
+    def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds:int=5,
+                 threshold_beta: float = 2.0, feature_names:list=None, model_config:dict=None,
+                 random_state:int=1945):
         """
         Class Initializer
 
@@ -47,7 +48,7 @@ class Model_Tester_V2:
         self.feature_names = feature_names
         #Minimal, optional per-model settings
         self.model_config = model_config or {}
-        self.scoring = self.model_config.get("scoring", "accuracy")
+        self.scoring = self.model_config.get("scoring", "recall")
         self.best_model = None
         self.X_train = None
         self.X_test = None
@@ -56,8 +57,9 @@ class Model_Tester_V2:
         self.k_fold_results = {"train_scores": [], "test_scores": []}
         self.decision_threshold = 0.5
         self.threshold_metric = None
-        self.threshold_beta = threshold_beta
+        self.threshold_beta = float(self.model_config.get("threshold_beta", threshold_beta))
         self.positive_label = self.model_config.get("positive_label", 1)
+        self.random_state = random_state
         return
 
     def preprocess_inputs(self, X, y):
@@ -109,6 +111,15 @@ class Model_Tester_V2:
             else:
                 coerced[f"model__{k}"] = v
         return coerced
+
+    def _resolve_cv(self):
+        """Return a StratifiedKFold splitter matching Gradient_Boosting_Optimization defaults."""
+        cv = self.cv_folds
+        if cv is None:
+            return StratifiedKFold(n_splits=5, shuffle=True, random_state=self.random_state)
+        if isinstance(cv, int):
+            return StratifiedKFold(n_splits=cv, shuffle=True, random_state=self.random_state)
+        return cv
 
     def _get_classes(self):
         """Return class labels from the fitted estimator (handles Pipeline wrappers)."""
@@ -198,15 +209,16 @@ class Model_Tester_V2:
             self.decision_threshold = float(threshold)
             # print(f"Using Decision Threshold: {self.decision_threshold:.4f}") #No longer needed, since evals prints decision threshold 
 
-    def train_test_split(self, X, y, train_size=0.8, random_state=1945):
+    def train_test_split(self, X, y, train_size=0.8, random_state=None):
         """
         Perform Train Test Split
         """
         #Optional preprocessing hook (no-ops by default)
         X_in, y_in = self.preprocess_inputs(X, y)
 
+        split_seed = random_state if random_state is not None else self.random_state
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X_in, y_in, train_size=train_size, random_state=random_state, stratify=y_in)
+            X_in, y_in, train_size=train_size, random_state=split_seed, stratify=y_in)
 
         if self.feature_names is None:
             if hasattr(X_in, "columns"):
@@ -217,7 +229,7 @@ class Model_Tester_V2:
         self.k_fold_results = {"train_scores": [], "test_scores": []}
         return
 
-    def k_folds(self, K=None, random_state=1945, stratified: bool=True):
+    def k_folds(self, K=None, random_state=None, stratified: bool=True):
         """
         Perform K-Fold Cross-Validation
 
@@ -231,10 +243,11 @@ class Model_Tester_V2:
 
         X_train_array = np.array(self.X_train)
         y_train_array = np.array(self.y_train)
+        seed = random_state if random_state is not None else self.random_state
         if stratified:
-            kf = StratifiedKFold(n_splits=K, random_state=random_state, shuffle=True)
+            kf = StratifiedKFold(n_splits=K, random_state=seed, shuffle=True)
         else:
-            kf = KFold(n_splits=K, random_state=random_state, shuffle=True)
+            kf = KFold(n_splits=K, random_state=seed, shuffle=True)
         train_scores, test_scores = [], []
 
         for idxTrain, idxTest in kf.split(X_train_array, y_train_array):
@@ -271,6 +284,7 @@ class Model_Tester_V2:
             raise ValueError("No model provided. Please initialize with a valid scikit-learn classifier.")
 
         scoring_to_use = scoring if scoring is not None else self.scoring
+        cv_splitter = self._resolve_cv()
 
         if self.parameter_grid:
             #Ensure parameter grid works with a Pipeline
@@ -280,28 +294,28 @@ class Model_Tester_V2:
             if search_method == "grid":
                 searcher = GridSearchCV(
                     estimator, param_grid,
-                    cv=self.cv_folds, scoring=scoring_to_use, n_jobs=-1,
+                    cv=cv_splitter, scoring=scoring_to_use, n_jobs=-1,
                     return_train_score=False)
 
             elif search_method == "random":
                 searcher = RandomizedSearchCV(
                     estimator, param_distributions=param_grid,
-                    n_iter=n_iter, cv=self.cv_folds,
+                    n_iter=n_iter, cv=cv_splitter,
                     scoring=scoring_to_use, n_jobs=-1,
-                    random_state=1945, return_train_score=False)
+                    random_state=self.random_state, return_train_score=False)
             elif search_method == "halving":
                 try:
                     from sklearn.model_selection import HalvingGridSearchCV
                     y_arr = np.asarray(self.y_train)
                     minority_share = max((y_arr == self.positive_label).mean(), 1e-6)
-                    min_resources = max(int(np.ceil(self.cv_folds / minority_share)), 200)
-                    cv = StratifiedKFold(n_splits=self.cv_folds, shuffle=True, random_state=1945)
+                    n_splits = cv_splitter.get_n_splits(self.X_train, self.y_train)
+                    min_resources = max(int(np.ceil(n_splits / minority_share)), 200)
                     searcher = HalvingGridSearchCV(
                         estimator, param_grid,
-                        cv=cv, scoring=scoring_to_use,
+                        cv=cv_splitter, scoring=scoring_to_use,
                         n_jobs=-1, factor=3,
                         verbose=False, aggressive_elimination=True,
-                        min_resources=min_resources, random_state=1945)
+                        min_resources=min_resources, random_state=self.random_state)
                 except ImportError:
                      raise ImportError("HalvingGridSearchCV not available in this sklearn version.")
             elif search_method == "bayes":
@@ -309,9 +323,9 @@ class Model_Tester_V2:
                     from skopt import BayesSearchCV
                     searcher = BayesSearchCV(
                         estimator, search_spaces=param_grid,
-                        n_iter=n_iter, cv=self.cv_folds,
+                        n_iter=n_iter, cv=cv_splitter,
                         scoring=scoring_to_use, n_jobs=-1,
-                        random_state=1945)
+                        random_state=self.random_state)
                 except ImportError:
                     raise ImportError("BayesSearchCV requires scikit-optimize (skopt).")
             else:
@@ -329,7 +343,7 @@ class Model_Tester_V2:
                 val_size = float(self.model_config.get("validation_size", 0.1))
                 X_fit, X_val, y_fit, y_val = train_test_split(
                     self.X_train, self.y_train, test_size=val_size,
-                    stratify=self.y_train, random_state=1945)
+                    stratify=self.y_train, random_state=self.random_state)
                 best = self.make_estimator()
                 #Apply best params (pipeline-safe)
                 if isinstance(best, Pipeline):
@@ -346,7 +360,7 @@ class Model_Tester_V2:
                 val_size = float(self.model_config.get("validation_size", 0.1))
                 X_fit, X_val, y_fit, y_val = train_test_split(
                     self.X_train, self.y_train, test_size=val_size,
-                    stratify=self.y_train, random_state=1945)
+                    stratify=self.y_train, random_state=self.random_state)
                 self.best_model = self.fit_with_hooks(est, X_fit, y_fit, X_val, y_val)
             else:
                 est.fit(self.X_train, self.y_train)
