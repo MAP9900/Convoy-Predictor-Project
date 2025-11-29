@@ -1,8 +1,8 @@
 {
   "model_name": "cat",
-  "saved_at": "2025-11-11T03:33:35Z",
+  "saved_at": "2025-11-29T17:21:26Z",
   "scoring": "recall",
   "notes": "Enable early stopping via fit_with_hooks; add cat_feature indices later if needed.",
-  "decision_threshold": 0.38980806031160925,
-  "threshold_metric": 0.9567430025440293
+  "decision_threshold": 0.03812851822614824,
+  "threshold_metric": 0.9556650246303361
 }

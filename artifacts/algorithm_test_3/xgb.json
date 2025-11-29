@@ -1,8 +1,8 @@
 {
   "model_name": "xgb",
-  "saved_at": "2025-11-09T23:47:02Z",
+  "saved_at": "2025-11-29T17:21:23Z",
   "scoring": "recall",
   "notes": "Enable early stopping via fit_with_hooks; set eval_set to (X_val,y_val).",
-  "decision_threshold": 0.6786020398139954,
-  "threshold_metric": 0.9326683291765573
+  "decision_threshold": 0.6045228242874146,
+  "threshold_metric": 0.9328726554785712
 }

@@ -1,8 +1,8 @@
 {
   "model_name": "et",
-  "saved_at": "2025-11-09T21:26:29Z",
+  "saved_at": "2025-11-29T17:21:23Z",
   "scoring": "recall",
   "notes": "More randomness can help recall.",
-  "decision_threshold": 0.5967690759217779,
-  "threshold_metric": 0.8717948717943739
+  "decision_threshold": 0.5301993709420139,
+  "threshold_metric": 0.9351503759396189
 }

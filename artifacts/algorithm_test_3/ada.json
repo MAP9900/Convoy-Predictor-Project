@@ -1,8 +1,8 @@
 {
   "model_name": "ada",
-  "saved_at": "2025-11-09T22:24:10Z",
+  "saved_at": "2025-11-29T17:21:23Z",
   "scoring": "recall",
   "notes": "Imbalance via base estimator if customized.",
-  "decision_threshold": 0.6514920321873099,
-  "threshold_metric": 0.6036866359442031
+  "decision_threshold": 0.18746645048462152,
+  "threshold_metric": 0.6455309396482904
 }
