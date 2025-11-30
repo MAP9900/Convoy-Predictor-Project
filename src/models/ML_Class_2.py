@@ -15,11 +15,13 @@ import seaborn as sns
 
 # --- Machine Learning Class Number 2 ---
 # --- (evolution of ML_Class_1 with light hooks designed to work with the 10 algorithms being further tested) ---
+# --- Updated 11/29 to follow the same structure as Gradient_Boosting_Optimization.py ---
 
 
-#Recent Addition: 
+#Recent Additions: 
 #    Optional validation refit: if model_config['use_val_split'] is True, refits best params on a small train/val split
 #    using fit_with_hooks. If not set, behavior matches ML_Class_1.
+#    Added _resolve_cv() so any cv_folds int is converted into StratifiedKFold(...) #Ensures flow is in line with Gradient_Boosting_Optimization.py
 
 class Model_Tester_V2:
     def __init__(self, model=None, scaler=None, parameter_grid=None, cv_folds:int=5,
@@ -81,8 +83,7 @@ class Model_Tester_V2:
         if self.scaler is not None and self.model is not None:
             return Pipeline([
                 ("scaler", self.scaler),
-                ("model", clone(self.model))
-            ])
+                ("model", clone(self.model))])
         return clone(self.model) if self.model is not None else None
 
     def fit_with_hooks(self, estimator, X, y, X_val=None, y_val=None):
@@ -253,7 +254,6 @@ class Model_Tester_V2:
         for idxTrain, idxTest in kf.split(X_train_array, y_train_array):
             X_train_fold, X_test_fold = X_train_array[idxTrain], X_train_array[idxTest]
             y_train_fold, y_test_fold = y_train_array[idxTrain], y_train_array[idxTest]
-            
             #Build estimator (Pipeline if scaler is provided) for each fold
             estimator = self.make_estimator()
             estimator.fit(X_train_fold, y_train_fold)
@@ -291,19 +291,22 @@ class Model_Tester_V2:
             param_grid = self._coerce_param_grid(estimator, self.parameter_grid)
             #Select optimization method
             search_method = method.lower()
+            #Grid Search (Updated to follow Gradient_Boosting_Optimization.py)
             if search_method == "grid":
                 searcher = GridSearchCV(
                     estimator, param_grid,
                     cv=cv_splitter, scoring=scoring_to_use, n_jobs=-1,
                     return_train_score=False)
-
+            #Random Search
             elif search_method == "random":
                 searcher = RandomizedSearchCV(
                     estimator, param_distributions=param_grid,
                     n_iter=n_iter, cv=cv_splitter,
                     scoring=scoring_to_use, n_jobs=-1,
                     random_state=self.random_state, return_train_score=False)
+            #Halving Search
             elif search_method == "halving":
+                #Halving Search Not fully released
                 try:
                     from sklearn.model_selection import HalvingGridSearchCV
                     y_arr = np.asarray(self.y_train)
@@ -318,6 +321,7 @@ class Model_Tester_V2:
                         min_resources=min_resources, random_state=self.random_state)
                 except ImportError:
                      raise ImportError("HalvingGridSearchCV not available in this sklearn version.")
+            #Bayes Search
             elif search_method == "bayes":
                 try:
                     from skopt import BayesSearchCV
@@ -354,7 +358,7 @@ class Model_Tester_V2:
                 self.best_model = self.fit_with_hooks(best, X_fit, y_fit, X_val, y_val)
 
         else:
-            #Fit estimator directly (no grid)
+            #Fit estimator directly (no optimization)
             est = estimator
             if self.model_config.get("use_val_split", False):
                 val_size = float(self.model_config.get("validation_size", 0.1))
@@ -374,11 +378,11 @@ class Model_Tester_V2:
 
         Returns a dictionary containing key metrics for downstream comparison.
         """
+        #Safety Checks
         if self.X_test is None or self.y_test is None:
             raise ValueError("Call train_test_split() before evaluate().")
         if self.best_model is None:
             raise RuntimeError("Model is not fitted before evaluation. Call optimize() or fit the model first.")
-
         try:
             check_is_fitted(self.best_model)
         except NotFittedError as exc:
@@ -390,7 +394,7 @@ class Model_Tester_V2:
             _name_estimator = _name_estimator.named_steps.get("model", _name_estimator)
         model_name = type(_name_estimator).__name__
 
-        #Determine class labels for downstream reporting
+        #Determine class labels for later reporting
         class_labels = self._get_classes()
         if class_labels is None:
             class_labels = getattr(self.best_model, "classes_", None)
@@ -418,8 +422,7 @@ class Model_Tester_V2:
             pos_index = list(class_labels).index(self.positive_label)
             negative_label = [label for label in class_labels if label != self.positive_label][0]
             y_predict = np.where(probas[:, pos_index] >= self.decision_threshold,
-                                 self.positive_label,
-                                 negative_label)
+                                 self.positive_label, negative_label)
             print(f"Applied decision threshold: {self.decision_threshold:.4f}") #To keep track of threshold used
         else:
             y_predict = self.best_model.predict(self.X_test)
@@ -470,7 +473,7 @@ class Model_Tester_V2:
                 print('Model has no attribute: Feature Importances')
         else:
             print(f"{model_name} Confusion Matrix:\n{cm}")
-
+        #Saved Summary of Results (for later use if needed)
         results = {
             "model_name": model_name,
             "classification_report": classification_report(self.y_test, y_predict, output_dict=True),
