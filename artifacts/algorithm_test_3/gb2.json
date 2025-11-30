@@ -1,8 +1,8 @@
 {
   "model_name": "gb2",
-  "saved_at": "2025-11-29T21:10:22Z",
+  "saved_at": "2025-11-30T01:01:12Z",
   "scoring": "recall",
   "notes": "Classic sklearn GBM; no native early stopping.",
-  "decision_threshold": 0.9673761277210436,
-  "threshold_metric": 0.9999999999997999
+  "decision_threshold": 0.39299875898016395,
+  "threshold_metric": 0.9930486593841087
 }
