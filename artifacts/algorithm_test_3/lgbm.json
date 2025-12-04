@@ -1,6 +1,6 @@
 {
   "model_name": "lgbm",
-  "saved_at": "2025-11-29T17:21:23Z",
+  "saved_at": "2025-12-04T01:31:19Z",
   "scoring": "recall",
   "notes": "Lean grid + fewer estimators to keep runtimes <~2hrs; still supports early stopping via hooks.",
   "decision_threshold": 0.17940874397022338,

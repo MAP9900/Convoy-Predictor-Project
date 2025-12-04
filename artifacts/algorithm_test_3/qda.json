@@ -1,6 +1,6 @@
 {
   "model_name": "qda",
-  "saved_at": "2025-11-29T17:21:23Z",
+  "saved_at": "2025-12-04T00:24:02Z",
   "scoring": "recall",
   "notes": "Regularization avoids singular covariance.",
   "decision_threshold": 0.17698754021455249,

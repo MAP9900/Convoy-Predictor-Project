@@ -1,6 +1,6 @@
 {
   "model_name": "bag",
-  "saved_at": "2025-11-29T17:21:23Z",
+  "saved_at": "2025-12-03T23:32:50Z",
   "scoring": "recall",
   "notes": "Importance not exposed at wrapper level.",
   "decision_threshold": 0.4586411977503492,

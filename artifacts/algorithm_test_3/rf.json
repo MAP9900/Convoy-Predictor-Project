@@ -1,6 +1,6 @@
 {
   "model_name": "rf",
-  "saved_at": "2025-11-29T17:21:22Z",
+  "saved_at": "2025-12-03T23:27:23Z",
   "scoring": "recall",
   "notes": "Use class_weight for imbalance; parallel fit.",
   "decision_threshold": 0.3932169953814138,
