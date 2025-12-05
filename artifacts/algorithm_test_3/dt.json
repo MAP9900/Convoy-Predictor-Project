@@ -1,6 +1,6 @@
 {
   "model_name": "dt",
-  "saved_at": "2025-12-03T23:21:26Z",
+  "saved_at": "2025-12-05T23:44:41Z",
   "scoring": "recall",
   "notes": "Shallow depth + leaf sizes help recall.",
   "decision_threshold": 0.44931506849315067,
