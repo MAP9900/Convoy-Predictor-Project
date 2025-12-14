@@ -284,15 +284,32 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td>5 Model Test</td><td>0.826</td><td>0.836</td><td>0.506</td><td>0.765</td><td>0.660</td><td>0.579</td><td>0.617</td></tr>
             <tr><td>Best Recall</td><td>0.796</td><td>0.817</td><td>0.462</td><td>0.754</td><td>0.680</td><td>0.515</td><td>0.586</td></tr>
             <tr><td>Best Balance</td><td>0.843</td><td>0.823</td><td>0.520</td><td>0.754</td><td>0.600</td><td>0.638</td><td>0.619</td></tr>
             <tr><td>Middle Performers</td><td>0.834</td><td>0.810</td><td>0.501</td><td>0.749</td><td>0.600</td><td>0.612</td><td>0.606</td></tr>
+            <tr><td>Five Model Ensemble</td><td>0.826</td><td>0.836</td><td>0.506</td><td>0.765</td><td>0.660</td><td>0.579</td><td>0.617</td></tr>
+            <tr><td>Six Model Ensemble</td><td>0.796</td><td>0.833</td><td>0.453</td><td>0.746</td><td>0.660</td><td>0.516</td><td>0.579</td></tr>
+            <tr><td>Six Model Ensemble (2)</td><td>0.830</td><td>0.841</td><td>0.507</td><td>0.761</td><td>0.640</td><td>0.593</td><td>0.615</td></tr>
+
         </tbody>
     </table>
 </div>
     <p class="centered-paragraph">
-        ___
+        Five combinations of soft voting ensemble models were tested with the results above.
+        Best Recall takes the top three recall performers from the optimized results above 
+        (QuadraticDiscriminantAnalysis, AdaBoostClassifier, and DecisionTreeClassifier). Best Balance takes three models with strong ROC AUC, MCC, and balanced accuracy along 
+        with decent recall (RandomForestClassifier, ExtraTreesClassifier, and GradientBoostingClassifier). Best mid takes three decent recall based performing models and acts as 
+        comparison ensemble model (XGBRFClassifier, CatBoostClassifier, and BaggingClassifier). Five model ensemble combines Best Recall and part of Best Balance 
+        (QuadraticDiscriminantAnalysis, AdaBoostClassifier, DecisionTreeClassifier, RandomForestClassifier, and ExtraTreesClassifier). Six Model Ensemble adds the 
+        XGBRFClassifier the Five Model Ensemble. Six Model Ensemble (2) is all models from Best Recall and Best Balance. 
+        
+        <br><br>
+         Initial ensemble metrics pose promising results especially when compared to the individual models. Ensemble accuracies reach 0.84, beating out the single best accuracy score
+         seen among the individual models (ExtraTreesClassifier). ROC AUC and MCC also see increases with the ensemble models when comparing to the top performing individual models. 
+         Though a clear "best" model is still difficult to determine at this point. Further testing needs to be done to better compare the six different ensemble models as well as
+         testing different methods of voting withing in the ensemble models (soft, hard, weighted, etc),
+
+
     </p>
 
 
