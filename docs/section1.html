@@ -258,13 +258,17 @@
     </table>
 </div>
     <p class="centered-paragraph">
-        Recall-optimized tunning now results in recall scores in the 0.60-0.80 range for the tree ensemble algorithms as well as 
-        the QuadraticDiscriminantAnalysis model. The XGBoost family of models outperform the original tests but still fall 
-        short of the recall scores seen in the classic bagging & forest models. These results indicate that more than just 
-        the Gradient Boosting Classifier can perform well in identifying at risk convoys. Though significant optimization, 
-        was done, it does appear there is still more room to improve recall and overall model accuracy. Additionally, further
-        threshold analysis can be done as a manual comparison. Next, the top 3-5 models will be combined into 
-        and voting based ensemble model to see if these results outperform any single model. 
+        Recall-optimized tunning now results in recall scores in the 0.60-0.80 range for the tree ensemble algorithms and 
+        the QuadraticDiscriminantAnalysis model but at the expense of decreases in accuracy, MCC, and precision.
+        Pushing recall past the 0.70 mark drastically worsens this tradeoff causing collapses in MCC and accuracy.
+        Boosting-based models exhibit weaker recall responsiveness under recall optimized tuning, suggesting threshold or 
+        loss-function misalignment rather than insufficient model capacity. 
+
+        These results indicate that more than just the GradientBoostingClassifier can perform well on this data, motivating 
+        the use of ensemble models to capture predictive nuance that may be lost when relying on a single classifier. 
+        Despite extensive recall-focused optimization, the models still exhibit room for improvement, as evidenced by recall plateaus, 
+        degraded decision quality at high-recall operating points, and overlapping error patterns that ensemble methods may help mitigate.
+    
     </p>
 
 <h2 style="text-align: center;">Ensemble Model Results</h2>
@@ -304,12 +308,12 @@
         XGBRFClassifier the Five Model Ensemble. Six Model Ensemble (2) is all models from Best Recall and Best Balance. 
         
         <br><br>
-         Initial ensemble metrics pose promising results especially when compared to the individual models. Ensemble accuracies reach 0.84, beating out the single best accuracy score
-         seen among the individual models (ExtraTreesClassifier). ROC AUC and MCC also see increases with the ensemble models when comparing to the top performing individual models. 
-         Though a clear "best" model is still difficult to determine at this point. Further testing needs to be done to better compare the six different ensemble models as well as
-         testing different methods of voting withing in the ensemble models (soft, hard, weighted, etc),
-
-
+        Initial ensemble metrics demonstrate clear performance gains relative to the individual models. Ensemble accuracies reach 0.84, exceeding the highest
+        accuracy achieved by any single classifier (ExtraTreesClassifier), while ROC-AUC and MCC also improve compared to the top-performing individual models.
+        Although no single ensemble dominates across all metrics, the five-model ensemble consistently provides the strongest overall tradeoff between recall, 
+        discriminative ability, and decision quality, suggesting diminishing returns from adding additional models. Further evaluation should focus on more 
+        granular comparisons between ensemble configurations and on alternative voting strategies, including weighted and threshold-aware approaches, to determine 
+        whether recall can be further improved without degrading overall model reliability.
     </p>
 
 
