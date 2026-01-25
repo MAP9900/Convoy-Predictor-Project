@@ -29,11 +29,11 @@
     </header>
     <!-- Main Section --- Original Models -->
      <main>
-        <h2 style="text-align: center;"> </strong>Original Regression Approach:</h2>
+        <h2 style="text-align: center;">Original Regression Approach:</h2>
         <p class="centered-paragraph">
-            The original goal of the project was to predict convoy's exact sink percentages through machine learning regression techniques. 
+            The original goal of the project was to predict convoys' exact sink percentages through machine learning regression techniques. 
             Linear Regression, Random Forest Regressor, and Gradient Boosting Regressor models were deemed the most applicable models in this first
-            approach. Link to the initial the notebook with these preliminary results can be found
+            approach. A link to the initial notebook with these preliminary results can be found
             <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/exploration/Regression_Test_2.ipynb" target="_blank">here</a>.
             Below are the results for the three models first tested. Although no optimization was done to improve the models, the extremely low test score results 
             indicate a regression approach is not feasible. 
@@ -79,12 +79,12 @@
         <img src="images/GB_TP.png" alt="Gradient Boosting Visualization">
     </div>
     <p class="centered-paragraph">
-        All three regression models underperformed on the test data highlighting their weak predictive power. 
+        All three regression models underperformed on the test data, highlighting their weak predictive power. 
         Linear Regression barely improved over a naive baseline (train R² 0.1197 vs. test R² 0.0947), while Random Forest 
-        and Gradient Boosting appeared to overfit the data (train R² ≈0.86 and mean accuracy ≈0.81 vs test R² 0.0282 and mean accuracy 0.0707)
-        Combined with outliers where convoys suffered heavy losses and the many un-modeled wartime factors (weather, night/day, U-boat tactics, etc.)
-        make predicting a precise sink percentage unrealistic. Going forward, the target variable will be switched to a binary value of 0 
-        (no ships sunk) or 1 (at least one ship sunk). This new focus will aim on identifying high risk convoys rather than estimating exact sink percentages. 
+        and Gradient Boosting appeared to overfit the data (train R² ≈0.86 and mean accuracy ≈0.81 vs. test R² 0.0282 and mean accuracy 0.0707).
+        Combined with outliers where convoys suffered heavy losses and the many unmodeled wartime factors (weather, night/day, U-boat tactics, etc.),
+        predicting a precise sink percentage is unrealistic. Going forward, the target variable will be switched to a binary value of 0 
+        (no ships sunk) or 1 (at least one ship sunk). This new focus will aim at identifying high-risk convoys rather than estimating exact sink percentages. 
     </p>
     </main>
 

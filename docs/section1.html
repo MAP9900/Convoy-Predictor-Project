@@ -29,7 +29,7 @@
     <main>
         
 <!-- Original Classification Results -->
-        <h2 style="text-align: center;"> </strong>Exploring Classification Algorithms</h2>
+        <h2 style="text-align: center;">Exploring Classification Algorithms</h2>
         <p class="centered-paragraph">
         
 
@@ -81,7 +81,7 @@
         </div>
         <p class="centered-paragraph">
         The Gradient Boosting Classifier performs the best on this data and will be the foundation for all future tests. 
-        Notably, the RandomForestClassifier, QuadraticDiscriminantAnalysis, and ComplementNB algorithms performed comparable, even resulting in higher 
+        Notably, the RandomForestClassifier, QuadraticDiscriminantAnalysis, and ComplementNB algorithms performed comparably, even resulting in higher 
         recall scores. However, ComplementNB is an algorithm developed for text classification and is best suited for imbalanced
         and discrete datasets. Tests done in this 
         <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/exploration/CNB_and_QDA_Test.ipynb" target="_blank">notebook</a>
@@ -120,10 +120,10 @@
             ROC-AUC and F1 scores along with the strongest recall for at-risk convoys. Further optimization will focus on 
             improving recall and reducing false negatives. The emphasis on recall (true positives divided by true positives plus 
             false negatives) is necessary because identifying convoys at risk is more important than identifying those not at risk.
-            False negative (cases where the model predicts a convoy is not at risk when it actually is) are particularly dangerous, 
+            False negatives (cases where the model predicts a convoy is not at risk when it actually is) are particularly dangerous, 
             especially with human life and vital wartime supplies at stake. False positives, while not ideal, carry much less
             associated risk. If a convoy is labeled as at risk but in reality is not, no harm results. There are limitations to
-            false negatives, such as the need to allocate defensive resources as otherwise, every convoy could simply be labeled at risk.
+            false negatives, such as the need to allocate defensive resources; otherwise, every convoy could simply be labeled at risk.
             However, some false positives are acceptable as a form of caution.
         </p>
 
@@ -137,11 +137,11 @@
         To optimize the gradient boosting classifier, Grid Search Cross Validation will be used to test a predefined set of hyperparameters. The hyperparameters 
         optimized are learning_rate, n_estimators, max_depth, min_samples_leaf, min_samples_split, subsample, and max_features. To learn more about these hyperparameters
         see Scikit-Learn's <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html" target="_blank">docs</a>. 
-        After Gris Search CV, a threshold comparison is done to examine the affect on recall, precision, and accuracy. Threshold, which defaults to 0.5, is the value used to 
-        convert the model's probability output into a discrete class (0 or 1). With the default value of 0.5, any output below 0.5 will be classified as 0 and above 0.5, will be a 1.
-        By manipulating the threshold, more weight can be onto recall and limiting the number of false negatives at the expense of decreasing precision and increasing the number of
-        false positives. It is also worth noting that overall accuracy has decreased from the algorithm comparison test but this is easily explained through the optimization techniques 
-        employed which prioritized recall and f1-score over accuracy. The results for the optimized classifier and threshold comparison are below. 
+        After Grid Search CV, a threshold comparison is done to examine the effect on recall, precision, and accuracy. The threshold, which defaults to 0.5, is the value used to 
+        convert the model's probability output into a discrete class (0 or 1). With the default value of 0.5, any output below 0.5 will be classified as 0 and any output above 0.5 will be 1.
+        By manipulating the threshold, more weight can be placed on recall and limiting the number of false negatives at the expense of decreasing precision and increasing the number of
+        false positives. It is also worth noting that overall accuracy has decreased from the algorithm comparison test, but this is easily explained by the optimization techniques 
+        employed, which prioritized recall and F1-score over accuracy. The results for the optimized classifier and threshold comparison are below. 
 
         </p>
         <br>
@@ -209,22 +209,22 @@
             </figure>
 
      <p class="centered-paragraph">
-        The threshold comparison results indicate a threshold interval of [0.25, 0.35] to be the best performing. At a threshold of 0.30, f1-score peaks at 
-        0.75 and so does accuracy at 0.83 given the best balance between recall and precision. However, the number of false negatives remains relatively high
-        at 18 convoys classified as not a risk despite having ships sunk. So a recall focused best interval for threshold is instead at [0.05, 0.15]. At this interval.
-        false negatives are 7, 10, & 14 respectively. These results are more in line with goal of producing a model with a high recall score. Accuracy and f1-score 
-        remain high at a threshold of 0.15 but quickly begin at thresholds of 0.10 and 0.05. Therefore, determining a single, optimal threshold is difficult with each value 
-        having trade offs between the different metrics. A good balance, however, is a threshold of 0.20 which sees recall, accuracy and f1-score 
-        remain high at 0.68, 0.80, & 0.73 respectively and only 16 false negatives occuring. 
+        The threshold comparison results indicate a threshold interval of [0.25, 0.35] to be the best-performing. At a threshold of 0.30, F1-score peaks at 
+        0.75 and so does accuracy at 0.83, with the best balance between recall and precision. However, the number of false negatives remains relatively high
+        at 18 convoys classified as not a risk despite having ships sunk. A recall-focused interval is instead [0.05, 0.15]. At this interval,
+        false negatives are 7, 10, and 14, respectively. These results are more in line with the goal of producing a model with a high recall score. Accuracy and F1-score 
+        remain high at a threshold of 0.15 but quickly decline at thresholds of 0.10 and 0.05. Therefore, determining a single, optimal threshold is difficult, with each value 
+        having trade-offs between the different metrics. A good balance, however, is a threshold of 0.20, which sees recall, accuracy, and F1-score 
+        remain high at 0.68, 0.80, and 0.73, respectively, and only 16 false negatives occurring. 
      </p>
     
     <h2 style="text-align: center;">Exploring Other Promising Algorithms</h2>
     <p class="centered-paragraph">
-        Prior tests and the results above indicate multiple algorithms with potential to produce strong results. These other
+        Prior tests and the results above indicate multiple algorithms with the potential to produce strong results. These other
         models will now be optimized and tested to compare with the GradientBoostingClassifier. Optimization is done through
-        Halving Grid-Search on medium sized parameter grids. This will leave room for further, more in depth optimization
+        Halving Grid-Search on medium-sized parameter grids. This will leave room for further, more in-depth optimization
         but allow for solid baseline triaging beyond the simple algorithm test. The best resulting models will move on to 
-        further optimization and potential use in a voting based ensemble model. 
+        further optimization and potential use in a voting-based ensemble model. 
 
     </p>
     <h4 style="text-align: center;">Optimized Results</h4>
@@ -258,10 +258,10 @@
     </table>
 </div>
     <p class="centered-paragraph">
-        Recall-optimized tunning now results in recall scores in the 0.60-0.80 range for the tree ensemble algorithms and 
+        Recall-optimized tuning now results in recall scores in the 0.60-0.80 range for the tree ensemble algorithms and 
         the QuadraticDiscriminantAnalysis model but at the expense of decreases in accuracy, MCC, and precision.
-        Pushing recall past the 0.70 mark drastically worsens this tradeoff causing collapses in MCC and accuracy.
-        Boosting-based models exhibit weaker recall responsiveness under recall optimized tuning, suggesting threshold or 
+        Pushing recall past the 0.70 mark drastically worsens this trade-off, causing collapses in MCC and accuracy.
+        Boosting-based models exhibit weaker recall responsiveness under recall-optimized tuning, suggesting threshold or 
         loss-function misalignment rather than insufficient model capacity. 
 
         These results indicate that more than just the GradientBoostingClassifier can perform well on this data, motivating 
@@ -302,15 +302,15 @@
         Five combinations of soft voting ensemble models were tested with the results above.
         Best Recall takes the top three recall performers from the optimized results above 
         (QuadraticDiscriminantAnalysis, AdaBoostClassifier, and DecisionTreeClassifier). Best Balance takes three models with strong ROC AUC, MCC, and balanced accuracy along 
-        with decent recall (RandomForestClassifier, ExtraTreesClassifier, and GradientBoostingClassifier). Best mid takes three decent recall based performing models and acts as 
-        comparison ensemble model (XGBRFClassifier, CatBoostClassifier, and BaggingClassifier). Five model ensemble combines Best Recall and part of Best Balance 
+        with decent recall (RandomForestClassifier, ExtraTreesClassifier, and GradientBoostingClassifier). Best Mid takes three decently recall-performing models and acts as 
+        a comparison ensemble model (XGBRFClassifier, CatBoostClassifier, and BaggingClassifier). Five-model ensemble combines Best Recall and part of Best Balance 
         (QuadraticDiscriminantAnalysis, AdaBoostClassifier, DecisionTreeClassifier, RandomForestClassifier, and ExtraTreesClassifier). Six Model Ensemble adds the 
-        XGBRFClassifier the Five Model Ensemble. Six Model Ensemble (2) is all models from Best Recall and Best Balance. 
+        XGBRFClassifier to the Five Model Ensemble. Six Model Ensemble (2) is all models from Best Recall and Best Balance. 
         
         <br><br>
         Initial ensemble metrics demonstrate clear performance gains relative to the individual models. Ensemble accuracies reach 0.84, exceeding the highest
         accuracy achieved by any single classifier (ExtraTreesClassifier), while ROC-AUC and MCC also improve compared to the top-performing individual models.
-        Although no single ensemble dominates across all metrics, the five-model ensemble consistently provides the strongest overall tradeoff between recall, 
+        Although no single ensemble dominates across all metrics, the five-model ensemble consistently provides the strongest overall trade-off between recall, 
         discriminative ability, and decision quality, suggesting diminishing returns from adding additional models. Further evaluation should focus on more 
         granular comparisons between ensemble configurations and on alternative voting strategies, including weighted and threshold-aware approaches, to determine 
         whether recall can be further improved without degrading overall model reliability.
