@@ -106,6 +106,25 @@ footer {
     justify-content: center;
 }
 
+.routes-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    max-width: 1020px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.routes-grid .section-card {
+    grid-column: span 2;
+}
+
+.routes-grid .section-card:nth-last-child(2) {
+    grid-column: 2 / span 2;
+}
+
+.routes-grid .section-card:last-child {
+    grid-column: 4 / span 2;
+}
+
 .section-card {
     display: flex;
     flex-direction: column;
