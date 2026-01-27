@@ -315,7 +315,191 @@
         granular comparisons between ensemble configurations and on alternative voting strategies, including weighted and threshold-aware approaches, to determine 
         whether recall can be further improved without degrading overall model reliability.
     </p>
-        TODO: Add five vs six model comparison
+        <section id="five-six-scatter">
+            <h3 style="text-align: center;">Five vs Six Expanded Ensemble Comparison </h3>
+            <p class="centered-paragraph">
+                Each point is an ensemble configuration. Colors indicate method family (CalSoft / Stack / WeightedSoft / Soft / Hard), and marker shape indicates 
+                FiveModel (circle) vs SixModel (diamond). Results with accuracy below 0.70 were excluded. The full list of ensemble results can be found
+                <a href="section1_2.html">here.</a> 
+            </p>
+            <div id="ensemble-scatter" style="width: 75%; height: 475px; margin: 0 auto;"></div>
+
+        </section>
+
+        <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+        <script>
+            (function () {
+                const rawData = [
+                    { model: "FiveModel_WeightedSoft_w_custom1_t0.30", threshold: 0.30, acc: 0.697872, roc_auc: 0.837622, mcc: 0.422457, bal_acc: 0.757027, recall: 0.86, precision: 0.401869, f1: 0.547771 },
+                    { model: "FiveModel_WeightedSoft_w_recall_t0.30", threshold: 0.30, acc: 0.685106, roc_auc: 0.834811, mcc: 0.408326, bal_acc: 0.748919, recall: 0.86, precision: 0.390909, f1: 0.537500 },
+                    { model: "FiveModel_WeightedSoft_w_equal_t0.30", threshold: 0.30, acc: 0.668085, roc_auc: 0.836216, mcc: 0.389969, bal_acc: 0.738108, recall: 0.86, precision: 0.377193, f1: 0.524390 },
+                    { model: "FiveModel_Stack_LR_PT_t0.15", threshold: 0.15, acc: 0.659574, roc_auc: 0.812541, mcc: 0.380978, bal_acc: 0.732703, recall: 0.86, precision: 0.370690, f1: 0.518072 },
+                    { model: "FiveModel_WeightedSoft_w_stable_t0.30", threshold: 0.30, acc: 0.719149, roc_auc: 0.838378, mcc: 0.424889, bal_acc: 0.755946, recall: 0.82, precision: 0.418367, f1: 0.554054 },
+                    { model: "FiveModel_Stack_LR_PT_t0.20", threshold: 0.20, acc: 0.714894, roc_auc: 0.812541, mcc: 0.419809, bal_acc: 0.753243, recall: 0.82, precision: 0.414141, f1: 0.550336 },
+                    { model: "FiveModel_Stack_LR_t0.15", threshold: 0.15, acc: 0.753191, roc_auc: 0.832432, mcc: 0.436679, bal_acc: 0.755676, recall: 0.76, precision: 0.452381, f1: 0.567164 },
+                    { model: "FiveModel_Stack_LR_PT_t0.25", threshold: 0.25, acc: 0.782979, roc_auc: 0.812541, mcc: 0.459891, bal_acc: 0.760000, recall: 0.72, precision: 0.493151, f1: 0.585366 },
+                    { model: "FiveModel_Stack_LR_t0.20", threshold: 0.20, acc: 0.770213, roc_auc: 0.832432, mcc: 0.440768, bal_acc: 0.751892, recall: 0.72, precision: 0.473684, f1: 0.571429 },
+                    { model: "FiveModel_WeightedSoft_w_stable_t0.40", threshold: 0.40, acc: 0.782979, roc_auc: 0.838378, mcc: 0.450464, bal_acc: 0.752703, recall: 0.70, precision: 0.492958, f1: 0.578512 },
+                    { model: "FiveModel_CalSoft_t0.20", threshold: 0.20, acc: 0.744681, roc_auc: 0.820865, mcc: 0.394498, bal_acc: 0.728378, recall: 0.70, precision: 0.437500, f1: 0.538462 },
+                    { model: "FiveModel_CalSoft_t0.25", threshold: 0.25, acc: 0.829787, roc_auc: 0.820865, mcc: 0.522332, bal_acc: 0.775135, recall: 0.68, precision: 0.586207, f1: 0.629630 },
+                    { model: "FiveModel_Soft_t050", threshold: 0.50, acc: 0.825532, roc_auc: 0.836216, mcc: 0.506315, bal_acc: 0.765135, recall: 0.66, precision: 0.578947, f1: 0.616822 },
+                    { model: "FiveModel_Hard", threshold: null, acc: 0.821277, roc_auc: null, mcc: 0.498216, bal_acc: 0.762432, recall: 0.66, precision: 0.568966, f1: 0.611111 },
+                    { model: "FiveModel_Stack_LR_t0.25", threshold: 0.25, acc: 0.804255, roc_auc: 0.832432, mcc: 0.467337, bal_acc: 0.751622, recall: 0.66, precision: 0.532258, f1: 0.589286 },
+
+                    { model: "SixModel_Stack_LR_PT_t0.05", threshold: 0.05, acc: 0.348936, roc_auc: 0.835892, mcc: 0.184259, bal_acc: 0.579189, recall: 0.98, precision: 0.243781, f1: 0.390438 },
+                    { model: "SixModel_Stack_LR_PT_t0.10", threshold: 0.10, acc: 0.570213, roc_auc: 0.835892, mcc: 0.331779, bal_acc: 0.697838, recall: 0.92, precision: 0.321678, f1: 0.476684 },
+                    { model: "SixModel_WeightedSoft_w_recall_t0.30", threshold: 0.30, acc: 0.621277, roc_auc: 0.832541, mcc: 0.366780, bal_acc: 0.722973, recall: 0.90, precision: 0.348837, f1: 0.502793 },
+                    { model: "SixModel_Stack_LR_t0.10", threshold: 0.10, acc: 0.570213, roc_auc: 0.830054, mcc: 0.318357, bal_acc: 0.690541, recall: 0.90, precision: 0.319149, f1: 0.471204 },
+                    { model: "SixModel_WeightedSoft_w_stable_t0.30", threshold: 0.30, acc: 0.651064, roc_auc: 0.834703, mcc: 0.384131, bal_acc: 0.734595, recall: 0.88, precision: 0.366667, f1: 0.517647 },
+                    { model: "SixModel_WeightedSoft_w_equal_t0.30", threshold: 0.30, acc: 0.608511, roc_auc: 0.832973, mcc: 0.341739, bal_acc: 0.707568, recall: 0.88, precision: 0.338462, f1: 0.488889 },
+                    { model: "SixModel_CalSoft_t0.15", threshold: 0.15, acc: 0.591489, roc_auc: 0.816324, mcc: 0.325325, bal_acc: 0.696757, recall: 0.88, precision: 0.328358, f1: 0.478261 },
+                    { model: "SixModel_Stack_LR_PT_t0.15", threshold: 0.15, acc: 0.672340, roc_auc: 0.835892, mcc: 0.394510, bal_acc: 0.740811, recall: 0.86, precision: 0.380531, f1: 0.527607 },
+                    { model: "SixModel_WeightedSoft_w_custom1_t0.30", threshold: 0.30, acc: 0.638298, roc_auc: 0.835676, mcc: 0.358984, bal_acc: 0.719189, recall: 0.86, precision: 0.355372, f1: 0.502924 },
+                    { model: "SixModel_Stack_LR_PT_t0.20", threshold: 0.20, acc: 0.723404, roc_auc: 0.835892, mcc: 0.419234, bal_acc: 0.751351, recall: 0.80, precision: 0.421053, f1: 0.551724 },
+                    { model: "SixModel_CalSoft_t0.20", threshold: 0.20, acc: 0.714894, roc_auc: 0.816324, mcc: 0.398047, bal_acc: 0.738649, recall: 0.78, precision: 0.410526, f1: 0.537931 },
+                    { model: "SixModel_Stack_LR_PT_t0.25", threshold: 0.25, acc: 0.787234, roc_auc: 0.835892, mcc: 0.485223, bal_acc: 0.777297, recall: 0.76, precision: 0.500000, f1: 0.603175 },
+                    { model: "SixModel_WeightedSoft_w_recall_t0.40", threshold: 0.40, acc: 0.748936, roc_auc: 0.832541, mcc: 0.430943, bal_acc: 0.752973, recall: 0.76, precision: 0.447059, f1: 0.562963 },
+                    { model: "SixModel_Stack_LR_t0.15", threshold: 0.15, acc: 0.748936, roc_auc: 0.830054, mcc: 0.430943, bal_acc: 0.752973, recall: 0.76, precision: 0.447059, f1: 0.562963 },
+                    { model: "SixModel_Stack_LR_t0.20", threshold: 0.20, acc: 0.770213, roc_auc: 0.830054, mcc: 0.431041, bal_acc: 0.744595, recall: 0.70, precision: 0.472973, f1: 0.564516 },
+                    { model: "SixModel_CalSoft_t0.25", threshold: 0.25, acc: 0.817021, roc_auc: 0.816324, mcc: 0.498559, bal_acc: 0.767027, recall: 0.68, precision: 0.557377, f1: 0.612613 },
+                    { model: "SixModel_Hard", threshold: null, acc: 0.821277, roc_auc: null, mcc: 0.498216, bal_acc: 0.762432, recall: 0.66, precision: 0.568966, f1: 0.611111 },
+                    { model: "SixModel_Soft_t050", threshold: 0.50, acc: 0.795745, roc_auc: 0.832973, mcc: 0.452720, bal_acc: 0.746216, recall: 0.66, precision: 0.515625, f1: 0.578947 },
+                    { model: "SixModel_Stack_LR_t0.30", threshold: 0.30, acc: 0.829787, roc_auc: 0.830054, mcc: 0.506921, bal_acc: 0.760541, recall: 0.64, precision: 0.592593, f1: 0.615385 }
+                ];
+
+                function familyFor(model) {
+                    if (model.indexOf("CalSoft") !== -1) return "CalSoft";
+                    if (model.indexOf("WeightedSoft") !== -1) return "WeightedSoft";
+                    if (model.indexOf("Stack_LR") !== -1) return "Stack";
+                    if (model.indexOf("_Soft_") !== -1) return "Soft";
+                    if (model.indexOf("_Hard") !== -1) return "Hard";
+                    return "Other";
+                }
+
+                const filtered = rawData
+                    .map(d => ({
+                        ...d,
+                        group: d.model.indexOf("SixModel_") === 0 ? "SixModel" : "FiveModel",
+                        family: familyFor(d.model),
+                        threshold_display: (d.threshold === null || d.threshold === undefined) ? "N/A" : d.threshold.toFixed(2),
+                        roc_display: (d.roc_auc === null || d.roc_auc === undefined) ? "N/A" : d.roc_auc.toFixed(3)
+                    }))
+                    .filter(d => d.acc >= 0.70);
+
+                const jittered = filtered.map(d => {
+                    const isHard = d.model.indexOf("_Hard") !== -1;
+                    const jitter = isHard ? (d.group === "SixModel" ? -0.006 : 0.006) : 0;
+                    return {
+                        ...d,
+                        plot_precision: d.precision + jitter,
+                        plot_recall: d.recall
+                    };
+                });
+
+                const familyColors = {
+                    "CalSoft": "#1f77b4",
+                    "Stack": "#ff7f0e",
+                    "WeightedSoft": "#2ca02c",
+                    "Soft": "#9467bd",
+                    "Hard": "#7f7f7f",
+                    "Other": "#bcbd22"
+                };
+
+                const families = Array.from(new Set(jittered.map(d => d.family)));
+                const traces = families.map(family => {
+                    const points = jittered.filter(d => d.family === family);
+                    return {
+                        name: family,
+                        type: "scatter",
+                        mode: "markers",
+                        x: points.map(d => d.plot_precision),
+                        y: points.map(d => d.plot_recall),
+                        text: points.map(d => d.model),
+                        customdata: points,
+                        marker: {
+                            size: points.map(() => 9),
+                            color: familyColors[family] || "#333333",
+                            symbol: points.map(d => d.group === "SixModel" ? "diamond" : "circle"),
+                            line: { width: points.map(() => 0), color: "#111111" }
+                        },
+                        hovertemplate:
+                            "<b>%{text}</b><br>" +
+                            "Group: %{customdata.group}<br>" +
+                            "Precision_1: %{x:.3f}<br>" +
+                            "Recall_1: %{y:.3f}<br>" +
+                            "Acc: %{customdata.acc:.3f}<br>" +
+                            "MCC: %{customdata.mcc:.3f}<br>" +
+                            "ROC_AUC: %{customdata.roc_display}<br>" +
+                            "Threshold: %{customdata.threshold_display}<extra></extra>"
+                    };
+                });
+
+                traces.push(
+                    {
+                        name: "FiveModel (circle)",
+                        type: "scatter",
+                        mode: "markers",
+                        x: [null],
+                        y: [null],
+                        marker: { size: 9, color: "#111111", symbol: "circle" },
+                        showlegend: true,
+                        hoverinfo: "skip"
+                    },
+                    {
+                        name: "SixModel (diamond)",
+                        type: "scatter",
+                        mode: "markers",
+                        x: [null],
+                        y: [null],
+                        marker: { size: 9, color: "#111111", symbol: "diamond" },
+                        showlegend: true,
+                        hoverinfo: "skip"
+                    }
+                );
+
+                const layout = {
+                    margin: { t: 30, r: 20, b: 50, l: 60 },
+                    xaxis: { title: "Precision", range: [0.30, 0.65] },
+                    yaxis: { title: "Recall", range: [0.60, 0.92] },
+                    legend: { orientation: "h", y: -0.2, x: 0.5, xanchor: "center" },
+                    paper_bgcolor: "#ffffff",
+                    plot_bgcolor: "#ffffff"
+                };
+
+                Plotly.newPlot("ensemble-scatter", traces, layout, { displayModeBar: false, responsive: true });
+
+                const details = document.getElementById("ensemble-scatter-details");
+                const plot = document.getElementById("ensemble-scatter");
+
+                function setSelection(curveNumber, pointNumber) {
+                    const sizes = traces.map(trace => trace.marker.size.map(() => 9));
+                    const widths = traces.map(trace => trace.marker.line.width.map(() => 0));
+                    sizes[curveNumber][pointNumber] = 14;
+                    widths[curveNumber][pointNumber] = 2;
+                    Plotly.restyle(plot, { "marker.size": sizes, "marker.line.width": widths });
+                }
+
+                plot.on("plotly_click", function (event) {
+                    const pt = event.points[0];
+                    setSelection(pt.curveNumber, pt.pointNumber);
+                    const d = pt.customdata;
+                    const threshold = (d.threshold === null || d.threshold === undefined) ? "N/A" : d.threshold.toFixed(2);
+                    const roc = (d.roc_auc === null || d.roc_auc === undefined) ? "N/A" : d.roc_auc.toFixed(3);
+                    details.innerHTML = [
+                        "<strong>Selected:</strong> " + d.model,
+                        "Group: " + d.group,
+                        "Method: " + d.family,
+                        "Threshold: " + threshold,
+                        "Acc: " + d.acc.toFixed(3),
+                        "MCC: " + d.mcc.toFixed(3),
+                        "ROC_AUC: " + roc,
+                        "Recall_1: " + d.recall.toFixed(3),
+                        "Precision_1: " + d.precision.toFixed(3),
+                        "F1_1: " + d.f1.toFixed(3)
+                    ].join(" | ");
+                });
+            })();
+        </script>
 
 
 
@@ -324,7 +508,7 @@
 
     <!-- Footer Section -->
     <footer>
-        <p>&copy; 2025 Matthew Plambeck</p>
+        <p>&copy; 2026 Matthew Plambeck</p>
     </footer>
 
 </body>

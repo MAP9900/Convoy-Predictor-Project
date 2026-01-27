@@ -1,0 +1,132 @@
+<!--Archive of Five & Six Ensemble Model Test--> 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Convoy Machine Learning (Five & Six Ensemble Model Test)</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>Convoy Machine Learning</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li> <!-- Link back to homepage -->
+                <li><a href="section1.html">Convoy Machine Learning</a></li> <!-- Link to Section 1 Page -->
+                <li><a href="section6.html">Results</a></li> <!-- Link to Section 6 Page -->
+                <li><a href="section2.html">Convoy Data Visualization</a></li> <!-- Link to Section 2 Page -->
+                <li><a href="section3.html">Convoy History</a></li> <!-- Link to Section 3 Page -->
+                <li><a href="section4.html">Original Project</a></li> <!-- Link to Section 4 Page -->
+                <li><a href="section5.html">Additional Info</a></li> <!-- Link to Section 5 Page -->
+            </ul>
+        </nav>
+    </header>
+    <!-- Main Section --- Five & Six Ensemble Model Test -->
+     <main>
+        <h2 style="text-align: center;">Results of Five and Six Model Ensemble Comparison</h2>
+        <p class="centered-paragraph">
+            Below are the results from a comprehensive test of ensemble configurations and voting strategies. The test was done for a five model ensemble 
+            (QuadraticDiscriminantAnalysis, AdaBoostClassifier, DecisionTreeClassifier, RandomForestClassifier, and ExtraTreesClassifier) and a six model
+            ensemble (QuadraticDiscriminantAnalysis, AdaBoostClassifier, DecisionTreeClassifier, RandomForestClassifier, ExtraTreesClassifier, and XGBRFClassifier). 
+            Highlighted rows indicate they are included in the scatter plot and have accuracies greater than 0.70. The link for notebook containing the test can be found 
+            <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/exploration/Ensemble_Learning_Test.ipynb" target="_blank" rel="noopener noreferrer">here.</a> 
+            To return to the Convoy Machine Learning section click <a href="section1.html">here!</a> 
+        </p>
+
+    <div class="table-container">
+    <table>
+        <caption>Five-Model Ensemble Comparison</caption>
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>Threshold</th>
+                <th>Acc</th>
+                <th>ROC_AUC</th>
+                <th>MCC</th>
+                <th>Bal_Acc</th>
+                <th>Recall1</th>
+                <th>Precision1</th>
+                <th>F1_1</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>FiveModel_CalSoft_t0.05</td><td>0.05</td><td>0.213</td><td>0.821</td><td>0.000</td><td>0.500</td><td>1.00</td><td>0.213</td><td>0.351</td></tr>
+            <tr><td>FiveModel_Stack_LR_t0.05</td><td>0.05</td><td>0.213</td><td>0.832</td><td>0.000</td><td>0.500</td><td>1.00</td><td>0.213</td><td>0.351</td></tr>
+            <tr><td>FiveModel_Stack_LR_PT_t0.05</td><td>0.05</td><td>0.306</td><td>0.813</td><td>0.141</td><td>0.552</td><td>0.98</td><td>0.232</td><td>0.375</td></tr>
+            <tr><td>FiveModel_CalSoft_t0.10</td><td>0.10</td><td>0.298</td><td>0.821</td><td>0.107</td><td>0.539</td><td>0.96</td><td>0.227</td><td>0.368</td></tr>
+            <tr><td>FiveModel_CalSoft_t0.15</td><td>0.15</td><td>0.587</td><td>0.821</td><td>0.347</td><td>0.709</td><td>0.92</td><td>0.331</td><td>0.487</td></tr>
+            <tr><td>FiveModel_Stack_LR_PT_t0.10</td><td>0.10</td><td>0.528</td><td>0.813</td><td>0.293</td><td>0.671</td><td>0.92</td><td>0.301</td><td>0.453</td></tr>
+            <tr><td>FiveModel_Stack_LR_t0.10</td><td>0.10</td><td>0.566</td><td>0.832</td><td>0.314</td><td>0.688</td><td>0.90</td><td>0.317</td><td>0.469</td></tr>
+            <tr><td>FiveModel_WeightedSoft_w_custom1_t0.30</td><td>0.30</td><td>0.698</td><td>0.838</td><td>0.422</td><td>0.757</td><td>0.86</td><td>0.402</td><td>0.548</td></tr>
+            <tr><td>FiveModel_WeightedSoft_w_recall_t0.30</td><td>0.30</td><td>0.685</td><td>0.835</td><td>0.408</td><td>0.749</td><td>0.86</td><td>0.391</td><td>0.538</td></tr>
+            <tr><td>FiveModel_WeightedSoft_w_equal_t0.30</td><td>0.30</td><td>0.668</td><td>0.836</td><td>0.390</td><td>0.738</td><td>0.86</td><td>0.377</td><td>0.524</td></tr>
+            <tr><td>FiveModel_Stack_LR_PT_t0.15</td><td>0.15</td><td>0.660</td><td>0.813</td><td>0.381</td><td>0.733</td><td>0.86</td><td>0.371</td><td>0.518</td></tr>
+            <tr class="highlight-row"><td>FiveModel_WeightedSoft_w_stable_t0.30</td><td>0.30</td><td>0.719</td><td>0.838</td><td>0.425</td><td>0.756</td><td>0.82</td><td>0.418</td><td>0.554</td></tr>
+            <tr class="highlight-row"><td>FiveModel_Stack_LR_PT_t0.20</td><td>0.20</td><td>0.715</td><td>0.813</td><td>0.420</td><td>0.753</td><td>0.82</td><td>0.414</td><td>0.550</td></tr>
+            <tr class="highlight-row"><td>FiveModel_Stack_LR_t0.15</td><td>0.15</td><td>0.753</td><td>0.832</td><td>0.437</td><td>0.756</td><td>0.76</td><td>0.452</td><td>0.567</td></tr>
+            <tr class="highlight-row"><td>FiveModel_Stack_LR_PT_t0.25</td><td>0.25</td><td>0.783</td><td>0.813</td><td>0.460</td><td>0.760</td><td>0.72</td><td>0.493</td><td>0.585</td></tr>
+            <tr class="highlight-row"><td>FiveModel_Stack_LR_t0.20</td><td>0.20</td><td>0.770</td><td>0.832</td><td>0.441</td><td>0.752</td><td>0.72</td><td>0.474</td><td>0.571</td></tr>
+            <tr class="highlight-row"><td>FiveModel_WeightedSoft_w_stable_t0.40</td><td>0.40</td><td>0.783</td><td>0.838</td><td>0.450</td><td>0.753</td><td>0.70</td><td>0.493</td><td>0.579</td></tr>
+            <tr class="highlight-row"><td>FiveModel_CalSoft_t0.20</td><td>0.20</td><td>0.745</td><td>0.821</td><td>0.394</td><td>0.728</td><td>0.70</td><td>0.438</td><td>0.538</td></tr>
+            <tr class="highlight-row"><td>FiveModel_CalSoft_t0.25</td><td>0.25</td><td>0.830</td><td>0.821</td><td>0.522</td><td>0.775</td><td>0.68</td><td>0.586</td><td>0.630</td></tr>
+            <tr class="highlight-row"><td>FiveModel_Soft_t050</td><td>0.50</td><td>0.826</td><td>0.836</td><td>0.506</td><td>0.765</td><td>0.66</td><td>0.579</td><td>0.617</td></tr>
+            <tr class="highlight-row"><td>FiveModel_Hard</td><td>—</td><td>0.821</td><td>—</td><td>0.498</td><td>0.762</td><td>0.66</td><td>0.569</td><td>0.611</td></tr>
+            <tr class="highlight-row"><td>FiveModel_Stack_LR_t0.25</td><td>0.25</td><td>0.804</td><td>0.832</td><td>0.467</td><td>0.752</td><td>0.66</td><td>0.532</td><td>0.589</td></tr>
+        </tbody>
+    </table>
+</div>
+<div class="table-container">
+    <table>
+        <caption>Six-Model Ensemble Comparison</caption>
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>Threshold</th>
+                <th>Acc</th>
+                <th>ROC_AUC</th>
+                <th>MCC</th>
+                <th>Bal_Acc</th>
+                <th>Recall1</th>
+                <th>Precision1</th>
+                <th>F1_1</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>SixModel_CalSoft_t0.05</td><td>0.05</td><td>0.213</td><td>0.816</td><td>0.000</td><td>0.500</td><td>1.00</td><td>0.213</td><td>0.351</td></tr>
+            <tr><td>SixModel_Stack_LR_PT_t0.05</td><td>0.05</td><td>0.349</td><td>0.836</td><td>0.184</td><td>0.579</td><td>0.98</td><td>0.244</td><td>0.390</td></tr>
+            <tr><td>SixModel_Stack_LR_t0.05</td><td>0.05</td><td>0.209</td><td>0.830</td><td>-0.126</td><td>0.490</td><td>0.98</td><td>0.209</td><td>0.345</td></tr>
+            <tr><td>SixModel_CalSoft_t0.10</td><td>0.10</td><td>0.366</td><td>0.816</td><td>0.180</td><td>0.583</td><td>0.96</td><td>0.246</td><td>0.392</td></tr>
+            <tr><td>SixModel_Stack_LR_PT_t0.10</td><td>0.10</td><td>0.570</td><td>0.836</td><td>0.332</td><td>0.698</td><td>0.92</td><td>0.322</td><td>0.477</td></tr>
+            <tr><td>SixModel_WeightedSoft_w_recall_t0.30</td><td>0.30</td><td>0.621</td><td>0.833</td><td>0.367</td><td>0.723</td><td>0.90</td><td>0.349</td><td>0.503</td></tr>
+            <tr><td>SixModel_Stack_LR_t0.10</td><td>0.10</td><td>0.570</td><td>0.830</td><td>0.318</td><td>0.691</td><td>0.90</td><td>0.319</td><td>0.471</td></tr>
+            <tr><td>SixModel_WeightedSoft_w_stable_t0.30</td><td>0.30</td><td>0.651</td><td>0.835</td><td>0.384</td><td>0.735</td><td>0.88</td><td>0.367</td><td>0.518</td></tr>
+            <tr><td>SixModel_WeightedSoft_w_equal_t0.30</td><td>0.30</td><td>0.609</td><td>0.833</td><td>0.342</td><td>0.708</td><td>0.88</td><td>0.338</td><td>0.489</td></tr>
+            <tr><td>SixModel_CalSoft_t0.15</td><td>0.15</td><td>0.591</td><td>0.816</td><td>0.325</td><td>0.697</td><td>0.88</td><td>0.328</td><td>0.478</td></tr>
+            <tr><td>SixModel_Stack_LR_PT_t0.15</td><td>0.15</td><td>0.672</td><td>0.836</td><td>0.395</td><td>0.741</td><td>0.86</td><td>0.381</td><td>0.528</td></tr>
+            <tr><td>SixModel_WeightedSoft_w_custom1_t0.30</td><td>0.30</td><td>0.638</td><td>0.836</td><td>0.359</td><td>0.719</td><td>0.86</td><td>0.355</td><td>0.503</td></tr>
+            <tr class="highlight-row"><td>SixModel_Stack_LR_PT_t0.20</td><td>0.20</td><td>0.723</td><td>0.836</td><td>0.419</td><td>0.751</td><td>0.80</td><td>0.421</td><td>0.552</td></tr>
+            <tr class="highlight-row"><td>SixModel_CalSoft_t0.20</td><td>0.20</td><td>0.715</td><td>0.816</td><td>0.398</td><td>0.739</td><td>0.78</td><td>0.411</td><td>0.538</td></tr>
+            <tr class="highlight-row"><td>SixModel_Stack_LR_PT_t0.25</td><td>0.25</td><td>0.787</td><td>0.836</td><td>0.485</td><td>0.777</td><td>0.76</td><td>0.500</td><td>0.603</td></tr>
+            <tr class="highlight-row"><td>SixModel_WeightedSoft_w_recall_t0.40</td><td>0.40</td><td>0.749</td><td>0.833</td><td>0.431</td><td>0.753</td><td>0.76</td><td>0.447</td><td>0.563</td></tr>
+            <tr class="highlight-row"><td>SixModel_Stack_LR_t0.15</td><td>0.15</td><td>0.749</td><td>0.830</td><td>0.431</td><td>0.753</td><td>0.76</td><td>0.447</td><td>0.563</td></tr>
+            <tr class="highlight-row"><td>SixModel_Stack_LR_t0.20</td><td>0.20</td><td>0.770</td><td>0.830</td><td>0.431</td><td>0.745</td><td>0.70</td><td>0.473</td><td>0.565</td></tr>
+            <tr class="highlight-row"><td>SixModel_CalSoft_t0.25</td><td>0.25</td><td>0.817</td><td>0.816</td><td>0.499</td><td>0.767</td><td>0.68</td><td>0.557</td><td>0.613</td></tr>
+            <tr class="highlight-row"><td>SixModel_Hard</td><td>—</td><td>0.821</td><td>—</td><td>0.498</td><td>0.762</td><td>0.66</td><td>0.569</td><td>0.611</td></tr>
+            <tr class="highlight-row"><td>SixModel_Soft_t050</td><td>0.50</td><td>0.796</td><td>0.833</td><td>0.453</td><td>0.746</td><td>0.66</td><td>0.516</td><td>0.579</td></tr>
+            <tr class="highlight-row"><td>SixModel_Stack_LR_t0.30</td><td>0.30</td><td>0.830</td><td>0.830</td><td>0.507</td><td>0.761</td><td>0.64</td><td>0.593</td><td>0.615</td></tr>
+        </tbody>
+    </table>
+</div>
+
+
+    </main>
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2026 Matthew Plambeck</p>
+    </footer>
+    
