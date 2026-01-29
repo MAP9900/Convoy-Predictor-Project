@@ -150,40 +150,40 @@ print(f"Shape: {out_df.shape} | target positive rate: {out_df['target'].mean():.
 
 # --- Cell Two --- 
 
-CACHE_DIR = Path("data/cache")
-X_train_path = CACHE_DIR / "X_train.parquet"
-y_train_path = CACHE_DIR / "y_train.parquet"
+# CACHE_DIR = Path("data/cache")
+# X_train_path = CACHE_DIR / "X_train.parquet"
+# y_train_path = CACHE_DIR / "y_train.parquet"
 
-if not X_train_path.exists():
-    build_cache(
-        input_path=Path("data/processed/features.parquet"),
-        target_col="target",
-        cache_dir=CACHE_DIR,
-        test_size=0.2,
-        val_size=0,
-        sample_frac=1.0,
-        random_state=1945,)
+# if not X_train_path.exists():
+#     build_cache(
+#         input_path=Path("data/processed/features.parquet"),
+#         target_col="target",
+#         cache_dir=CACHE_DIR,
+#         test_size=0.2,
+#         val_size=0,
+#         sample_frac=1.0,
+#         random_state=1945,)
 
-X_train = pd.read_parquet(X_train_path)
-y_train = pd.read_parquet(y_train_path)["target"]
+# X_train = pd.read_parquet(X_train_path)
+# y_train = pd.read_parquet(y_train_path)["target"]
 
-spec = MODEL_SPECS["gb"]
-gb_model = Model_Tester_V2(
-    model=spec["estimator"],
-    scaler=StandardScaler(),
-    parameter_grid=spec["grid_small"],
-    cv_folds=5,
-    feature_names=feature_names,
-    model_config=spec["config"])
+# spec = MODEL_SPECS["gb"]
+# gb_model = Model_Tester_V2(
+#     model=spec["estimator"],
+#     scaler=StandardScaler(),
+#     parameter_grid=spec["grid_small"],
+#     cv_folds=5,
+#     feature_names=feature_names,
+#     model_config=spec["config"])
 
-gb_model.X_train = X_train
-gb_model.y_train = y_train
-gb_model.X_test = pd.read_parquet(CACHE_DIR / "X_test.parquet")
-gb_model.y_test = pd.read_parquet(CACHE_DIR / "y_test.parquet")["target"]
+# gb_model.X_train = X_train
+# gb_model.y_train = y_train
+# gb_model.X_test = pd.read_parquet(CACHE_DIR / "X_test.parquet")
+# gb_model.y_test = pd.read_parquet(CACHE_DIR / "y_test.parquet")["target"]
 
-# @track_performance("gb_optimize") #Decorator from perf_utils.py
-def run_optimize():
-    gb_model.optimize(scoring="recall")
+# # @track_performance("gb_optimize") #Decorator from perf_utils.py
+# def run_optimize():
+#     gb_model.optimize(scoring="recall")
 
-run_optimize()
-gb_results = gb_model.evaluate(show_plots=False)
+# run_optimize()
+# gb_results = gb_model.evaluate(show_plots=False)
