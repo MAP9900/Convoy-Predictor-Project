@@ -347,10 +347,10 @@
         XGBRFClassifier to the Five Model Ensemble. Six Model Ensemble (2) is all models from Best Recall and Best Balance. 
         
         <br><br>
-        Initial ensemble metrics demonstrate clear performance gains relative to the individual models. Ensemble accuracies reach 0.84, exceeding the highest
+        Initial ensemble metrics demonstrate modest but consistent performance gains relative to the individual models. Ensemble accuracies reach 0.84, exceeding the highest
         accuracy achieved by any single classifier (ExtraTreesClassifier), while ROC-AUC and MCC also improve compared to the top-performing individual models.
         Although no single ensemble dominates across all metrics, the five-model ensemble consistently provides the strongest overall trade-off between recall, 
-        discriminative ability, and decision quality, suggesting diminishing returns from adding additional models. Further evaluation should focus on more 
+        discriminative ability, and decision quality, suggesting diminishing returns from adding models. Further evaluation should focus on more 
         granular comparisons between ensemble configurations and on alternative voting strategies, including weighted and threshold-aware approaches, to determine 
         whether recall can be further improved without degrading overall model reliability.
     </p>
@@ -540,6 +540,10 @@
             })();
         </script>
 
+        <p class="centered-paragraph">
+            TODO: Write Analysis of Results
+
+        </p>
 
 
     </main>
@@ -609,6 +613,8 @@
             <tr><td>CatBoostClassifier</td><td>0.74</td><td>0.7717</td><td>0.3681</td><td>0.7111</td><td>0.66</td><td>0.52</td></tr>
         </tbody>
 
+
+        The only difference is that during threshold calibration beta was changed from 1 (old) to 2 (new)
 
 
 -->
