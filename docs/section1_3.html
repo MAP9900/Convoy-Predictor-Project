@@ -9,6 +9,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Convoy Machine Learning (Old Models)</title>
     <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
 
@@ -32,23 +41,137 @@
     <h2 style="text-align: center;">Machine Learning Terminology & Metrics</h2>
 
     <p class="centered-paragraph">
-        This section intends to be short guide to the metrics and terminology used aimed at making interpreting the results as easy and understandable as possible. 
+        This section intends to be short guide to the metrics and terminology used aimed at making interpreting the results as easy and understandable as possible.
         <br><br>
-    Machine Learning Metrics:
-
-    Accuracy:
-    Accuracy is simply the number of correct predictions divided by the total number of predictions. It provides a high level overview of a model's performance but struggles with 
-    meaningfully conveying problems caused by class imbalances (Un-even distribution of data; ex: 75% of data is labeled 0 while only 25% of data labeled 1) or asymmetrical costs
-    (predicting a 0 incorrectly is worse than predicting a 1 incorrectly; ex: Medical data or my convoy problem) 
-
-    Formula:
-
-    \text{Accuracy} = \frac{\text{# correct predictions}}{\text{# total predictions}} or  \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
-    
-    
-    
-
-
+        Machine Learning Metrics:
+        <br><br>
+        <strong>Confusion Matrix Metrics:</strong>
+        <br>
+        True Positive (TP): The number of times the model correctly predicts the positive (1) class.
+        <br>
+        True Negative (TN): The number of times the model correctly predicts the negative (0) class.
+        <br>
+        False Positive (FP): The number of times the model incorrectly predicts the positive (1) class. Also known as a Type I error.
+        <br>
+        False Negative (FN): The number of times the model incorrectly predicts the negative (0) class. Also known as a Type II error.
+        <br><br>
+        These metrics all together form the confusion matrix has seen below:
+        <img src="images/Confusion_Matrix_Example.png" alt="CM Example" width="600" height="450" style="display: block; margin: auto;">
+        <br>
+        From the confusion matrix, Accuracy, Precision, and Recall are able to be calculated.
+        <br><br>
+         <strong>Accuracy (Acc):</strong>
+        <br>
+        Accuracy is simply the number of correct predictions divided by the total number of predictions. It provides a high level overview of a model's performance but struggles with
+        meaningfully conveying problems caused by class imbalances (Un-even distribution of data; ex: 75% of data is labeled 0 while only 25% of data labeled 1) or asymmetrical costs
+        (predicting a 0 incorrectly is worse than predicting a 1 incorrectly; ex: Medical data or my convoy problem)
+        <br><br>
+        <strong>Formula:</strong>
+        <br>
+        \[
+        \text{Accuracy} = \frac{\text{# correct predictions}}{\text{# total predictions}}
+        \;\; \text{or} \;\;
+        \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
+        \]
+        <br>
+        <strong>Precision:</strong>
+        <br>
+        Calculates all of the model's positive prediction that were correct. The higher the precision, the fewer false positives.
+        <br><br>
+        <strong>Formula:</strong>
+        <br>
+        \[
+        \text{Precision}_1 = \frac{TP}{TP + FP}
+        \]
+        <br>
+        <strong>Precision for class 0:</strong>
+        <br>
+        \[
+        \text{Precision}_0 = \frac{TN}{TN + FN}
+        \]
+        <br>
+        <strong>Precision together (macro average):</strong>
+        <br>
+        \[
+        \text{Precision}_{\text{macro}} = \frac{\text{Precision}_0 + \text{Precision}_1}{2}
+        \]
+        <br>
+        <strong>Recall:</strong>
+        <br>
+        Calculates all of the model's negative predictions that were correct. The higher the recall, the fewer the false negatives.
+        <br><br>
+        <strong>Formula:</strong>
+        <br>
+        \[
+        \text{Recall}_1 = \frac{TP}{TP + FN}
+        \]
+        <br>
+        <strong>Recall for class 0:</strong>
+        <br>
+        \[
+        \text{Recall}_0 = \frac{TN}{TN + FP}
+        \]
+        <br>
+        <strong>Recall together (macro average):</strong>
+        <br>
+        \[
+        \text{Recall}_{\text{macro}} = \frac{\text{Recall}_0 + \text{Recall}_1}{2}
+        \]
+        <br><br>
+        <strong>Threshold:</strong>
+        <br>
+        Binary classification models do not output the actual labels of a class (no risk vs risk) but a score or probability \( P(y=1 \mid x) = 0.00 \;\; \text{to} \;\; 1.00 \).
+        It is for this reason why binary classification labels are defined as 0 or 1 during data preprocessing. The threshold is the cutoff for predicting either positive or negative.
+        Threshold defaults to 0.50 where any output below 0.50 is predicted as negative and any output above 0.50 is predicted as positive. Threshold can be changed manually to change
+        how cautious or aggressive a model performs but this does not change the models score/probability outputs. Therefore, lowering the threshold will increase recall but decrease
+        precision and vice versa for rasing the threshold.
+        <br><br>
+        <strong>Receiver Operating Characteristic Area Under Curve (ROC_AUC):</strong>
+        <br>
+        Based off the ROC Curve, the ROC_AUC is the area under said curve. Formally, it measures the probability that the classifier will give a randomly chosen positive gets
+        a higher score than a randomly chosen negative. ROC_AUC close to one indicates the model can effectively distinguish between the positive and negative class, ROC_AUC close
+        to 0 indicates the model struggles to differentiate between the two classes, and a ROC_AUC around 0.50 indicates the model is doing random guessing.
+        <br><br>
+        <strong>Matthews Correlation Coefficient (MCC):</strong>
+        <br>
+        The MCC measures correlation between predictions and truth using all confusion matrix values. It differs from accuracy by penalizing False Positives and False Negatives
+        strongly and is more robust to class imbalances. MCC of 1 indicates perfect prediction, MCC of 0 indicates random prediction, and MCC of -1 indicates perfectly wrong prediction
+        <br><br>
+        <strong>Formula:</strong>
+        <br>
+        \[
+        \text{MCC} = \frac{TP \cdot TN - FP \cdot FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+        \]
+        <br><br>
+        <strong>Balanced Accuracy (Bal_Acc):</strong>
+        <br>
+        Aims to relive the issues class imbalances can have on Accuracy by giving each class equal weight. Calculated with the Recall scores for the 0 and 1 score to test
+        if the model can perform well on both classes. Ignores Precision.
+        <br><br>
+        <strong>Formula:</strong>
+        <br>
+        \[
+        \text{Balanced Accuracy} = \frac{\text{Recall}_0 + \text{Recall}_1}{2}
+        \]
+        <br>
+        Where:
+        <br>
+        \[
+        \text{Recall}_0 = \frac{TN}{TN + FP}
+        \qquad
+        \text{Recall}_1 = \frac{TP}{TP + FN}
+        \]
+        <br><br>
+        <strong>F1-Score (F1_1):</strong>
+        <br>
+        Measures the Precision-Recall tradeoff for the positive class or the harmonic mean between the two. If either Precision or Recall is low, F1 collapses creating a solid balance
+        between the two metrics. Ignores True Negatives.
+        <br><br>
+        <strong>Formula:</strong>
+        <br>
+        \[
+        \text{F1} = 2 \cdot \frac{\text{Precision}_1 \cdot \text{Recall}_1}{\text{Precision}_1 + \text{Recall}_1}
+        \]
     </p>
     </main>
 

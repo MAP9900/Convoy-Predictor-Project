@@ -31,75 +31,73 @@ U_Boat_df.to_csv('U-Boat-Data.csv')
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-# Standardizing the features before applying PCA
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X_train_class)
+# # Standardizing the features before applying PCA
+# scaler = StandardScaler()
+# X_scaled = scaler.fit_transform(X_train_class)
 
-# Applying PCA
-pca = PCA(n_components=0.95)  # Keep 95% of variance
-X_pca = pca.fit_transform(X_scaled)
+# # Applying PCA
+# pca = PCA(n_components=0.95)  # Keep 95% of variance
+# X_pca = pca.fit_transform(X_scaled)
 
-# The number of components chosen by PCA
-n_components = X_pca.shape[1]
+# # The number of components chosen by PCA
+# n_components = X_pca.shape[1]
 
-# Transforming the test set with the same PCA and scaler
-X_test_scaled = scaler.transform(X_test_class)
-X_test_pca = pca.transform(X_test_scaled)
+# # Transforming the test set with the same PCA and scaler
+# X_test_scaled = scaler.transform(X_test_class)
+# X_test_pca = pca.transform(X_test_scaled)
 
-# Train a Random Forest Classifier on the transformed data
-rf_classifier_pca = RandomForestClassifier(random_state=42)
-rf_classifier_pca.fit(X_pca, y_train_class)
-y_pred_pca = rf_classifier_pca.predict(X_test_pca)
+# # Train a Random Forest Classifier on the transformed data
+# rf_classifier_pca = RandomForestClassifier(random_state=42)
+# rf_classifier_pca.fit(X_pca, y_train_class)
+# y_pred_pca = rf_classifier_pca.predict(X_test_pca)
 
-# Evaluate the classifier after PCA transformation
-pca_accuracy = accuracy_score(y_test_class, y_pred_pca)
-pca_class_report = classification_report(y_test_class, y_pred_pca)
+# # Evaluate the classifier after PCA transformation
+# pca_accuracy = accuracy_score(y_test_class, y_pred_pca)
+# pca_class_report = classification_report(y_test_class, y_pred_pca)
 
-n_components, pca_accuracy, pca_class_report
+# n_components, pca_accuracy, pca_class_report
 
+# from sklearn.model_selection import TimeSeriesSplit
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+# import matplotlib.pyplot as plt
 
+# # Extracting year for time-based splitting
+# df2['Year'] = df2['Year'].astype(int)
+# years = df2['Year'].unique()
 
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-import matplotlib.pyplot as plt
+# # Sorting the DataFrame by year to ensure correct time series splitting
+# df2.sort_values(by='Year', inplace=True)
+# X = df2.drop(columns=['Overall Sink Percentage', 'High Risk'])
+# y = df2['High Risk']
 
-# Extracting year for time-based splitting
-df2['Year'] = df2['Year'].astype(int)
-years = df2['Year'].unique()
+# # Setting up TimeSeriesSplit for cross-validation
+# tscv = TimeSeriesSplit(n_splits=len(years) - 1) # Subtract 1 because the first year can't be used as a test
 
-# Sorting the DataFrame by year to ensure correct time series splitting
-df2.sort_values(by='Year', inplace=True)
-X = df2.drop(columns=['Overall Sink Percentage', 'High Risk'])
-y = df2['High Risk']
+# # Placeholder for storing model performance metrics
+# model_performance = []
 
-# Setting up TimeSeriesSplit for cross-validation
-tscv = TimeSeriesSplit(n_splits=len(years) - 1) # Subtract 1 because the first year can't be used as a test
+# # Time-based cross-validation
+# for train_index, test_index in tscv.split(X):
+#     X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+#     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-# Placeholder for storing model performance metrics
-model_performance = []
+#     # Training the Random Forest Classifier
+#     clf = RandomForestClassifier(n_estimators=100, random_state=0)
+#     clf.fit(X_train, y_train)
 
-# Time-based cross-validation
-for train_index, test_index in tscv.split(X):
-    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+#     # Making predictions
+#     y_pred = clf.predict(X_test)
 
-    # Training the Random Forest Classifier
-    clf = RandomForestClassifier(n_estimators=100, random_state=0)
-    clf.fit(X_train, y_train)
+#     # Computing performance metrics
+#     accuracy = accuracy_score(y_test, y_pred)
+#     conf_matrix = confusion_matrix(y_test, y_pred)
+#     class_report = classification_report(y_test, y_pred, output_dict=True)
 
-    # Making predictions
-    y_pred = clf.predict(X_test)
+#     # Storing the results
+#     year = X_test['Year'].iloc[0]
+#     model_performance.append({'Year': year, 'Accuracy': accuracy, 'Confusion Matrix': conf_matrix, 'Classification Report': class_report})
 
-    # Computing performance metrics
-    accuracy = accuracy_score(y_test, y_pred)
-    conf_matrix = confusion_matrix(y_test, y_pred)
-    class_report = classification_report(y_test, y_pred, output_dict=True)
-
-    # Storing the results
-    year = X_test['Year'].iloc[0]
-    model_performance.append({'Year': year, 'Accuracy': accuracy, 'Confusion Matrix': conf_matrix, 'Classification Report': class_report})
-
-# Display the performance for the first few models as a sample
-model_performance[:3]  # Show performance for the first 3 years as an example
+# # Display the performance for the first few models as a sample
+# model_performance[:3]  # Show performance for the first 3 years as an example
 

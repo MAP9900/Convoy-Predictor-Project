@@ -1,22 +1,29 @@
-def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None, n_jobs=-1, train_sizes=np.linspace(.1, 1.0, 5)):
-    plt.figure()
-    plt.title(title)
-    if ylim is not None:
-        plt.ylim(*ylim)
-    plt.xlabel("Training examples")
-    plt.ylabel("Score")
-    train_sizes, train_scores, test_scores = learning_curve(
-        estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes, scoring="r2")
-    train_scores_mean = np.mean(train_scores, axis=1)
-    train_scores_std = np.std(train_scores, axis=1)
-    test_scores_mean = np.mean(test_scores, axis=1)
-    test_scores_std = np.std(test_scores, axis=1)
-    plt.grid()
-    plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
-                     train_scores_mean + train_scores_std, alpha=0.1, color="r")
-    plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
-                     test_scores_mean + test_scores_std, alpha=0.1, color="g")
-    plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
-    plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
-    plt.legend(loc="best")
-    plt.show()
+import matplotlib.pyplot as plt
+import numpy as np
+
+matrix = np.array([[2, 1], [1, 2]])
+fig, ax = plt.subplots(facecolor='lightgrey')
+ax.imshow(matrix, cmap='Blues', vmin=0, vmax=2)
+labels = [["TN", "FP"],
+          ["FN", "TP"]]
+for i in range(2):
+    for j in range(2):
+        ax.text(j, i, labels[i][j],
+                ha="center", va="center",
+                fontsize=14, fontweight="bold")
+ax.set_xlabel("Predicted Label")
+ax.set_ylabel("True Label")
+ax.set_facecolor('lightgrey')
+ax.set_xticks([0, 1])
+ax.set_yticks([0, 1])
+ax.set_xticklabels(["Negative", "Positive"])
+ax.set_yticklabels(["Negative", "Positive"])
+ax.set_xticks(np.arange(-.5, 2, 1), minor=True)
+ax.set_yticks(np.arange(-.5, 2, 1), minor=True)
+ax.grid(which="minor")
+ax.tick_params(which="minor", bottom=False, left=False)
+for spine in plt.gca().spines.values():
+    spine.set_visible(False)
+plt.title("Confusion Matrix (Example)")
+# fig.savefig('Confusion_Matrix_Example.png')
+plt.show()
