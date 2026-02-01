@@ -41,7 +41,7 @@
     <h2 style="text-align: center;">Machine Learning Terminology & Metrics</h2>
 
     <p class="centered-paragraph">
-        This section intends to be short guide to the metrics and terminology used aimed at making interpreting the results as easy and understandable as possible.
+        This section intends to be a short guide to the metrics and terminology used aimed at making interpreting the results as easy and understandable as possible.
         <br><br>
         Machine Learning Metrics:
         <br><br>
@@ -55,7 +55,7 @@
         <br>
         False Negative (FN): The number of times the model incorrectly predicts the negative (0) class. Also known as a Type II error.
         <br><br>
-        These metrics all together form the confusion matrix has seen below:
+        These metrics all together form the confusion matrix as seen below:
         <img src="images/Confusion_Matrix_Example.png" alt="CM Example" width="600" height="450" style="display: block; margin: auto;">
         <br>
         From the confusion matrix, Accuracy, Precision, and Recall are able to be calculated.
@@ -63,7 +63,7 @@
          <strong>Accuracy (Acc):</strong>
         <br>
         Accuracy is simply the number of correct predictions divided by the total number of predictions. It provides a high level overview of a model's performance but struggles with
-        meaningfully conveying problems caused by class imbalances (Un-even distribution of data; ex: 75% of data is labeled 0 while only 25% of data labeled 1) or asymmetrical costs
+        meaningfully conveying problems caused by class imbalances (Uneven distribution of data; ex: 75% of data is labeled 0 while only 25% of data labeled 1) or asymmetrical costs
         (predicting a 0 incorrectly is worse than predicting a 1 incorrectly; ex: Medical data or my convoy problem)
         <br><br>
         <strong>Formula:</strong>
@@ -76,7 +76,7 @@
         <br>
         <strong>Precision:</strong>
         <br>
-        Calculates all of the model's positive prediction that were correct. The higher the precision, the fewer false positives.
+        Calculates all of the model's positive predictions that were correct. The higher the precision, the fewer false positives.
         <br><br>
         <strong>Formula:</strong>
         <br>
@@ -98,7 +98,7 @@
         <br>
         <strong>Recall:</strong>
         <br>
-        Calculates all of the model's negative predictions that were correct. The higher the recall, the fewer the false negatives.
+        Calculates all of the model's positive predictions that were correct. The higher the recall, the fewer the false negatives.
         <br><br>
         <strong>Formula:</strong>
         <br>
@@ -123,13 +123,13 @@
         Binary classification models do not output the actual labels of a class (no risk vs risk) but a score or probability \( P(y=1 \mid x) = 0.00 \;\; \text{to} \;\; 1.00 \).
         It is for this reason why binary classification labels are defined as 0 or 1 during data preprocessing. The threshold is the cutoff for predicting either positive or negative.
         Threshold defaults to 0.50 where any output below 0.50 is predicted as negative and any output above 0.50 is predicted as positive. Threshold can be changed manually to change
-        how cautious or aggressive a model performs but this does not change the models score/probability outputs. Therefore, lowering the threshold will increase recall but decrease
-        precision and vice versa for rasing the threshold.
+        how cautious or aggressive a model performs but this does not change the model's score/probability outputs. Therefore, lowering the threshold will increase recall but decrease
+        precision and vice versa for raising the threshold.
         <br><br>
         <strong>Receiver Operating Characteristic Area Under Curve (ROC_AUC):</strong>
         <br>
-        Based off the ROC Curve, the ROC_AUC is the area under said curve. Formally, it measures the probability that the classifier will give a randomly chosen positive gets
-        a higher score than a randomly chosen negative. ROC_AUC close to one indicates the model can effectively distinguish between the positive and negative class, ROC_AUC close
+        Based on the ROC Curve, the ROC_AUC is the area under said curve. Formally, it measures the probability that the classifier will give a randomly chosen positive a higher score
+        than a randomly chosen negative. ROC_AUC close to one indicates the model can effectively distinguish between the positive and negative class, ROC_AUC close
         to 0 indicates the model struggles to differentiate between the two classes, and a ROC_AUC around 0.50 indicates the model is doing random guessing.
         <br><br>
         <strong>Matthews Correlation Coefficient (MCC):</strong>
@@ -145,7 +145,7 @@
         <br><br>
         <strong>Balanced Accuracy (Bal_Acc):</strong>
         <br>
-        Aims to relive the issues class imbalances can have on Accuracy by giving each class equal weight. Calculated with the Recall scores for the 0 and 1 score to test
+        Aims to relieve the issues class imbalances can have on Accuracy by giving each class equal weight. Calculated with the Recall scores for the 0 and 1 score to test
         if the model can perform well on both classes. Ignores Precision.
         <br><br>
         <strong>Formula:</strong>
@@ -164,7 +164,7 @@
         <br><br>
         <strong>F1-Score (F1_1):</strong>
         <br>
-        Measures the Precision-Recall tradeoff for the positive class or the harmonic mean between the two. If either Precision or Recall is low, F1 collapses creating a solid balance
+        Measures the Precision-Recall tradeoff for the positive class or the harmonic mean between the two. If either Precision or Recall is low, F1 collapses, creating a solid balance
         between the two metrics. Ignores True Negatives.
         <br><br>
         <strong>Formula:</strong>
