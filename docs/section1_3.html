@@ -58,6 +58,8 @@
         These metrics all together form the confusion matrix as seen below:
         <img src="images/Confusion_Matrix_Example.png" alt="CM Example" width="600" height="450" style="display: block; margin: auto;">
         <br>
+        In this project, class 1 = at-risk, class 0 = not at-risk.
+        <br>
         From the confusion matrix, Accuracy, Precision, and Recall are able to be calculated.
         <br><br>
          <strong>Accuracy (Acc):</strong>
@@ -99,6 +101,8 @@
         <strong>Recall:</strong>
         <br>
         Calculates all of the model's positive predictions that were correct. The higher the recall, the fewer the false negatives.
+        <br>
+        Precision focuses on false positives; recall focuses on false negatives.
         <br><br>
         <strong>Formula:</strong>
         <br>
@@ -166,6 +170,8 @@
         <br>
         Measures the Precision-Recall tradeoff for the positive class or the harmonic mean between the two. If either Precision or Recall is low, F1 collapses, creating a solid balance
         between the two metrics. Ignores True Negatives.
+        <br>
+        F1_1 focuses on the positive class; macro F1 averages F1 for class 0 and class 1.
         <br><br>
         <strong>Formula:</strong>
         <br>
