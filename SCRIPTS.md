@@ -8,7 +8,6 @@ Project root: /Users/matthewplambeck/Desktop/Convoy Predictor
 - `misc/` — Miscellaneous assets.
 - `notebooks/` — Exploration, modeling, and visualization notebooks.
 - `src/` — Python source scripts (scraping, data prep, models, tests).
-- `Python.gitignore` — Git ignore template.
 
 # Scripts
 
