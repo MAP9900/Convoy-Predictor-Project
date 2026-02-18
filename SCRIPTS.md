@@ -43,3 +43,30 @@ Project root: /Users/matthewplambeck/Desktop/Convoy Predictor
 - `src/tests/Test_4.py` — Learning-curve plotting helper.
 - `src/tests/Test_5.py` — U-boat data table export and PCA/classification experiments.
 - `src/tests/Test_6.py` — PCA 3D visualization demo on synthetic data.
+
+# Notebooks
+
+## Exploration notebooks
+- `notebooks/exploration/Algorithm_Test_1.ipynb` — Early algorithm comparison experiments.
+- `notebooks/exploration/Algorithm_Test_2.ipynb` — Follow-up algorithm testing and metric checks.
+- `notebooks/exploration/Algorithm_Test_3.ipynb` — Later algorithm benchmarking and tuning trials.
+- `notebooks/exploration/CNB_and_QDA_Test.ipynb` — Complement Naive Bayes vs QDA evaluation.
+- `notebooks/exploration/Classification_Test_1.ipynb` — Initial classification workflow experiments.
+- `notebooks/exploration/Classification_Test_2.ipynb` — Extended classification testing.
+- `notebooks/exploration/Ensemble_Learning_Test.ipynb` — Ensemble model experiments.
+- `notebooks/exploration/Regression_Test_1.ipynb` — Initial regression analysis.
+- `notebooks/exploration/Regression_Test_2.ipynb` — Follow-up regression experiments.
+- `notebooks/exploration/XGBRFClassifier_Test_1.ipynb` — XGBRF classifier-specific testing.
+
+## Modeling notebooks
+- `notebooks/models/Convoy_Feature_Importance.ipynb` — Feature-importance analysis for trained models.
+- `notebooks/models/GB_Model_Vis.ipynb` — Gradient boosting model visualization.
+- `notebooks/models/Results.ipynb` — Consolidated model result review.
+- `notebooks/models/Results_OLD.ipynb` — Archived/previous results notebook.
+
+## Visualization notebooks
+- `notebooks/visualization/Convoy_Data_Vis.ipynb` — General convoy dataset visualization.
+- `notebooks/visualization/Convoy_Routes_Viz.ipynb` — Convoy route-focused plots/maps.
+- `notebooks/visualization/HX_Plots.ipynb` — HX route visualization notebook.
+- `notebooks/visualization/OB_Plots.ipynb` — OB route visualization notebook.
+- `notebooks/visualization/SC_Plots.ipynb` — SC route visualization notebook.
