@@ -30,10 +30,11 @@
      <main>
         <h2 style="text-align: center;">Results of Five and Six Model Ensemble Comparison</h2>
         <p class="centered-paragraph">
-            Below are the results from a comprehensive test of ensemble configurations and voting strategies. The test was done for a five model ensemble 
-            (QuadraticDiscriminantAnalysis, AdaBoostClassifier, DecisionTreeClassifier, RandomForestClassifier, and ExtraTreesClassifier) and a six model
-            ensemble (QuadraticDiscriminantAnalysis, AdaBoostClassifier, DecisionTreeClassifier, RandomForestClassifier, ExtraTreesClassifier, and XGBRFClassifier). 
-            Highlighted rows indicate they are included in the scatter plot and have accuracies greater than 0.70. The link for notebook containing the test can be found 
+            Below are the results from a comprehensive test of ensemble configurations and voting strategies. The test covered hard voting, soft voting, calibrated soft voting, 
+            weighted soft voting (equal, recall-based, stable, and custom weighting schemes), and threshold-aware approaches (probability-threshold sweeps plus priority-threshold 
+            logistic stacking variants). The test was done for a five model ensemble (QuadraticDiscriminantAnalysis, AdaBoostClassifier, DecisionTreeClassifier, RandomForestClassifier, 
+            and ExtraTreesClassifier) and a six model ensemble (QuadraticDiscriminantAnalysis, AdaBoostClassifier, DecisionTreeClassifier, RandomForestClassifier, ExtraTreesClassifier, 
+            and XGBRFClassifier). Highlighted rows indicate they are included in the scatter plot and have accuracies greater than 0.70. The link for notebook containing the test can be found 
             <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/exploration/Ensemble_Learning_Test.ipynb" target="_blank" rel="noopener noreferrer">here.</a> 
             To return to the Convoy Machine Learning section click <a href="section1.html">here!</a> 
         </p>
