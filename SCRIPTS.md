@@ -36,6 +36,19 @@ Project root: /Users/matthewplambeck/Desktop/Convoy Predictor
 - `src/models/perf_utils.py` — Performance-tracking decorator for timing, CPU, and memory.
 - `src/models/cache_preprocessor.py` — Utility to cache train/test/val splits for faster model runs.
 
+## Results workflows
+- `src/results/model_loading_core.py` — Shared seed/split utilities, model-tester preparation, and voting-ensemble evaluation metrics.
+- `src/results/ensemble_models.py` — Loads saved base models and runs the calibrated five-model soft-voting ensemble at threshold 0.25.
+- `src/results/visualization_functions.py` — ROC/confusion plotting plus permutation, aggregated, and SHAP feature-importance plot functions.
+- `src/results/confusion_groups.py` — Builds FN/FP/TP/TN slices from scored test rows and compares grouped `describe()` statistics.
+- `src/results/statistical_testing.py` — Nonparametric feature-testing pipeline (global Kruskal, pairwise Mann-Whitney, Cliff's delta, FDR/Holm correction, and ranked summary table).
+- `src/results/calibration_threshold_eval.py` — Calibration quality and operating-threshold evaluation utilities (Brier/calibration curve, FN probability diagnostics, threshold sweep/selection, and CV threshold stability).
+- `src/results/feature_importance_triangulation.py` — Multi-view feature-importance triangulation (permutation, aggregated base-model importance, SHAP, rank agreement, stability flags, and FN-specific SHAP analysis).
+- `src/results/segment_temporal_robustness.py` — Segment/time robustness evaluation (time bins, segment metrics, FN concentration, shift testing, and per-segment threshold stability).
+- `src/results/leakage_data_quality_checks.py` — Leakage/data-quality audit utilities (column leakage flags, split/alignment checks, missingness/outlier diagnostics by confusion group, preprocessing audit, and ranked risk summary).
+- `src/results/run_results.md` — Notebook-ready execution cells (imports + function calls) for the full results workflow.
+- `src/results/results.md` — Detailed narrative summary of all results-module additions, goals, execution flow, assumptions, and caveats.
+
 ## Tests and exploratory scripts
 - `src/tests/Test_1.py` — Mixed exploratory analysis and KNN cross-validation (includes plotting and stats).
 - `src/tests/Test_2.py` — SC convoy time-series plots and moving averages.
