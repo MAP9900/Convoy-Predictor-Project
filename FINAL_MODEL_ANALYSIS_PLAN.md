@@ -89,7 +89,7 @@ This checklist is for analyzing the final ensemble model (`FiveModel_CalSoft_t0.
 - [ ] Evaluate threshold stability by segment:
     - Does optimal threshold vary materially?
 
-## 8) Leakage and Data Quality Checks
+## 8) Leakage and Data Quality Checks DONE
 - [ ] Reconfirm no leakage columns are present in training inputs:
     - Remove post-outcome or future-derived variables.
 - [ ] Validate train/test split integrity:
@@ -118,20 +118,3 @@ This checklist is for analyzing the final ensemble model (`FiveModel_CalSoft_t0.
     - decision and rationale.
 - [ ] Stop criteria:
     - Improvement < predefined practical threshold or trade-off unacceptable.
-
-## 10) Deliverables to Save
-- [ ] Final metrics table (baseline vs tuned threshold).
-- [ ] Final confusion matrix and ROC plot.
-- [ ] FN/FP/TP/TN analysis tables.
-- [ ] Statistical test summary with corrected p-values + effect sizes.
-- [ ] Final written conclusion:
-- What changed, why, and what threshold/model you selected.
-
----
-
-
-
-USE PRIOR KNOWLEDGE FROM Model_Loading.md. IMPLEMENT EVERYTHING INTO THE EXISTING WORKFLOW WE JUST ESTABLISHED (DEDICATED .py FILES UNDER src/results, ADD TO FILES WHERE IT MAKES SENSE AND MAKE NEW ONES WHEN NEEDED, PROPER IMPORTS, ETC). MAKE SURE TO ADDITIONALLY, ADD THE CODE BLOCKS TO RUN THE ADDITIONS IN run_results.md AND UPDATE SCRIPTS.md. KEEP CODE SIMPLE AND NO NEED FOR ANY TEST FUNCTIONS. ALSO ADD CODE COMMENTS WHERE APPLICABLE (#WHAT CODE DOES, ETC)
-
-
-Now can you create results.md with a detailed description of all the additions and what the aim to accomplish. Also include any other relevant information please. 
