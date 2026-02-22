@@ -1,7 +1,7 @@
 # Results Workflow Additions
 
 ## Purpose
-This document summarizes all additions implemented under `src/results/` from `Model_Loading.md` TODOs and follow-on analysis requests. The aim is to turn notebook-heavy analysis into reusable, modular scripts while preserving your existing output paths and notebook-driven execution style.
+This document summarizes all additions implemented under `src/results/`. The aim is to turn notebook-heavy analysis into reusable, modular scripts while preserving existing output paths and notebook-driven execution style.
 
 The additions support:
 - Reproducible model loading and ensemble evaluation
