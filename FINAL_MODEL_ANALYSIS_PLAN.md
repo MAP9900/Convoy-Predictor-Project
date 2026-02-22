@@ -118,3 +118,8 @@ This checklist is for analyzing the final ensemble model (`FiveModel_CalSoft_t0.
     - decision and rationale.
 - [ ] Stop criteria:
     - Improvement < predefined practical threshold or trade-off unacceptable.
+
+
+
+
+Project to make github art that includes normal commits
