@@ -79,7 +79,17 @@ def flag_leakage_columns(X, feature_metadata=None, patterns=None):
             }
         )
 
-    return pd.DataFrame(rows).sort_values(["severity", "feature"], ascending=[True, True]).reset_index(drop=True)
+    out = pd.DataFrame(
+        rows,
+        columns=["feature", "reason", "severity", "pattern_matched", "metadata_flag"],
+    )
+    if out.empty:
+        return out
+
+    severity_order = {"high": 0, "medium": 1, "low": 2}
+    out["_sev"] = out["severity"].map(severity_order).fillna(3)
+    out = out.sort_values(["_sev", "feature"]).drop(columns="_sev").reset_index(drop=True)
+    return out
 
 
 def check_split_integrity(X_train, X_test, id_col=None, convoy_id_col=None, sample_n=10):
@@ -422,6 +432,34 @@ def audit_preprocessing(preprocess_pipeline, X_train, X_test, feature_groups=Non
     }
 
 
+def aggregate_preprocessing_audits(base_preprocess_audits, tolerance=1e-6):
+    """Combine per-model preprocessing audits into a single audit payload."""
+    all_category_flags = []
+    all_scaler_flags = []
+    notes = []
+
+    for model_name, audit in (base_preprocess_audits or {}).items():
+        if audit is None:
+            continue
+        for f in audit.get("category_leakage_flags", []):
+            all_category_flags.append({"model": model_name, **f})
+        for f in audit.get("scaler_leakage_flags", []):
+            all_scaler_flags.append({"model": model_name, **f})
+        for note in audit.get("notes", []):
+            notes.append(f"{model_name}: {note}")
+
+    if not notes:
+        notes = ["No model-level preprocessing notes provided."]
+
+    return {
+        "fit_status": "base_model_level_audit",
+        "category_leakage_flags": all_category_flags,
+        "scaler_leakage_flags": all_scaler_flags,
+        "tolerance_used": tolerance,
+        "notes": notes,
+    }
+
+
 def build_risk_summary(
     leakage_flags=None,
     split_integrity=None,
@@ -441,7 +479,7 @@ def build_risk_summary(
             rows.append(
                 {
                     "issue_type": "leakage_flag",
-                    "feature_or_id": row["feature"],
+                    "feature_or_id": row.get("feature", ""),
                     "severity": row.get("severity", "high"),
                     "key_stat": row.get("reason", ""),
                     "recommendation": "Remove or justify feature before training.",
@@ -552,3 +590,115 @@ def build_risk_summary(
     summary["_sev"] = summary["severity"].map(severity_order).fillna(3)
     summary = summary.sort_values(["_sev", "issue_type", "feature_or_id"]).drop(columns="_sev").head(report_top_n)
     return summary.reset_index(drop=True)
+
+
+def build_leakage_quality_report(
+    X_train,
+    X_test,
+    y_train,
+    y_test,
+    y_proba_test,
+    threshold=0.25,
+    id_col=None,
+    convoy_id_col=None,
+    df_raw_train=None,
+    df_raw_test=None,
+    feature_metadata=None,
+    known_leakage_patterns=None,
+    missingness_test=None,
+    multiple_test_method="fdr_bh",
+    outlier_method="iqr",
+    outlier_params=None,
+    preprocess_pipeline=None,
+    base_models=None,
+    feature_groups=None,
+    alpha=0.05,
+    report_top_n=30,
+):
+    """Run end-to-end leakage/data-quality checks and return report-ready outputs."""
+    leakage_flags_df = flag_leakage_columns(
+        X_train,
+        feature_metadata=feature_metadata,
+        patterns=known_leakage_patterns,
+    )
+
+    split_integrity_report = check_split_integrity(
+        X_train=X_train,
+        X_test=X_test,
+        id_col=id_col,
+        convoy_id_col=convoy_id_col,
+    )
+
+    # Build y Series with explicit X index alignment for safer audit semantics.
+    y_train_series = pd.Series(y_train, index=X_train.index)
+    y_test_series = pd.Series(y_test, index=X_test.index)
+    alignment_train_report = audit_alignment(X_train, y_train_series, df_raw=df_raw_train, id_col=id_col)
+    alignment_test_report = audit_alignment(X_test, y_test_series, df_raw=df_raw_test, id_col=id_col)
+
+    test_groups = confusion_groups(y_test, y_proba_test, threshold=threshold)
+    missingness_group_df = missingness_by_confusion_group(
+        X_test=X_test,
+        groups=test_groups,
+        multiple_test_method=multiple_test_method,
+        missingness_test=missingness_test,
+    )
+
+    numeric_cols = X_train.select_dtypes(include=[np.number]).columns.tolist()
+    bounds = outlier_bounds_from_train(
+        X_train=X_train,
+        numeric_cols=numeric_cols,
+        method=outlier_method,
+        params=outlier_params or {},
+    )
+    outliers_group_df = outliers_by_confusion_group(
+        X_test=X_test,
+        groups=test_groups,
+        bounds=bounds,
+    )
+
+    if base_models is not None:
+        base_preprocess_audits = {}
+        for model_name, model_obj in base_models.items():
+            base_preprocess_audits[model_name] = audit_preprocessing(
+                preprocess_pipeline=model_obj,
+                X_train=X_train,
+                X_test=X_test,
+                feature_groups=feature_groups,
+                tolerance=1e-6,
+            )
+        preprocessing_audit_report = aggregate_preprocessing_audits(base_preprocess_audits, tolerance=1e-6)
+    else:
+        base_preprocess_audits = {}
+        preprocessing_audit_report = audit_preprocessing(
+            preprocess_pipeline=preprocess_pipeline,
+            X_train=X_train,
+            X_test=X_test,
+            feature_groups=feature_groups,
+            tolerance=1e-6,
+        )
+
+    risk_summary_df = build_risk_summary(
+        leakage_flags=leakage_flags_df,
+        split_integrity=split_integrity_report,
+        alignment_train=alignment_train_report,
+        alignment_test=alignment_test_report,
+        missingness_df=missingness_group_df,
+        outliers_df=outliers_group_df,
+        preprocessing_audit=preprocessing_audit_report,
+        alpha=alpha,
+        report_top_n=report_top_n,
+    )
+
+    return {
+        "leakage_flags": leakage_flags_df,
+        "split_integrity": split_integrity_report,
+        "alignment_train": alignment_train_report,
+        "alignment_test": alignment_test_report,
+        "groups": test_groups,
+        "missingness_by_group": missingness_group_df,
+        "outlier_bounds": bounds,
+        "outliers_by_group": outliers_group_df,
+        "preprocessing_audit": preprocessing_audit_report,
+        "base_preprocess_audits": base_preprocess_audits,
+        "risk_summary": risk_summary_df,
+    }

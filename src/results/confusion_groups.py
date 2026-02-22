@@ -70,6 +70,8 @@ def get_false_negatives(voter_calsoft_025, threshold=0.25, data_path=DEFAULT_DAT
     )
     mask = (y_test_meta == 1) & (y_pred == 0)
     idx_test = all_rows_scored.index[all_rows_scored["Is_Test"]]
+    # Initialize full-column boolean mask to avoid NaN boolean indexing errors.
+    all_rows_scored["Is_False_Negative"] = False
     all_rows_scored.loc[idx_test, "Is_False_Negative"] = mask
 
     false_negatives = all_rows_scored[all_rows_scored["Is_False_Negative"]].copy()
@@ -87,6 +89,8 @@ def get_false_positives(voter_calsoft_025, threshold=0.25, data_path=DEFAULT_DAT
     )
     mask = (y_test_meta == 0) & (y_pred == 1)
     idx_test = all_rows_scored.index[all_rows_scored["Is_Test"]]
+    # Initialize full-column boolean mask to avoid NaN boolean indexing errors.
+    all_rows_scored["Is_False_Positive"] = False
     all_rows_scored.loc[idx_test, "Is_False_Positive"] = mask
 
     false_positives = all_rows_scored[all_rows_scored["Is_False_Positive"]].copy()
@@ -104,6 +108,8 @@ def get_true_positives(voter_calsoft_025, threshold=0.25, data_path=DEFAULT_DATA
     )
     mask = (y_test_meta == 1) & (y_pred == 1)
     idx_test = all_rows_scored.index[all_rows_scored["Is_Test"]]
+    # Initialize full-column boolean mask to avoid NaN boolean indexing errors.
+    all_rows_scored["Is_True_Positive"] = False
     all_rows_scored.loc[idx_test, "Is_True_Positive"] = mask
 
     true_positives = all_rows_scored[all_rows_scored["Is_True_Positive"]].copy()
@@ -121,6 +127,8 @@ def get_true_negatives(voter_calsoft_025, threshold=0.25, data_path=DEFAULT_DATA
     )
     mask = (y_test_meta == 0) & (y_pred == 0)
     idx_test = all_rows_scored.index[all_rows_scored["Is_Test"]]
+    # Initialize full-column boolean mask to avoid NaN boolean indexing errors.
+    all_rows_scored["Is_True_Negative"] = False
     all_rows_scored.loc[idx_test, "Is_True_Negative"] = mask
 
     true_negatives = all_rows_scored[all_rows_scored["Is_True_Negative"]].copy()

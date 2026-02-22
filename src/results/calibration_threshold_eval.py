@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from sklearn.calibration import calibration_curve
 from sklearn.metrics import brier_score_loss, confusion_matrix
 
+DEFAULT_RESULTS_DIR = "/Users/matthewplambeck/Desktop/Convoy Predictor/results"
+
 
 def _prepare_binary_inputs(y_true, y_proba, pos_label=1):
     """Convert inputs to aligned numeric arrays and drop NaN pairs."""
@@ -37,6 +39,8 @@ def _metrics_at_threshold(y_true_bin, y_proba, threshold):
     fpr = _safe_div(fp, fp + tn)
     tnr = _safe_div(tn, tn + fp)
     bal_acc = np.nanmean([recall1, tnr])
+    accuracy = _safe_div(tp + tn, tp + tn + fp + fn)
+    f1 = _safe_div(2 * tp, (2 * tp) + fp + fn)
 
     # Manual MCC with zero-denominator guard.
     mcc_den = np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
@@ -52,6 +56,8 @@ def _metrics_at_threshold(y_true_bin, y_proba, threshold):
         "FN": int(fn),
         "recall1": recall1,
         "precision1": precision1,
+        "accuracy": accuracy,
+        "f1": f1,
         "fpr": fpr,
         "mcc": mcc,
         "bal_acc": bal_acc,
@@ -117,17 +123,20 @@ def calibration_report(
             strategy=strategy,
         )
 
-    if plot:
+    if plot: 
         if ax is None:
-            _, ax = plt.subplots(figsize=(6, 4))
+            _, ax = plt.subplots(figsize=(6, 4), facecolor="lightgrey")
         ax.plot([0, 1], [0, 1], "--", color="gray", label="Perfect Calibration")
-        ax.plot(mean_post, frac_post, marker="o", label="Post Calibration")
+        ax.plot(mean_post, frac_post, color='#06768d', marker="o", label="Post Calibration")
         if y_proba_pre is not None:
             ax.plot(mean_pre, frac_pre, marker="o", label="Pre Calibration")
         ax.set_xlabel("Mean Predicted Value")
         ax.set_ylabel("Fraction of Positives")
         ax.set_title(f"Calibration Curve (threshold={threshold:.2f})")
         ax.legend(loc="best")
+        ax.set_facecolor("lightgrey")
+        for spine in plt.gca().spines.values():
+            spine.set_visible(False)
         plt.tight_layout()
         plt.show()
 
@@ -215,6 +224,82 @@ def threshold_sweep(
     for threshold in thresholds:
         rows.append(_metrics_at_threshold(y_true_bin, y_proba_arr, threshold))
     return pd.DataFrame(rows)
+
+
+def plot_threshold_sweep_metrics(
+    sweep_df,
+    metric_cols=None,
+    title="Metrics vs Decision Threshold",
+    x_ticks=None,
+    y_ticks=None,
+    results_dir=DEFAULT_RESULTS_DIR,):
+
+    """Plot threshold-sweep metrics using a notebook-friendly style."""
+    if sweep_df is None or sweep_df.empty:
+        raise ValueError("sweep_df is empty. Run threshold_sweep(...) first.")
+
+    metric_cols = metric_cols or ["recall1", "precision1", "accuracy", "f1", "bal_acc", "mcc"]
+    available_cols = [c for c in metric_cols if c in sweep_df.columns]
+    if not available_cols:
+        raise ValueError("None of the requested metric columns are present in sweep_df.")
+
+    color_map = {
+        "recall1": "#0398fc",
+        "precision1": "#fc6f03",
+        "accuracy": "#3f8a06",
+        "f1": "#ab0003",
+        "bal_acc": "#3f8a06",
+        "mcc": "#E7EF17",
+        "fpr": "#761e7c"}
+    marker_map = {
+        "recall1": "o",
+        "precision1": "s",
+        "accuracy": "^",
+        "f1": "d",
+        "bal_acc": "^",
+        "mcc": "P",
+        "fpr": "x",
+    }
+    label_map = {
+        "recall1": "Recall",
+        "precision1": "Precision",
+        "accuracy": "Accuracy",
+        "f1": "F1-score",
+        "bal_acc": "Balanced Accuracy",
+        "mcc": "MCC",
+        "fpr": "FPR",
+    }
+
+    fig, ax = plt.subplots(figsize=(10, 5), facecolor="lightgrey")
+    ax.set_facecolor("lightgrey")
+
+    if x_ticks is None:
+        x_ticks = np.round(np.arange(0, 1.1, 0.1), 2)
+    if y_ticks is None:
+        y_ticks = np.round(np.arange(0, 1.01, 0.1), 2)
+
+    ax.set_xticks(x_ticks)
+    ax.set_yticks(y_ticks)
+
+    for col in available_cols:
+        ax.plot(
+            sweep_df["threshold"],
+            sweep_df[col],
+            label=label_map.get(col, col),
+            marker=marker_map.get(col, "o"),
+            color=color_map.get(col, None),
+        )
+
+    ax.set_title(title)
+    ax.set_xlabel("Decision Threshold")
+    ax.set_ylabel("Score")
+    ax.grid(True, linestyle="--", alpha=0.6)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(f"{results_dir}/Threshold_Sweep_Plot")
+    plt.show()
 
 
 def select_threshold(
@@ -377,16 +462,30 @@ def threshold_stability_cv(
 
     if plot:
         if plot_kind == "box":
-            plt.figure(figsize=(6, 4))
-            plt.boxplot(threshold_array, vert=True)
-            plt.ylabel("Optimal Threshold")
-            plt.title("CV Threshold Stability (Boxplot)")
+            plt.figure(figsize=(7, 4), facecolor="lightgrey")
+            ax = plt.gca()
+            ax.set_facecolor("lightgrey")
+            ax.boxplot(threshold_array, vert=True)
+            ax.set_ylabel("Optimal Threshold")
+            ax.set_title("CV Threshold Stability (Boxplot)")
+            ax.grid(True, linestyle="--", alpha=0.5)
+            for spine in ax.spines.values():
+                spine.set_visible(False)
         else:
-            plt.figure(figsize=(6, 4))
-            plt.hist(threshold_array, bins="auto")
-            plt.xlabel("Optimal Threshold")
-            plt.ylabel("Count")
-            plt.title("CV Threshold Stability (Histogram)")
+            # Plot discrete threshold frequencies (clearer than auto-binned hist for small fold counts).
+            counts = pd.Series(np.round(threshold_array, 4)).value_counts().sort_index()
+            plt.figure(figsize=(8, 4), facecolor="lightgrey")
+            ax = plt.gca()
+            ax.set_facecolor("lightgrey")
+            ax.bar(counts.index.astype(float), counts.values, width=max(threshold_step * 0.8, 0.004), edgecolor="black")
+            ax.set_xlabel("Optimal Threshold")
+            ax.set_ylabel("Count (folds)")
+            ax.set_title("CV Threshold Stability (Discrete Histogram)")
+            ax.set_xticks(counts.index.astype(float))
+            ax.set_yticks(np.arange(0, int(counts.max()) + 1, 1))
+            ax.grid(True, axis="y", linestyle="--", alpha=0.5)
+            for spine in ax.spines.values():
+                spine.set_visible(False)
         plt.tight_layout()
         plt.show()
 

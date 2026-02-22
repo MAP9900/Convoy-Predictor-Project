@@ -32,6 +32,7 @@ from src.results.statistical_testing import (
 from src.results.calibration_threshold_eval import (
     calibration_report,
     fn_probability_diagnostics,
+    plot_threshold_sweep_metrics,
     select_threshold,
     threshold_stability_cv,
     threshold_sweep,
@@ -57,8 +58,10 @@ from src.results.segment_temporal_robustness import (
     threshold_sweep_metrics,
 )
 from src.results.leakage_data_quality_checks import (
+    aggregate_preprocessing_audits,
     audit_alignment,
     audit_preprocessing,
+    build_leakage_quality_report,
     build_risk_summary,
     check_split_integrity,
     confusion_groups,
@@ -336,6 +339,13 @@ sweep_df = threshold_sweep(
     threshold_max=0.35,
     threshold_step=0.01,
 )
+
+plot_threshold_sweep_metrics(
+    sweep_df,
+    metric_cols=['recall1', 'precision1', 'accuracy', 'f1'],
+    title='Threshold Sweep: Recall / Precision / Accuracy / F1',
+)
+
 sweep_df.head(10)
 ```
 
@@ -608,89 +618,76 @@ stability_summary_df.to_excel('/Users/matthewplambeck/Desktop/Convoy Predictor/r
 ```
 
 ```python
-# Cell 38: Leakage and split-integrity checks
-leakage_flags_df = flag_leakage_columns(
-    X_train,
-    feature_metadata=None,  # pass metadata dict/DataFrame if available
-    patterns=None,  # uses default suspicious leakage patterns
-)
+# Cell 38: End-to-end leakage/data-quality report (clean backend orchestration)
+base_models_for_audit = {
+    'qda': qda_ensemble,
+    'ada': ada_ensemble,
+    'dt': dt_ensemble,
+    'rf': rf_ensemble,
+    'et': et_ensemble,
+}
 
-split_integrity_report = check_split_integrity(
+leakage_quality_report = build_leakage_quality_report(
     X_train=X_train,
     X_test=X_test,
-    id_col=None,  # set if you keep an ID column in model matrix
-    convoy_id_col=None,  # set if convoy/group id is present in matrix
+    y_train=y_train,
+    y_test=y_test,
+    y_proba_test=y_proba,
+    threshold=0.25,
+    id_col=None,  # set if your model matrix includes a unique row id
+    convoy_id_col=None,  # set if convoy/group id exists in model matrix
+    df_raw_train=None,  # optional raw preprocessed train frame
+    df_raw_test=None,  # optional raw preprocessed test frame
+    feature_metadata=None,  # optional metadata table/dict
+    known_leakage_patterns=None,  # uses defaults when None
+    missingness_test={'method': 'chi2'},
+    multiple_test_method='fdr_bh',
+    outlier_method='iqr',
+    outlier_params={'k': 1.5},
+    preprocess_pipeline=None,  # use this only when auditing one shared pipeline
+    base_models=base_models_for_audit,  # preferred for this ensemble workflow
+    feature_groups=None,
+    alpha=0.05,
+    report_top_n=30,
 )
 
-leakage_flags_df.head(20), split_integrity_report
+leakage_flags_df = leakage_quality_report['leakage_flags']
+split_integrity_report = leakage_quality_report['split_integrity']
+alignment_train_report = leakage_quality_report['alignment_train']
+alignment_test_report = leakage_quality_report['alignment_test']
+test_groups = leakage_quality_report['groups']
+missingness_group_df = leakage_quality_report['missingness_by_group']
+train_outlier_bounds = leakage_quality_report['outlier_bounds']
+outliers_group_df = leakage_quality_report['outliers_by_group']
+preprocessing_audit_report = leakage_quality_report['preprocessing_audit']
+base_preprocess_audits = leakage_quality_report['base_preprocess_audits']
+risk_summary_df = leakage_quality_report['risk_summary']
+
+split_integrity_report
 ```
 
 ```python
-# Cell 39: Alignment, confusion groups, missingness, and outlier concentration
-alignment_train_report = audit_alignment(X_train, y_train, df_raw=None, id_col=None)
-alignment_test_report = audit_alignment(X_test, y_test, df_raw=None, id_col=None)
-
-test_groups = confusion_groups(y_test, y_proba, threshold=0.25)
-
-missingness_group_df = missingness_by_confusion_group(
-    X_test=X_test,
-    groups=test_groups,
-    multiple_test_method='fdr_bh',
-    missingness_test={'method': 'chi2'},
-)
-
-numeric_cols_quality = X_train.select_dtypes(include=[np.number]).columns.tolist()
-train_outlier_bounds = outlier_bounds_from_train(
-    X_train=X_train,
-    numeric_cols=numeric_cols_quality,
-    method='iqr',
-    params={'k': 1.5},
-)
-outliers_group_df = outliers_by_confusion_group(
-    X_test=X_test,
-    groups=test_groups,
-    bounds=train_outlier_bounds,
-)
-
+# Cell 39a: Alignment reports
 alignment_train_report, alignment_test_report
 ```
 
 ```python
+# Cell 39b: Missingness by confusion group (Top 20)
 missingness_group_df.head(20)
 ```
 
 ```python
+# Cell 39c: Outlier rates by confusion group (Top 20)
 outliers_group_df.head(20)
 ```
 
 ```python
-# Cell 40: Preprocessing audit (train-only fit consistency heuristics)
-# If you have a fitted pipeline object available, set preprocess_pipeline_ref to it.
-preprocess_pipeline_ref = globals().get('preprocess_pipeline', None)
-
-preprocessing_audit_report = audit_preprocessing(
-    preprocess_pipeline=preprocess_pipeline_ref,
-    X_train=X_train,
-    X_test=X_test,
-    feature_groups=None,  # optional: {'numeric': [...], 'categorical': [...]}
-    tolerance=1e-6,
-)
+# Cell 40: Preprocessing audit outputs
 preprocessing_audit_report
 ```
 
 ```python
 # Cell 41: Ranked risk summary table
-risk_summary_df = build_risk_summary(
-    leakage_flags=leakage_flags_df,
-    split_integrity=split_integrity_report,
-    alignment_train=alignment_train_report,
-    alignment_test=alignment_test_report,
-    missingness_df=missingness_group_df,
-    outliers_df=outliers_group_df,
-    preprocessing_audit=preprocessing_audit_report,
-    alpha=0.05,
-    report_top_n=30,
-)
 risk_summary_df
 ```
 
@@ -704,3 +701,6 @@ pd.DataFrame([split_integrity_report]).to_excel('/Users/matthewplambeck/Desktop/
 pd.DataFrame([alignment_train_report]).to_excel('/Users/matthewplambeck/Desktop/Convoy Predictor/results/Alignment_Train_Report.xlsx', index=False)
 pd.DataFrame([alignment_test_report]).to_excel('/Users/matthewplambeck/Desktop/Convoy Predictor/results/Alignment_Test_Report.xlsx', index=False)
 ```
+
+
+DONE!
