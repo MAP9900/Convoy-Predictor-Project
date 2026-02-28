@@ -1,85 +1,150 @@
-# Project Map
-Project root: /Users/matthewplambeck/Desktop/Convoy Predictor
+# SCRIPTS.md
+Project root: `/Users/matthewplambeck/Desktop/Convoy Predictor`
 
-- `Plots/` — Generated figures and model output visuals.
-- `artifacts/` — Saved model artifacts (joblib/json).
-- `data/` — Raw, external, and processed datasets.
-- `docs/` — Project report site (HTML/CSS) and images.
-- `misc/` — Miscellaneous assets.
-- `notebooks/` — Exploration, modeling, and visualization notebooks.
-- `src/` — Python source scripts (scraping, data prep, models, tests).
+This document is the practical map/runbook for the repository.
 
-# Scripts
+## 1) Canonical Workflow (Current)
+If your goal is to reproduce and extend final model analysis, use this path:
 
-## Data cleaning and preparation
-- `src/data_cleaning/DataFrames.py` — Cleans raw convoy Excel files and computes per-convoy aggregates (ships, sunk, tons, escorts, stragglers), writing transformed Excel outputs.
-- `src/data_cleaning/Convert_To_CSV.py` — Merges transformed convoy data with date sheets, standardizes date formats, and writes CSVs; includes a U-boat monthly data table.
-- `src/data_cleaning/Inconsistency_Test.py` — Compares convoy sink counts against UBoat.net data and surfaces mismatches for manual correction.
-- `src/data_cleaning/Compile_Data_Frames.py` — Combines route-level datasets into a single CSV and engineers derived features (sink percentages, escort ratio, time at sea, historical rates, etc.).
+1. Data source: `data/processed/Complete_Convoy_Data.csv`
+2. Model artifacts: `artifacts/algorithm_test_3/*.joblib`
+3. Results notebook: `notebooks/models/Results.ipynb`
+4. Modular backend for results: `src/results/*.py`
+5. Final outputs: `results/*.xlsx`, `results/*.png`, plus report content files in project root/docs
 
-## Web scraping
-- `src/scraping/SC_Convoy_Web-Scrape.py` — Scrapes SC convoy tables and dates from convoyweb.org.uk.
-- `src/scraping/HX_Convoy_Web-Scrape.py` — Scrapes HX convoy tables and dates from convoyweb.org.uk.
-- `src/scraping/OB_Convoy_Web-Scrape.py` — Scrapes OB convoy tables and dates from convoyweb.org.uk.
-- `src/scraping/ON_Convoy_Web-Scrape.py` — Scrapes ON convoy tables and dates from convoyweb.org.uk.
-- `src/scraping/ONS_Convoy_Web-Scrape.py` — Scrapes ONS convoy tables and dates from convoyweb.org.uk.
-- `src/scraping/UBoat.net_Data.py` — Scrapes convoy sink totals from uboat.net into a dataframe.
+For Section 6 report writing:
+- analysis narrative source: `results-analysis.md`
+- webpage target: `docs/section6.html`
 
-## Modeling and evaluation
-- `src/models/ML_Class_1.py` — Baseline model testing class with K-fold, grid search, and evaluation plots.
-- `src/models/ML_Class_2.py` — Expanded model testing class with additional optimization hooks and configurable scoring.
-- `src/models/Gradient_Boosting_Optimization.py` — Gradient boosting optimizer with threshold calibration and optional plot saving.
-- `src/models/CNB_Tester.py` — Complement Naive Bayes workflow with calibration, grid search, and evaluation utilities.
-- `src/models/Model_Refiner_1.py` — Experimental gradient-descent model refiner (noted as untested/optional).
-- `src/models/model_specs.py` — Model registry with estimator definitions and tuned parameter grids.
-- `src/models/model_artifacts.py` — Save/load helpers for trained models and metadata.
-- `src/models/perf_utils.py` — Performance-tracking decorator for timing, CPU, and memory.
-- `src/models/cache_preprocessor.py` — Utility to cache train/test/val splits for faster model runs.
+## 2) Directory Map
+- `data/`
+  - `raw/`: original convoy spreadsheets
+  - `external/`: external references (U-boat data)
+  - `processed/`: model-ready combined data
+- `artifacts/`: persisted trained estimators + metadata
+- `notebooks/`
+  - `models/Results.ipynb`: final integrated analysis notebook
+- `src/`
+  - `results/`: modular analytics library used by results workflow
+  - `models/`: model classes, tuning logic, artifact helpers
+  - `data_cleaning/`: legacy preprocessing scripts
+  - `scraping/`: legacy web-scraping scripts
+  - `tests/`: exploratory/legacy scripts (not formal test suite)
+- `results/`: generated result tables/figures
+- `docs/`: static report website
+- `Plots/`: earlier or duplicated plot exports
 
-## Results workflows
-- `src/results/model_loading_core.py` — Shared seed/split utilities, model-tester preparation, and voting-ensemble evaluation metrics.
-- `src/results/ensemble_models.py` — Loads saved base models and runs the calibrated five-model soft-voting ensemble at threshold 0.25.
-- `src/results/visualization_functions.py` — ROC/confusion plotting plus permutation, aggregated, and SHAP feature-importance plot functions.
-- `src/results/confusion_groups.py` — Builds FN/FP/TP/TN slices from scored test rows and compares grouped `describe()` statistics.
-- `src/results/statistical_testing.py` — Nonparametric feature-testing pipeline (global Kruskal, pairwise Mann-Whitney, Cliff's delta, FDR/Holm correction, and ranked summary table).
-- `src/results/calibration_threshold_eval.py` — Calibration quality and operating-threshold evaluation utilities (Brier/calibration curve, FN probability diagnostics, threshold sweep/selection, and CV threshold stability).
-- `src/results/feature_importance_triangulation.py` — Multi-view feature-importance triangulation (permutation, aggregated base-model importance, SHAP, rank agreement, stability flags, and FN-specific SHAP analysis).
-- `src/results/segment_temporal_robustness.py` — Segment/time robustness evaluation (time bins, segment metrics, FN concentration, shift testing, and per-segment threshold stability).
-- `src/results/leakage_data_quality_checks.py` — Leakage/data-quality audit utilities (column leakage flags, split/alignment checks, missingness/outlier diagnostics by confusion group, preprocessing audit, and ranked risk summary).
-- `src/results/run_results.md` — Notebook-ready execution cells (imports + function calls) for the full results workflow.
-- `src/results/results.md` — Detailed narrative summary of all results-module additions, goals, execution flow, assumptions, and caveats.
+## 3) `src/results` Modules (Primary)
 
-## Tests and exploratory scripts
-- `src/tests/Test_1.py` — Mixed exploratory analysis and KNN cross-validation (includes plotting and stats).
-- `src/tests/Test_2.py` — SC convoy time-series plots and moving averages.
-- `src/tests/Test_3.py` — SC convoy trend plots plus correlation and binning analysis.
-- `src/tests/Test_4.py` — Learning-curve plotting helper.
-- `src/tests/Test_5.py` — U-boat data table export and PCA/classification experiments.
-- `src/tests/Test_6.py` — PCA 3D visualization demo on synthetic data.
+### Core loading and ensemble execution
+- `src/results/model_loading_core.py`
+  - Shared seed/split helpers and voting-ensemble evaluation.
+- `src/results/ensemble_models.py`
+  - Loads final base models and builds calibrated five-model soft-voting ensemble.
 
-# Notebooks
+### Visualization and interpretability
+- `src/results/visualization_functions.py`
+  - ROC, confusion matrix, permutation importance, aggregated base importance, SHAP importance plots.
 
-## Exploration notebooks
-- `notebooks/exploration/Algorithm_Test_1.ipynb` — Early algorithm comparison experiments.
-- `notebooks/exploration/Algorithm_Test_2.ipynb` — Follow-up algorithm testing and metric checks.
-- `notebooks/exploration/Algorithm_Test_3.ipynb` — Later algorithm benchmarking and tuning trials.
-- `notebooks/exploration/CNB_and_QDA_Test.ipynb` — Complement Naive Bayes vs QDA evaluation.
-- `notebooks/exploration/Classification_Test_1.ipynb` — Initial classification workflow experiments.
-- `notebooks/exploration/Classification_Test_2.ipynb` — Extended classification testing.
-- `notebooks/exploration/Ensemble_Learning_Test.ipynb` — Ensemble model experiments.
-- `notebooks/exploration/Regression_Test_1.ipynb` — Initial regression analysis.
-- `notebooks/exploration/Regression_Test_2.ipynb` — Follow-up regression experiments.
-- `notebooks/exploration/XGBRFClassifier_Test_1.ipynb` — XGBRF classifier-specific testing.
+### Error cohort analysis
+- `src/results/confusion_groups.py`
+  - Builds FN/FP/TP/TN subsets and exports descriptive comparisons.
 
-## Modeling notebooks
-- `notebooks/models/Convoy_Feature_Importance.ipynb` — Feature-importance analysis for trained models.
-- `notebooks/models/GB_Model_Vis.ipynb` — Gradient boosting model visualization.
-- `notebooks/models/Results.ipynb` — Consolidated model result review.
-- `notebooks/models/Results_OLD.ipynb` — Archived/previous results notebook.
+### Statistical inference
+- `src/results/statistical_testing.py`
+  - Kruskal global screens, Mann-Whitney pairwise tests, Cliff's delta, p-value correction, summary ranking.
 
-## Visualization notebooks
-- `notebooks/visualization/Convoy_Data_Vis.ipynb` — General convoy dataset visualization.
-- `notebooks/visualization/Convoy_Routes_Viz.ipynb` — Convoy route-focused plots/maps.
-- `notebooks/visualization/HX_Plots.ipynb` — HX route visualization notebook.
-- `notebooks/visualization/OB_Plots.ipynb` — OB route visualization notebook.
-- `notebooks/visualization/SC_Plots.ipynb` — SC route visualization notebook.
+### Calibration and thresholding
+- `src/results/calibration_threshold_eval.py`
+  - Calibration diagnostics, FN-threshold diagnostics, threshold sweeps, objective-based threshold selection, CV stability.
+
+### Feature importance triangulation
+- `src/results/feature_importance_triangulation.py`
+  - Merges permutation/native/SHAP importance views, computes rank agreement and stability, performs FN-specific SHAP analysis.
+
+### Segment and temporal robustness
+- `src/results/segment_temporal_robustness.py`
+  - Segment metrics, FN concentration, distribution-shift tests, segment-specific threshold stability.
+
+### Leakage and data quality checks
+- `src/results/leakage_data_quality_checks.py`
+  - Leakage flags, split integrity checks, alignment audits, missingness/outlier diagnostics, risk summary.
+
+### Notebook cell runbook
+- `src/results/run_results.md`
+  - Ordered notebook cells to run the full analysis stack.
+
+## 4) `src/models` (Modeling Infrastructure)
+
+### Active/core utilities
+- `src/models/ML_Class_2.py`
+  - Main model runner class with search strategies and threshold calibration.
+- `src/models/model_specs.py`
+  - Estimator registry + small/large parameter grids.
+- `src/models/model_artifacts.py`
+  - Save/load helpers for trained models.
+- `src/models/perf_utils.py`
+  - Runtime and resource instrumentation helpers.
+- `src/models/cache_preprocessor.py`
+  - Preprocessed split caching utility.
+
+### Legacy/experimental scripts
+- `src/models/ML_Class_1.py`
+- `src/models/CNB_Tester.py`
+- `src/models/QDA_Tester.py`
+- `src/models/Gradient_Boosting_Optimization.py`
+- `src/models/Model_Refiner_1.py`
+
+Use these for historical context unless you explicitly need their behavior.
+
+## 5) Data-Cleaning and Scraping Scripts (Legacy Pipeline)
+These scripts were part of the original acquisition/prep workflow and contain hardcoded relative assumptions.
+
+### Data preparation
+- `src/data_cleaning/DataFrames.py`
+- `src/data_cleaning/Convert_To_CSV.py`
+- `src/data_cleaning/Inconsistency_Test.py`
+- `src/data_cleaning/Compile_Data_Frames.py`
+
+### Scraping
+- `src/scraping/SC_Convoy_Web-Scrape.py`
+- `src/scraping/HX_Convoy_Web-Scrape.py`
+- `src/scraping/OB_Convoy_Web-Scrape.py`
+- `src/scraping/ON_Convoy_Web-Scrape.py`
+- `src/scraping/ONS_Convoy_Web-Scrape.py`
+- `src/scraping/UBoat.net_Data.py`
+
+## 6) Tests Folder Status
+`src/tests/` currently holds exploratory scripts and visual demos rather than assertive, automated tests.
+
+- `Test_1.py` to `Test_6.py`: ad hoc experiments/plots/PCA demos.
+
+Recommendation:
+- treat as notebooks-in-script-form, not CI-safe validation.
+
+## 7) Inputs and Outputs
+
+### Key input files
+- `data/processed/Complete_Convoy_Data.csv`
+- `artifacts/algorithm_test_3/*.joblib`
+
+### Key output files
+- `results/Threshold_Sweep.xlsx`
+- `results/Threshold_Selections.xlsx`
+- `results/Statistical_Testing_Summary.xlsx`
+- `results/Feature_Triangulation_*.xlsx`
+- `results/Segment_*.xlsx`
+- `results/Leakage_Data_Quality_All_In_One.xlsx`
+- `results/FiveModel_CalSoft_t0.25_*.png`
+
+## 8) Documentation Pointers
+- high-level project summary: `README.md`
+- results module details: `src/results/README.md`
+- section 6 narrative draft: `results-analysis.md`
+- engineering/code review: `PROJECT_CODE_REVIEW.md`
+
+## 9) Known Operational Caveats
+1. Several modules still include absolute local paths and are not fully portable.
+2. Environment dependencies are not pinned in a lock file.
+3. End-to-end execution is notebook-driven (manual orchestration).
+4. Formal automated tests are not yet implemented for core analytics modules.

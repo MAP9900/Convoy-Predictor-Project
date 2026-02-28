@@ -1,45 +1,54 @@
 # Convoy Predictor
 
 ## Overview
-Convoy Predictor is an end-to-end data science project centered on WWII Atlantic convoy operations. It covers
-data acquisition, cleaning, feature engineering, modeling, and reporting, with a focus on predicting convoy risk
-and analyzing historical drivers of sinkings.
+Convoy Predictor is an end-to-end historical analytics and machine learning project focused on WWII Atlantic convoy risk.
 
-## Highlights
-- End-to-end WWII convoy dataset built from multiple routes (SC, HX, OB, ON, ONS) plus external U-Boat sources.
-- Data integrity checks cross-validate convoy sink counts against UBoat.net records, with mismatch reports for manual fixes.
-- Feature engineering adds operational context such as escort ratio, time at sea, monthly historical sink rates, and U-Boat presence.
-- Modeling bench spans classic ML baselines and ensembles (e.g., QDA, Complement Naive Bayes, Gradient Boosting) with reusable evaluation utilities.
-- Interpretability-first outputs: ROC/PR curves, confusion matrices, and feature importance plots for decision support.
-- Reproducible artifacts saved to `artifacts/` with metadata, plus static report assets in `docs/`.
+The repository contains:
+- data ingestion and cleaning workflows,
+- model training and artifact persistence,
+- a modular results-analysis stack,
+- report-ready outputs and a static documentation site.
 
-## Project Map
-See `SCRIPTS.md` for a concise map of the top-level folders and the purpose of each script.
+## Current Project State
+The most complete and current workflow is the final analysis pipeline in:
+- `notebooks/models/Results.ipynb`
+- `src/results/*.py`
 
-## Data
-- `data/raw/` — Raw convoy datasets (Excel/CSV).
-- `data/external/` — External reference datasets (e.g., U-Boat data).
-- `data/processed/` — Cleaned and compiled CSV outputs.
+This workflow loads saved models, evaluates the calibrated ensemble, and runs deeper diagnostics (thresholding, statistical testing, feature triangulation, temporal robustness, and leakage/data-quality checks).
 
-## Notebooks
-- `notebooks/exploration/` — Early exploration and algorithm tests.
-- `notebooks/models/` — Model-focused analysis and visuals.
-- `notebooks/visualization/` — Plotting and storytelling notebooks.
+## Quick Navigation
+- Script map/runbook: `SCRIPTS.md`
+- Results module detail: `src/results/README.md`
+- Findings narrative for report writing: `results-analysis.md`
+- Repository-level engineering review: `PROJECT_CODE_REVIEW.md`
 
-## Scripts
-- `src/scraping/` — Selenium-based scrapers for convoy sources.
-- `src/data_cleaning/` — Data preparation and feature engineering utilities.
-- `src/models/` — Model training, evaluation, and artifact helpers.
-- `src/tests/` — Exploratory analysis scripts and ad hoc tests.
+## Repository Layout
+- `data/` - raw/external/processed data
+- `artifacts/` - persisted model objects and metadata
+- `notebooks/` - exploration, modeling, and visualization notebooks
+- `src/` - code for data prep, modeling, results analysis, scraping, and legacy tests
+- `results/` - exported analysis tables and figures
+- `docs/` - static report website (`section6.html` is results section target)
+- `Plots/` - historical and supplemental plots
 
-## Outputs
-- `Plots/` — Generated plots and figures.
-- `artifacts/` — Saved model artifacts and metadata.
-- `docs/` — Static report site assets.
+## Core Inputs and Outputs
 
-## Findings (Still need to add!)
-- 
+### Inputs
+- Processed dataset: `data/processed/Complete_Convoy_Data.csv`
+- Model artifacts: `artifacts/algorithm_test_3/*.joblib`
 
-## Notes
-- Some scripts assume local paths and ChromeDriver availability.
-- Several scripts are exploratory or one-off; `SCRIPTS.md` clarifies their intent.
+### Outputs
+- Metrics/diagnostics tables in `results/*.xlsx`
+- Figures in `results/*.png`
+- Report prose assets in markdown/html under repo root and `docs/`
+
+## Recommended Workflow
+1. Use the existing processed data and artifacts.
+2. Run/inspect `notebooks/models/Results.ipynb` (guided by `src/results/run_results.md`).
+3. Use `results-analysis.md` to populate `docs/section6.html`.
+4. Use `PROJECT_CODE_REVIEW.md` and `SCRIPTS.md` for maintenance and refactoring priorities.
+
+## Important Notes
+- Some scripts still rely on machine-specific absolute paths.
+- Dependency versions are not yet pinned in a lock file.
+- `src/tests/` is exploratory and not a formal automated test suite.
