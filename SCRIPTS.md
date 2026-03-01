@@ -8,7 +8,9 @@ If your goal is to reproduce and extend final model analysis, use this path:
 
 1. Data source: `data/processed/Complete_Convoy_Data.csv`
 2. Model artifacts: `artifacts/algorithm_test_3/*.joblib`
-3. Results notebook: `notebooks/models/Results.ipynb`
+3. Results notebooks:
+   - `notebooks/models/Results.ipynb` (core analysis + exports)
+   - `notebooks/models/Results_Viz.ipynb` (final report visualizations)
 4. Modular backend for results: `src/results/*.py`
 5. Final outputs: `results/*.xlsx`, `results/*.png`, plus report content files in project root/docs
 
@@ -45,6 +47,18 @@ For Section 6 report writing:
 ### Visualization and interpretability
 - `src/results/visualization_functions.py`
   - ROC, confusion matrix, permutation importance, aggregated base importance, SHAP importance plots.
+- `src/results/performance_panel_viz.py`
+  - Operating-point panel (ROC, PR, confusion matrix, KPI block).
+- `src/results/threshold_tradeoff_viz.py`
+  - Threshold trade-off curve for recall/precision/accuracy/F1.
+- `src/results/calibration_distribution_viz.py`
+  - Calibration curve + class-wise probability distribution plot.
+- `src/results/robustness_viz.py`
+  - Temporal robustness heatmap by segment.
+- `src/results/interpretability_viz.py`
+  - Feature-rank bump chart and FN-focused SHAP delta insight view.
+- `src/results/case_study_cards_viz.py`
+  - TP/FN/FP case-study cards for report storytelling.
 
 ### Error cohort analysis
 - `src/results/confusion_groups.py`

@@ -99,6 +99,7 @@ Recommendation:
 ## Strengths
 - Clear modularization of the final analysis pipeline under `src/results/`.
 - Good analytical coverage: calibration, thresholding, stats testing, feature triangulation, segment drift, leakage checks.
+- New report visualization layer now covers operating-point panels, threshold trade-offs, calibration/distribution, temporal heatmaps, case cards, and FN-focused views.
 - Artifact outputs are comprehensive and report-ready.
 - `model_artifacts.py` cleanly handles persisted estimators and metadata.
 
@@ -107,7 +108,7 @@ Recommendation:
 - Processed dataset: `data/processed/Complete_Convoy_Data.csv`
 - Training/eval abstractions: `src/models/`
 - Final analysis modules: `src/results/`
-- Notebook orchestration: `notebooks/models/Results.ipynb`
+- Notebook orchestration: `notebooks/models/Results.ipynb`, `notebooks/models/Results_Viz.ipynb`
 - Report site: `docs/` (notably `section6.html`)
 
 ## Recommended Refactor Roadmap

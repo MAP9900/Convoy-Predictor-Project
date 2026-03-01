@@ -1,4 +1,3 @@
-TODO: Remove legacy section5.html sections and update with results
 <!--Results of ML models and Feature Analysis-->
 <!DOCTYPE html>
 <html lang="en">
@@ -26,9 +25,45 @@ TODO: Remove legacy section5.html sections and update with results
         </nav>
     </header>
 
-    <!-- Main Content Section (Image Gallery) -->
+    <!-- Final Results Section -->
     <main>
-        
+    <h2 style="text-align: center;">Convoy Risk Prediction Model Analysis</h2>
+
+    <p class="centered-paragraph">
+    Through extensive testing, the FiveModel_CalSoft_t0.25 ensemble model has proved to be the most capable model in predicting convoys at risk of having at least one ship sunk or zero
+    ships sunk. This section will cover the results of the FiveModel_CalSoft_t0.25 model and will encompass a deep analysis into the model and its behavior. All tests come from the
+    <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/models/Results.ipynb" target="_blank">results notebook</a> with underlying analysis code found
+    <a href="https://github.com/MAP9900/Convoy-Predictor-Project/tree/main/src/results" target="_blank">here</a>.
+<!-- 
+    Guide to <a href="section1_3.html" target="_blank">ML Terminology & Metrics</a>
+ -->
+    </p>
+    <!--Final Model Overview -->
+    <h2 style="text-align: center;">Model Overview</h2>
+    <p style="margin-bottom:0.75rem;">
+    Final ensemble: <strong>FiveModel_CalSoft_t0.25</strong> (calibrated soft-voting),
+    evaluated on a held-out test set (<strong>n=235</strong>) at decision threshold <strong>0.25</strong>.
+    </p>
+    <br>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:0.6rem; margin-bottom:0.75rem;">
+    <div><strong>ROC AUC</strong><br>0.821</div>
+    <div><strong>Accuracy</strong><br>0.830</div>
+    <div><strong>Recall (At-Risk)</strong><br>0.680</div>
+    <div><strong>Precision (At-Risk)</strong><br>0.586</div>
+    <div><strong>F1 (At-Risk)</strong><br>0.630</div>
+    <div><strong>MCC</strong><br>0.522</div>
+    <div><strong>Balanced Accuracy</strong><br>0.775</div>
+  </div>
+    <br>
+  <p class="centered-paragraph">
+    <strong>Overview:</strong> The model exhibits strong class separation (AUC 0.821) with moderate At-Risk recall/precision at the selected threshold
+
+
+    <!-- Confusion Matrix -->
+    <h2 style="text-align: center;">Confusion Matrix</h2>
+
+    <img src="_______" alt="Confusion Matrix" width="450" height="450">
+
     </main>
 
     <!-- Footer Section -->

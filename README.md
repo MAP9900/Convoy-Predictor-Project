@@ -12,9 +12,10 @@ The repository contains:
 ## Current Project State
 The most complete and current workflow is the final analysis pipeline in:
 - `notebooks/models/Results.ipynb`
+- `notebooks/models/Results_Viz.ipynb`
 - `src/results/*.py`
 
-This workflow loads saved models, evaluates the calibrated ensemble, and runs deeper diagnostics (thresholding, statistical testing, feature triangulation, temporal robustness, and leakage/data-quality checks).
+This workflow loads saved models, evaluates the calibrated ensemble, runs deeper diagnostics (thresholding, statistical testing, feature triangulation, temporal robustness, and leakage/data-quality checks), and generates final report visualizations.
 
 ## Quick Navigation
 - Script map/runbook: `SCRIPTS.md`
@@ -45,8 +46,9 @@ This workflow loads saved models, evaluates the calibrated ensemble, and runs de
 ## Recommended Workflow
 1. Use the existing processed data and artifacts.
 2. Run/inspect `notebooks/models/Results.ipynb` (guided by `src/results/run_results.md`).
-3. Use `results-analysis.md` to populate `docs/section6.html`.
-4. Use `PROJECT_CODE_REVIEW.md` and `SCRIPTS.md` for maintenance and refactoring priorities.
+3. Run `notebooks/models/Results_Viz.ipynb` to generate final Section 6 figures.
+4. Use `results-analysis.md` to populate `docs/section6.html`.
+5. Use `PROJECT_CODE_REVIEW.md` and `SCRIPTS.md` for maintenance and refactoring priorities.
 
 ## Important Notes
 - Some scripts still rely on machine-specific absolute paths.

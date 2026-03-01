@@ -1,182 +1,149 @@
-# Results Workflow Additions
+# `src/results` README
 
-## Purpose
-This document summarizes all additions implemented under `src/results/`. The aim is to turn notebook-heavy analysis into reusable, modular scripts while preserving existing output paths and notebook-driven execution style.
+Purpose: this folder is the modular backend for the final analysis workflow used in `notebooks/models/Results.ipynb`.
 
-The additions support:
-- Reproducible model loading and ensemble evaluation
-- Plotting and interpretation utilities
-- Confusion-group extraction and comparison
-- Statistical testing across confusion groups
-- Calibration and threshold quality analysis
-- Feature-importance triangulation across multiple methods
-- Segment/time robustness analysis
-- Leakage and data-quality audits
+It turns the notebook analysis into reusable functions for:
+- model loading and ensemble scoring,
+- error cohort analysis (FN/FP/TP/TN),
+- statistical testing,
+- calibration and threshold tuning,
+- feature-importance triangulation,
+- temporal/segment robustness,
+- leakage and data-quality audits.
 
-## What Was Added
+A dedicated visualization notebook is also available at `notebooks/models/Results_Viz.ipynb` for Section 6 report figures.
 
-### 1) Core model loading and evaluation
-- `src/results/model_loading_core.py`
-- `src/results/ensemble_models.py`
+## Canonical Inputs
+- Processed data: `data/processed/Complete_Convoy_Data.csv`
+- Saved models: `artifacts/algorithm_test_3/*.joblib`
 
-Goal:
-- Centralize shared split/seed setup and model tester preparation
-- Load artifacted base models and run the calibrated five-model soft-voting ensemble
+## Canonical Outputs
+Generated into `results/` (repo root), including:
+- performance plots (`*_CM.png`, `*_Permutation_Importance.png`, etc.)
+- threshold diagnostics (`Threshold_Sweep.xlsx`, `Threshold_Selections.xlsx`)
+- statistical outputs (`Kruskal_Global_Screen.xlsx`, `MWU_*.xlsx`)
+- triangulation outputs (`Feature_Triangulation_*.xlsx`)
+- segment robustness outputs (`Segment_*.xlsx`)
+- leakage/data-quality outputs (`Leakage_Data_Quality_All_In_One.xlsx`)
 
-Key outputs:
-- Ensemble metrics table
-- Trained voting model object
-- Confusion matrix/report objects
+## Module Guide
 
-### 2) Visualization functions
-- `src/results/visualization_functions.py`
+### `model_loading_core.py`
+Shared utilities for reproducibility and evaluation:
+- seed setup
+- train/test split helper
+- tester preparation from `MODEL_SPECS`
+- voting ensemble evaluation function
 
-Goal:
-- Keep visualization logic separate and editable per plot (no monolithic runner)
+### `ensemble_models.py`
+Loads the final base models and runs the calibrated five-model soft-voting ensemble (`t=0.25`).
 
-Includes:
-- ROC curve plot
-- Confusion matrix plot
-- Permutation importance plot
-- Aggregated base-model importance plot
-- SHAP importance plot
+### `visualization_functions.py`
+Plotting functions for:
+- ROC curve
+- confusion matrix
+- permutation importance
+- aggregated base-model importance
+- SHAP importance
 
-Note:
-- Save paths are preserved to `/Users/matthewplambeck/Desktop/Convoy Predictor/results/...`
+### `performance_panel_viz.py`
+Final operating-point panel:
+- ROC with threshold marker
+- PR with threshold marker
+- confusion matrix
+- KPI summary block
 
-### 3) Confusion-group extraction and summary
-- `src/results/confusion_groups.py`
+### `threshold_tradeoff_viz.py`
+Threshold trade-off line chart for recall, precision, accuracy, and F1.
 
-Goal:
-- Build FN/FP/TP/TN subsets from consistent split definitions
-- Compare descriptive statistics across groups
+### `calibration_distribution_viz.py`
+Calibration and probability diagnostics:
+- reliability curve
+- class-wise probability histogram with threshold line
 
-Includes:
-- FN/FP/TP/TN extraction functions
-- `compare_confusion_group_describes(...)`
+### `robustness_viz.py`
+Temporal robustness heatmap across segment metrics.
 
-### 4) Statistical testing pipeline (nonparametric)
-- `src/results/statistical_testing.py`
+### `interpretability_viz.py`
+Section-6 interpretability visuals:
+- feature-rank bump chart across methods
+- FN-focused SHAP delta insight view
 
-Goal:
-- Quantify feature differences across confusion groups with corrected significance
+### `case_study_cards_viz.py`
+Storytelling cards for representative TP/FN/FP convoy cases.
 
-Includes:
-- Global Kruskal–Wallis feature screen
-- Pairwise Mann–Whitney tests
-- Manual Cliff's delta + magnitude labels
-- FDR (Benjamini–Hochberg) and Holm corrections
-- Ranked summary table builder
-- Conditional targeted post-hoc testing on globally significant features
+### `confusion_groups.py`
+Builds scored test-row subsets for:
+- false negatives
+- false positives
+- true positives
+- true negatives
 
-### 5) Calibration and threshold-quality evaluation
-- `src/results/calibration_threshold_eval.py`
+Also includes grouped descriptive comparison helpers.
 
-Goal:
-- Evaluate probability calibration quality and operating-threshold behavior
+### `statistical_testing.py`
+Nonparametric testing pipeline:
+- global Kruskal screens
+- pairwise Mann-Whitney tests
+- Cliff's delta and rank-biserial effect sizes
+- multiple-testing adjustment (`fdr_bh`, `holm`)
+- ranked summary tables
 
-Includes:
-- Brier score and baseline comparison
-- Calibration curve plotting (pre/post optional)
+### `calibration_threshold_eval.py`
+Calibration and operating-threshold diagnostics:
+- Brier score report
+- calibration curve support
 - FN probability diagnostics near threshold
-- Threshold sweep metrics
-- Objective-based threshold selection:
-  - `min_fn_bounded_fp`
-  - `max_mcc_with_recall_constraint`
-  - `max_bal_acc_with_recall_constraint`
-- CV threshold stability analysis
+- threshold sweep and objective-based selection
+- optional CV threshold stability
 
-### 6) Feature importance triangulation
-- `src/results/feature_importance_triangulation.py`
+### `feature_importance_triangulation.py`
+Integrates three importance perspectives:
+- permutation importance
+- native base-model importance
+- SHAP importance
 
-Goal:
-- Compare feature-importance rankings from multiple viewpoints and detect disagreement
+Adds:
+- rank agreement,
+- stable/unstable feature flags,
+- FN-specific SHAP delta analysis,
+- one-call consolidated triangulation report.
 
-Includes:
-- Ensemble permutation importance
-- Aggregated native base-model importance (mean/var/CV)
-- Tree-model SHAP aggregation (lazy SHAP import)
-- Normalized multi-method comparison table
-- Rank agreement (Spearman)
-- Stable vs unstable feature identification
-- FN-specific SHAP delta analysis
-- One-call full report builder
+### `segment_temporal_robustness.py`
+Temporal and segment reliability checks:
+- segment creation (`Year`, `YearMonth`, `EarlyLate`)
+- per-segment metrics and FN distribution
+- distribution-shift testing
+- per-segment threshold stability
 
-### 7) Segment and temporal robustness
-- `src/results/segment_temporal_robustness.py`
+### `leakage_data_quality_checks.py`
+Audit layer for leakage and data quality:
+- leakage flagging by feature names/metadata
+- split integrity checks
+- alignment checks for X/y/raw frames
+- missingness and outlier concentration by confusion group
+- preprocessing audit heuristics
+- ranked risk summary
 
-Goal:
-- Validate whether model behavior shifts by time period or route segment
+## Recommended Run Order
+Use `run_results.md` (or notebook equivalents) in this order:
+1. Load data, split, load models, run ensemble.
+2. Baseline plots + confusion-group extraction.
+3. Statistical testing.
+4. Calibration + threshold diagnostics.
+5. Feature importance triangulation.
+6. Segment/temporal robustness.
+7. Leakage/data quality audit.
 
-Includes:
-- Time segment creation (`Year`, `YearMonth`, `EarlyLate`)
-- Segment-wise performance metrics and confusion counts
-- FN distribution by segment
-- Covariate shift tests:
-  - Early vs Late (Mann–Whitney + Cliff's delta)
-  - Multi-group (Kruskal)
-- Segment-wise threshold stability and material deviation flags
-- Optional matplotlib plots (no seaborn)
+For final report visuals, run `notebooks/models/Results_Viz.ipynb` after exports are available.
 
-### 8) Leakage and data-quality checks
-- `src/results/leakage_data_quality_checks.py`
+## Related Docs
+- Top-level runbook: `SCRIPTS.md`
+- Project overview: `README.md`
+- Results narrative for Section 6: `results-analysis.md`
+- Repo engineering review: `PROJECT_CODE_REVIEW.md`
 
-Goal:
-- Surface leakage risks and dataset integrity issues before relying on results
-
-Includes:
-- Leakage flagging by column-name patterns + optional metadata
-- Split integrity checks (duplicates, ID overlap, convoy/group overlap)
-- Alignment audits for `X`, `y`, and optional raw frames
-- Missingness-by-confusion-group tests with p-value correction
-- Train-derived outlier bounds + outlier concentration by group
-- Preprocessing audit heuristics (train-only fit consistency checks)
-- Ranked risk summary table for reporting/prioritization
-
-## Notebook Execution Integration
-- `src/results/run_results.md` now contains executable notebook cells for all modules.
-- Cells are organized into phases:
-  1. Core load/evaluate/plot
-  2. Confusion-group tables
-  3. Statistical testing
-  4. Calibration + threshold tuning
-  5. Importance triangulation
-  6. Segment/time robustness
-  7. Leakage + data quality checks
-
-## Documentation Updates
-- `SCRIPTS.md` was updated with a **Results workflows** section that lists and describes each added results script.
-
-## Design Principles Used
-- Keep functions simple and composable
-- Prefer explicit inputs/outputs over hidden state
-- Preserve your existing absolute save paths
-- Add comments/docstrings for maintainability
-- Make plots optional where analysis can run headless
-- Handle NaNs and small-sample edge cases defensively
-
-## Known Limitations and Heuristics
-- Leakage and preprocessing checks are best-effort heuristics, not formal proofs.
-- Preprocessing audit cannot always prove train-only fitting without training logs/artifacts.
-- SHAP support depends on installed package and tree-compatible estimators.
-- Some segment/time analyses require enough segment sample size (`min_segment_n`, `min_pos_n`).
-- Statistical significance depends on group counts and missingness patterns.
-
-## Suggested Usage Pattern
-1. Run base workflow cells in `run_results.md` through model scoring.
-2. Run diagnostic modules in order (stats -> threshold -> triangulation -> segment robustness -> leakage quality).
-3. Export generated tables to `/results` and use them for reporting.
-4. Treat `risk_summary` as a gating checklist before final conclusions.
-
-## File Inventory (Results)
-- `src/results/model_loading_core.py`
-- `src/results/ensemble_models.py`
-- `src/results/visualization_functions.py`
-- `src/results/confusion_groups.py`
-- `src/results/statistical_testing.py`
-- `src/results/calibration_threshold_eval.py`
-- `src/results/feature_importance_triangulation.py`
-- `src/results/segment_temporal_robustness.py`
-- `src/results/leakage_data_quality_checks.py`
-- `src/results/run_results.md`
-- `src/results/README.md` (this file)
+## Current Caveats
+1. Some modules still use machine-specific absolute paths for defaults.
+2. The execution pattern is notebook-driven, not yet one-click script orchestration.
+3. `src/tests/` is exploratory and does not yet provide automated regression coverage for these modules.

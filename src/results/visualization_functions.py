@@ -29,16 +29,15 @@ def plot_confusion_matrix(cm, model_name, class_labels=None, results_dir=DEFAULT
         labels_to_use = [str(i) for i in range(cm.shape[0])]
     else:
         labels_to_use = [str(label) for label in class_labels]
-
     plt.figure(figsize=(6, 4), facecolor="lightgrey")
     ax = sns.heatmap(
         cm,
         annot=True,
         fmt="d",
         cmap="Blues",
+        cbar=False, #Remove Gradient Color Bar (Legend)
         xticklabels=labels_to_use,
-        yticklabels=labels_to_use,
-    )
+        yticklabels=labels_to_use,)
     plt.xlabel("Predicted")
     plt.ylabel("Actual")
     plt.title("FiveModel_CalSoft_t0.25 \n Confusion Matrix")
@@ -52,8 +51,7 @@ def plot_permutation_importance(
     y_test,
     feature_names,
     model_name="FiveModel_CalSoft_t0.25",
-    results_dir=DEFAULT_RESULTS_DIR,
-):
+    results_dir=DEFAULT_RESULTS_DIR,):
     perm = permutation_importance(
         voter_calsoft_025,
         X_test,
