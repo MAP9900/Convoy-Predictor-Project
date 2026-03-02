@@ -265,6 +265,7 @@ def plot_threshold_sweep_metrics(
     sweep_df,
     metric_cols=None,
     title="Metrics vs Decision Threshold",
+    output_title="Threshold_Sweep_Plot",
     x_ticks=None,
     y_ticks=None,
     results_dir=DEFAULT_RESULTS_DIR,):
@@ -310,10 +311,10 @@ def plot_threshold_sweep_metrics(
     ax.set_facecolor("lightgrey")
 
     if x_ticks is None:
-        x_ticks = np.round(np.arange(0, 1.1, 0.1), 2)
+        x_ticks = (np.arange(0.15, 0.36, 0.05))
     if y_ticks is None:
-        y_ticks = np.round(np.arange(0, 1.01, 0.1), 2)
-
+        y_ticks = (np.arange(0, 1.1, 0.1))
+ 
     ax.set_xticks(x_ticks)
     ax.set_yticks(y_ticks)
 
@@ -332,8 +333,9 @@ def plot_threshold_sweep_metrics(
     plt.grid(True, linestyle="--", alpha=0.6)
     for spine in plt.gca().spines.values():
         spine.set_visible(False)
-    plt.legend()
-    plt.savefig(f"{results_dir}/Threshold_Sweep_Plot.png")
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), ncol=4)
+    plt.savefig(f"{results_dir}/{output_title}", bbox_inches='tight', dpi=300)
+    # plt.savefig(f"{results_dir}/{output_title}")
     plt.show()
 
 

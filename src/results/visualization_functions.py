@@ -68,13 +68,18 @@ def plot_permutation_importance(
         }
     ).sort_values(by="Importance", ascending=False)
 
-    plt.figure(figsize=(8, 4), facecolor="lightgrey")
+    plt.figure(figsize=(9, 5), facecolor="lightgrey")
     ax = sns.barplot(x="Importance", y="Feature", data=perm_df, palette="crest_r")
     plt.title("FiveModel_CalSoft_t0.25 \n Permutation Importance")
     ax.set_facecolor("lightgrey")
     for spine in plt.gca().spines.values():
         spine.set_visible(False)
-    plt.savefig(f"{results_dir}/{model_name}_Permutation_Importance.png")
+    plt.tight_layout()
+    plt.savefig(
+        f"{results_dir}/{model_name}_Permutation_Importance.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
     plt.show()
 
     return perm_df
@@ -134,13 +139,18 @@ def plot_aggregated_base_model_importance(
         }
     ).sort_values(by="Importance", ascending=False)
 
-    plt.figure(figsize=(8, 4), facecolor="lightgrey")
+    plt.figure(figsize=(9, 5), facecolor="lightgrey")
     ax = sns.barplot(x="Importance", y="Feature", data=agg_df, palette="crest_r")
     plt.title("FiveModel_CalSoft_t0.25 \n Aggregated Base-Model Importance")
     ax.set_facecolor("lightgrey")
     for spine in plt.gca().spines.values():
         spine.set_visible(False)
-    plt.savefig(f"{results_dir}/{model_name}_Aggregated_Importance.png")
+    plt.tight_layout()
+    plt.savefig(
+        f"{results_dir}/{model_name}_Aggregated_Importance.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
     plt.show()
 
     return agg_df
@@ -218,13 +228,18 @@ def plot_shap_importance(
         }
     ).sort_values(by="Importance", ascending=False)
 
-    plt.figure(figsize=(8, 4), facecolor="lightgrey")
+    plt.figure(figsize=(9, 5), facecolor="lightgrey")
     ax = sns.barplot(x="Importance", y="Feature", data=shap_df, palette="crest_r")
     plt.title("FiveModel_CalSoft_t0.25 \n SHAP Feature Importance (Tree Base Models)")
     ax.set_facecolor("lightgrey")
     for spine in plt.gca().spines.values():
         spine.set_visible(False)
-    plt.savefig(f"{results_dir}/{model_name}_SHAP_Importance.png")
+    plt.tight_layout()
+    plt.savefig(
+        f"{results_dir}/{model_name}_SHAP_Importance.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
     plt.show()
 
     return shap_df

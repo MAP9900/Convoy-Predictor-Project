@@ -26,6 +26,35 @@ def _safe_div(num, den):
     return num / den
 
 
+def plot_roc_with_perfect_reference(
+    y_true,
+    y_proba,
+    model_name="FiveModel_CalSoft_t0.25",
+    results_dir=DEFAULT_RESULTS_DIR,):
+    """Plot ROC curve in the same style as plot_roc_curve, plus perfect reference."""
+    y_true_arr = np.asarray(y_true).astype(int)
+    y_proba_arr = np.asarray(y_proba, dtype=float)
+    fpr, tpr, _ = roc_curve(y_true_arr, y_proba_arr)
+    roc_auc = roc_auc_score(y_true_arr, y_proba_arr)
+    fig, ax = plt.subplots(figsize=(6, 4), facecolor="lightgrey")
+    ax.set_facecolor("lightgrey")
+    ax.plot(fpr, tpr, color="#06768d", label=f"ROC Curve (AUC = {roc_auc:.2f})")
+    ax.plot([0, 1], [0, 1], color="grey", linestyle="--", label="Random Baseline")
+    ax.plot([0, 0, 1], [0, 1, 1], color="#000000", linestyle="--", label="Perfect ROC")
+    ax.set_title("FiveModel_CalSoft_t0.25 \n ROC Curve")
+    ax.set_xlabel("False Positive Rate")
+    ax.set_ylabel("True Positive Rate")
+    ax.legend(loc="lower right")
+
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+    plt.savefig(f"{results_dir}/{model_name}_ROC_with_Perfect_Reference.png")
+    plt.show()
+
+    return {"roc_auc": roc_auc}
+
+
 def plot_operating_point_panel(
     y_true,
     y_proba,
@@ -113,7 +142,7 @@ def plot_operating_point_panel(
         yticklabels=["True 0", "True 1"],
         ax=ax_cm,
     )
-    ax_cm.set_title(f"Confusion Matrix \\n Threshold={threshold:.2f}")
+    ax_cm.set_title(f"Confusion Matrix \n Threshold={threshold:.2f}")
 
     # KPI text block
     ax_text.set_facecolor("lightgrey")

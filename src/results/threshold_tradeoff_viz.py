@@ -16,15 +16,14 @@ def plot_threshold_tradeoff_curve(
     marker_thresholds=(0.25, 0.21, 0.19),
     title="Final Ensemble Metrics vs Decision Threshold",
     model_name="FiveModel_CalSoft_t0.25",
-    results_dir=DEFAULT_RESULTS_DIR,
-):
+    results_dir=DEFAULT_RESULTS_DIR,):
     """Plot recall, precision, accuracy, and F1 across decision thresholds."""
     df = sweep_df.copy()
 
     fig, ax = plt.subplots(figsize=(10, 5), facecolor="lightgrey")
     ax.set_facecolor("lightgrey")
 
-    ax.plot(df[threshold_col], df[recall_col], label="Recall", marker="o", color="#06768d")
+    ax.plot(df[threshold_col], df[recall_col], label="Recall", marker="o", color="#0398fc")
     ax.plot(df[threshold_col], df[precision_col], label="Precision", marker="s", color="#fc6f03")
     ax.plot(df[threshold_col], df[accuracy_col], label="Accuracy", marker="^", color="#3f8a06")
     ax.plot(df[threshold_col], df[f1_col], label="F1-score", marker="d", color="#ab0003")
@@ -43,9 +42,10 @@ def plot_threshold_tradeoff_curve(
     for spine in plt.gca().spines.values():
         spine.set_visible(False)
 
-    plt.legend()
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.18), ncol=4)
     plt.tight_layout()
-    plt.savefig(f"{results_dir}/{model_name}_Threshold_Tradeoff_Curve.png")
+    plt.savefig(f"{results_dir}/{model_name}Threshold_Tradeoff_Plot.png", bbox_inches='tight', dpi=300)
+    # plt.savefig(f"{results_dir}/{model_name}_Threshold_Tradeoff_Curve.png")
     plt.show()
 
     return ax

@@ -52,6 +52,7 @@ Final operating-point panel:
 - PR with threshold marker
 - confusion matrix
 - KPI summary block
+- standalone ROC curve with random baseline and perfect-reference line
 
 ### `threshold_tradeoff_viz.py`
 Threshold trade-off line chart for recall, precision, accuracy, and F1.

@@ -48,7 +48,7 @@ For Section 6 report writing:
 - `src/results/visualization_functions.py`
   - ROC, confusion matrix, permutation importance, aggregated base importance, SHAP importance plots.
 - `src/results/performance_panel_viz.py`
-  - Operating-point panel (ROC, PR, confusion matrix, KPI block).
+  - Operating-point panel (ROC, PR, confusion matrix, KPI block) + standalone ROC with perfect reference line.
 - `src/results/threshold_tradeoff_viz.py`
   - Threshold trade-off curve for recall/precision/accuracy/F1.
 - `src/results/calibration_distribution_viz.py`
