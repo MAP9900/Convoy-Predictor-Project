@@ -70,7 +70,7 @@ For Section 6 report writing:
 
 ### Calibration and thresholding
 - `src/results/calibration_threshold_eval.py`
-  - Calibration diagnostics, FN-threshold diagnostics, threshold sweeps, objective-based threshold selection, CV stability.
+  - Calibration diagnostics, FN-threshold diagnostics, classification report table at fixed threshold, threshold sweeps, objective-based threshold selection, CV stability.
 
 ### Feature importance triangulation
 - `src/results/feature_importance_triangulation.py`
@@ -145,6 +145,7 @@ Recommendation:
 ### Key output files
 - `results/Threshold_Sweep.xlsx`
 - `results/Threshold_Selections.xlsx`
+- `results/Classification_Report_t0.25.xlsx`
 - `results/Statistical_Testing_Summary.xlsx`
 - `results/Feature_Triangulation_*.xlsx`
 - `results/Segment_*.xlsx`

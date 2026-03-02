@@ -113,7 +113,7 @@ def plot_operating_point_panel(
         yticklabels=["True 0", "True 1"],
         ax=ax_cm,
     )
-    ax_cm.set_title(f"Confusion Matrix @ t={threshold:.2f}")
+    ax_cm.set_title(f"Confusion Matrix \\n Threshold={threshold:.2f}")
 
     # KPI text block
     ax_text.set_facecolor("lightgrey")
@@ -133,11 +133,11 @@ def plot_operating_point_panel(
         f"TN={tn} | FP={fp} | FN={fn} | TP={tp}"
     )
     ax_text.text(
-        0.02,
-        0.98,
+        0.5,
+        0.5,
         kpi_text,
-        va="top",
-        ha="left",
+        va="center",
+        ha="center",
         fontsize=11,
         bbox={"facecolor": "white", "alpha": 0.75, "edgecolor": "none", "boxstyle": "round,pad=0.5"},
     )

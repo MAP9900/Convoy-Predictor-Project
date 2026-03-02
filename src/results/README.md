@@ -94,6 +94,7 @@ Calibration and operating-threshold diagnostics:
 - Brier score report
 - calibration curve support
 - FN probability diagnostics near threshold
+- classification report table at chosen threshold
 - threshold sweep and objective-based selection
 - optional CV threshold stability
 

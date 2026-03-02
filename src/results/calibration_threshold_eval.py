@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.calibration import calibration_curve
-from sklearn.metrics import brier_score_loss, confusion_matrix
+from sklearn.metrics import brier_score_loss, classification_report, confusion_matrix
 
 DEFAULT_RESULTS_DIR = "/Users/matthewplambeck/Desktop/Convoy Predictor/results"
 
@@ -62,6 +62,41 @@ def _metrics_at_threshold(y_true_bin, y_proba, threshold):
         "mcc": mcc,
         "bal_acc": bal_acc,
     }
+
+
+def classification_report_at_threshold(
+    y_true,
+    y_proba,
+    threshold=0.25,
+    pos_label=1,
+    digits=3,
+):
+    """Return sklearn-style classification report table at a decision threshold."""
+    y_true_bin, y_proba_arr = _prepare_binary_inputs(y_true, y_proba, pos_label=pos_label)
+    y_hat = (y_proba_arr >= threshold).astype(int)
+
+    report_dict = classification_report(
+        y_true_bin,
+        y_hat,
+        labels=[0, 1],
+        output_dict=True,
+        digits=digits,
+        zero_division=0,
+    )
+
+    report_df = (
+        pd.DataFrame(report_dict)
+        .T.rename_axis("label")
+        .reset_index()
+        .rename(columns={"f1-score": "f1_score"})
+    )
+    report_df["threshold"] = float(threshold)
+
+    preferred_order = {"0": 0, "1": 1, "macro avg": 2, "weighted avg": 3, "accuracy": 4}
+    report_df["_order"] = report_df["label"].map(preferred_order).fillna(99)
+    report_df = report_df.sort_values("_order").drop(columns="_order").reset_index(drop=True)
+
+    return report_df, report_dict
 
 
 def _safe_calibration_curve(y_true_bin, y_proba, n_bins=10, strategy="uniform"):
@@ -237,9 +272,11 @@ def plot_threshold_sweep_metrics(
     """Plot threshold-sweep metrics using a notebook-friendly style."""
     if sweep_df is None or sweep_df.empty:
         raise ValueError("sweep_df is empty. Run threshold_sweep(...) first.")
+    metric_cols = metric_cols or ["recall1", "precision1", "accuracy", "f1"]
 
-    metric_cols = metric_cols or ["recall1", "precision1", "accuracy", "f1", "bal_acc", "mcc"]
-    available_cols = [c for c in metric_cols if c in sweep_df.columns]
+    preferred_order = ["recall1", "precision1", "accuracy", "f1", "bal_acc", "mcc", "fpr"]
+    requested = [c for c in preferred_order if c in metric_cols] + [c for c in metric_cols if c not in preferred_order]
+    available_cols = [c for c in requested if c in sweep_df.columns]
     if not available_cols:
         raise ValueError("None of the requested metric columns are present in sweep_df.")
 
@@ -248,17 +285,18 @@ def plot_threshold_sweep_metrics(
         "precision1": "#fc6f03",
         "accuracy": "#3f8a06",
         "f1": "#ab0003",
-        "bal_acc": "#3f8a06",
-        "mcc": "#E7EF17",
-        "fpr": "#761e7c"}
+        "bal_acc": "#F6FF00",
+        "mcc": "#ce2cda",
+        "fpr": "#633200",
+    }
     marker_map = {
         "recall1": "o",
         "precision1": "s",
         "accuracy": "^",
         "f1": "d",
-        "bal_acc": "^",
-        "mcc": "P",
-        "fpr": "x",
+        "bal_acc": "P",
+        "mcc": "8",
+        "fpr": "p",
     }
     label_map = {
         "recall1": "Recall",
@@ -267,9 +305,7 @@ def plot_threshold_sweep_metrics(
         "f1": "F1-score",
         "bal_acc": "Balanced Accuracy",
         "mcc": "MCC",
-        "fpr": "FPR",
-    }
-
+        "fpr": "False Positive Rate",}
     fig, ax = plt.subplots(figsize=(10, 5), facecolor="lightgrey")
     ax.set_facecolor("lightgrey")
 
@@ -290,15 +326,14 @@ def plot_threshold_sweep_metrics(
             color=color_map.get(col, None),
         )
 
-    ax.set_title(title)
-    ax.set_xlabel("Decision Threshold")
-    ax.set_ylabel("Score")
-    ax.grid(True, linestyle="--", alpha=0.6)
-    for spine in ax.spines.values():
+    plt.title(title)
+    plt.xlabel("Decision Threshold")
+    plt.ylabel("Score")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    for spine in plt.gca().spines.values():
         spine.set_visible(False)
-    ax.legend()
-    plt.tight_layout()
-    plt.savefig(f"{results_dir}/Threshold_Sweep_Plot")
+    plt.legend()
+    plt.savefig(f"{results_dir}/Threshold_Sweep_Plot.png")
     plt.show()
 
 

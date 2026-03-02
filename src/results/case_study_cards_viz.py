@@ -79,11 +79,11 @@ def plot_case_study_cards(
 
         text = _build_card_text(row, title)
         ax.text(
-            0.03,
-            0.97,
+            0.5,
+            0.93,
             text,
             va="top",
-            ha="left",
+            ha="center",
             fontsize=10,
             bbox={"facecolor": "white", "alpha": 0.82, "edgecolor": "none", "boxstyle": "round,pad=0.5"},
         )

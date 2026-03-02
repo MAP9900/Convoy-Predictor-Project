@@ -40,7 +40,7 @@ def plot_temporal_robustness_heatmap(
         fmt=".3f",
         cmap="Blues",
         linewidths=0.5,
-        linecolor="white",
+        linecolor="black",
         cbar=True,
         ax=ax,
     )
@@ -50,7 +50,9 @@ def plot_temporal_robustness_heatmap(
     ax.set_ylabel(segment_type)
 
     for spine in plt.gca().spines.values():
-        spine.set_visible(False)
+        spine.set_visible(True)
+        spine.set_color("black")
+        spine.set_linewidth(1.2)
 
     plt.tight_layout()
     plt.savefig(f"{results_dir}/{model_name}_Temporal_Robustness_Heatmap_{segment_type}.png")

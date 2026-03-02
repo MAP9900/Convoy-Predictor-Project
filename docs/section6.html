@@ -56,20 +56,64 @@
   </div>
     <br>
   <p class="centered-paragraph">
-    <strong>Overview:</strong> The model exhibits strong class separation (AUC 0.821) with moderate At-Risk recall/precision at the selected threshold
+    <strong>Overview:</strong> The model exhibits strong class separation (AUC 0.821) with moderate risk recall/precision at the selected threshold. 
+  </p>
 
 
     <!-- Confusion Matrix -->
     <h2 style="text-align: center;">Confusion Matrix</h2>
+    <img src="images/FiveModel_CalSoft_t0.25_CM.png" alt="Confusion Matrix" width="550" height="400">
 
-    <img src="_______" alt="Confusion Matrix" width="450" height="450">
+    <!-- Precision & Recall Metrics -->
+    <h2 style="text-align:center;">Classification Report</h2>
+    <div class="table-container">
+    <table>
+        <thead>
+        <tr>
+            <th>Class / Avg</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>F1-Score</th>
+            <th>Number of Ships</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr><td>Low Risk</td><td>0.910</td><td>0.870</td><td>0.890</td><td>185</td></tr>
+        <tr><td>At Risk</td><td>0.586</td><td>0.680</td><td>0.630</td><td>50</td></tr>
+        <tr><td>Macro Avg</td><td>0.748</td><td>0.775</td><td>0.760</td><td>235</td></tr>
+        <tr><td>Weighted Avg</td><td>0.841</td><td>0.830</td><td>0.834</td><td>235</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <p class="centered-paragraph">
+    The confusion matrix and classification report further demonstrate the model's ability to separate low risk and high risk convoys. Performance is strong on low risk convoys 
+    (class 0 recall = 0.870, precision = 0.910), while high risk detection is moderate (class 1 recall = 0.680, precision = 0.586). In practice, the model correctly captures about 
+    2 out of 3 at risk convoys, while missing about 1 out of 3 (false negative rate = 0.320). This class gap is expected under class imbalance (185 low risk vs 50 at risk cases) and 
+    reflects the model's conservative behavior. Optimization efforts focused on reducing false negatives without causing a large increase in false positives. These efforts produced a 
+    practical operating point with the FiveModel_CalSoft_t0.25 model at threshold 0.25, where at risk recall remains relatively high while overall accuracy (0.830) and weighted F1 
+    (0.834) stay stable, suggesting improved risk capture without destabilizing overall performance. Given the limited and skewed data, the inability to model certain factors (weather, 
+    day/night conditions, U-boat attack strategies, etc.), and the inherent complexity of the problem, these results represent a successful attempt to predict WWII convoy risk status. 
+    Overall, the model prioritizes catching at risk convoys, accepts some false alarms, and maintains stable overall performance.
+    </p>
 
     </main>
 
-     <!-- Model Visuals -->
-
-
-    <!-- Feature Analysis -->
+    <!-- POSSIBLE TO ADD SECTIONS -->
+    
+    <!-- Operating Point Panel (ROC + PR + Confusion + KPI Summary) -->
+    <!-- Precision-Recall Curve -->
+    <!-- Threshold Tradeoff Analysis -->
+    <!-- Calibration Curve & Probability Distribution -->
+    <!-- Confusion Group Breakdown (FN / FP / TP / TN) -->
+    <!-- Statistical Testing Summary (Kruskal + Mann-Whitney + Effect Sizes) -->
+    <!-- Feature Importance Triangulation (Permutation / Native / SHAP) -->
+    <!-- Feature Rank Bump Chart -->
+    <!-- FN-Focused SHAP Insight View -->
+    <!-- Case Study Cards (Representative TP / FN / FP) -->
+    <!-- Segment and Temporal Robustness -->
+    <!-- Threshold Stability by Segment -->
+    <!-- Leakage & Data Quality Audit Summary -->
 
     <!-- Footer Section -->
     <footer>
@@ -78,3 +122,8 @@
 
 </body>
 </html>
+
+
+<!-- 
+Image Placement Code:
+    <img src="_______" alt="_____" width="450" height="450"> -->

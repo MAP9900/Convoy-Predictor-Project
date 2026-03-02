@@ -42,6 +42,7 @@ This workflow loads saved models, evaluates the calibrated ensemble, runs deeper
 - Metrics/diagnostics tables in `results/*.xlsx`
 - Figures in `results/*.png`
 - Report prose assets in markdown/html under repo root and `docs/`
+- Includes threshold operating-point exports such as `results/Classification_Report_t0.25.xlsx`
 
 ## Recommended Workflow
 1. Use the existing processed data and artifacts.
