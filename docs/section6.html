@@ -30,9 +30,9 @@
     <h2 style="text-align: center;">Convoy Risk Prediction Model Analysis</h2>
 <nav class="period-nav" aria-label="Results section navigation">
         <ul>
-            <li><a href="#Operating Point Summary">Operating Point Summary</a></li>
-            <li><a href="#Precision-recall-curve">Precision-Recall Curve</a></li>
-            <li><a href="#Classification-Report">Classification Report</a></li>
+            <li><a href="#operating-point-summary">Operating Point Summary</a></li>
+            <li><a href="#precision-recall-curve">Precision-Recall Curve</a></li>
+            <li><a href="#classification-report">Classification Report</a></li>
             <li><a href="#threshold-selection">Threshold Selection</a></li>
             <li><a href="#feature-analysis">Feature Analysis</a></li>
             <li><a href="#false-negative-analysis">False Negative Analysis</a></li>
@@ -43,7 +43,7 @@
     <h2 style="text-align: center;">Model Overview</h2>
 
     <p class="centered-paragraph">
-    Through extensive testing, the <strong>FiveModel_CalSoft_t0.25</strong> calibrated soft-voting ensemble proved to be the most capable model for predicting whether a convoy was at risk of losing at least one ship. The final model configuration examined in this section was evaluated on a held-out test set of <strong>235 convoys</strong> at a decision threshold of <strong>0.25</strong>. This section presents the model's overall performance, threshold behavior, feature importance, and main limitations. All tests come from the <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/models/Results.ipynb" target="_blank">results notebook</a>, with the underlying analysis code found <a href="https://github.com/MAP9900/Convoy-Predictor-Project/tree/main/src/results" target="_blank">here</a>.
+    Through extensive testing, the <strong>FiveModel_CalSoft_t0.25</strong> calibrated soft-voting ensemble proved to be the most capable model for predicting whether a convoy was at risk of losing at least one ship. The final model configuration examined in this section was evaluated on a held-out test set of <strong>235 convoys</strong> at a decision threshold of <strong>0.25</strong>. This section presents the model's overall performance, threshold behavior, feature importance, and main limitations. All tests come from the <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/models/Results.ipynb" target="_blank">results notebook</a>, with the underlying analysis code available <a href="https://github.com/MAP9900/Convoy-Predictor-Project/tree/main/src/results" target="_blank">here</a>.
 <!-- 
     Guide to <a href="section1_3.html" target="_blank">ML Terminology & Metrics</a>
  -->
@@ -67,21 +67,18 @@
     <p class="centered-paragraph">
     The panel below summarizes the final operating point across the model's main evaluation metrics.
     </p>
-    <h2 id="Operating Point Summary" style="text-align: center;">Operating Point Summary</h2>
+    <h2 id="operating-point-summary" style="text-align: center;">Operating Point Summary</h2>
 
         <figure>
             <img class="results-figure" src="images/FiveModel_CalSoft_t0.25_Operating_Point_Panel.png" alt="Operating point summary panel for the final ensemble model" width="900" height="650">
         </figure>
         <p class="centered-paragraph">
-          From the Operating Point Panel, the confusion matrix indicates that the model correctly identified 34 at-risk convoys while missing 16 
-          and producing 24 false positives. This reflects the main tradeoff of the final model: it improves risk detection meaningfully, but 
-          some dangerous convoys are still missed. More broadly, the ROC-AUC of 0.821 indicates that the model separates low-risk and at-risk 
-          convoys well overall, even though the final classification threshold still requires a practical balance between recall and false positive control
+          The operating point panel shows that the confusion matrix correctly identified 34 at-risk convoys while missing 16 and producing 24 false positives. This reflects the main tradeoff of the final model: it improves risk detection meaningfully, but some dangerous convoys are still missed. More broadly, the ROC-AUC of 0.821 indicates that the model separates low-risk and at-risk convoys well overall, even though the final classification threshold still requires a practical balance between recall and false positive control.
         </p>
 
 
 
-        <h2 id="Precision-recall-curve" style="text-align: center;">Precision-Recall Curve</h2>
+        <h2 id="precision-recall-curve" style="text-align: center;">Precision-Recall Curve</h2>
         <figure>
             <img class="results-figure" src="images/FiveModel_CalSoft_t0.25_PR_Curve.png" alt="Precision recall curve for the final ensemble model" width="600" height="400">
         </figure>
@@ -91,12 +88,7 @@
           a moderate decline in precision.
         </p>
 
-        <p class="centered-paragraph">
-
-        </p>
-
-
-        <h2 id="Classification-Report" style="text-align: center;">Classification Report</h2>
+        <h2 id="classification-report" style="text-align: center;">Classification Report</h2>
         <div class="table-container wide-table">
             <table>
                 <thead>
@@ -153,8 +145,7 @@
         Feature importance was examined through multiple methods, including permutation importance, aggregated base-model importance, and SHAP. 
         Across these approaches, several variables repeatedly appeared near the top: Previous Month Avg Sink %, Number of Stragglers, 
         Total Tons of Convoy, Avg Number of U-Boats in Atlantic, and Time At Sea (Days). Together, these results suggest that recent operational danger, 
-        convoy vulnerability, and exposure over time are central to the model’s predictions. These results are inline with historical trends as 
-        known risks such as U-boats targeting straggling ships. 
+        convoy vulnerability, and exposure over time are central to the model’s predictions. These findings are in line with historical trends, including known risks such as U-boats targeting straggling ships. 
         <!-- <br> -->
         Although the importance methods do not agree perfectly, they show substantial overlap. In particular, SHAP and aggregated base-model 
         importance align closely, while permutation importance differs somewhat, likely because it captures interaction effects differently. 
@@ -170,7 +161,7 @@
         <p class="centered-paragraph">
         False negative analysis suggests that many of the missed at-risk convoys are not simply borderline predictions that fall just below the decision threshold.
         Instead, they appear to be structural misses, meaning the model is failing to fully represent some dangerous convoy patterns. Given the complexity of modeling
-        submarine warfare, outliers, and large amount of uncertainity in attacks, these results are to be expected. Likely no model could capture the full distribution of risk.
+        submarine warfare, outliers, and the high degree of uncertainty in attacks, these results are to be expected. Likely, no model could capture the full distribution of risk.
         The FN-focused SHAP view further suggests that seasonality and time-related context may matter more in these missed cases than the global importance 
         rankings alone would imply.    
         </p>
@@ -183,8 +174,7 @@
         The temporal robustness analysis shows that model performance is not stable across all years of the war. 
         Some periods, especially 1942, show comparatively strong results, while others deteriorate noticeably. 
         This indicates temporal drift in the underlying problem and suggests that one global threshold may not be equally 
-        appropriate across all wartime contexts. Historical changes between years including number of escorts, frequency of convoys, U-boat attack strategies, and 
-        much more likely accounts for these differences. 
+        appropriate across all wartime contexts. Historical changes between years, including the number of escorts, the frequency of convoys, U-boat attack strategies, and much more, likely account for these differences. 
         </p>
 
         <h2 style="text-align: center;">Limitations</h2>
