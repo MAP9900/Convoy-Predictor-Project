@@ -28,79 +28,117 @@
     <!-- Final Results Section -->
     <main>
     <h2 style="text-align: center;">Convoy Risk Prediction Model Analysis</h2>
+<nav class="period-nav" aria-label="Results section navigation">
+        <ul>
+            <li><a href="#Operating Point Summary">Operating Point Summary</a></li>
+            <li><a href="#Precision-recall-curve">Precision-Recall Curve</a></li>
+            <li><a href="#Classification-Report">Classification Report</a></li>
+            <li><a href="#threshold-selection">Threshold Selection</a></li>
+            <li><a href="#feature-analysis">Feature Analysis</a></li>
+            <li><a href="#false-negative-analysis">False Negative Analysis</a></li>
+            <li><a href="#temporal-robustness">Temporal Robustness</a></li>
+        </ul>
+    </nav>
+
+    <h2 style="text-align: center;">Model Overview</h2>
 
     <p class="centered-paragraph">
-    Through extensive testing, the FiveModel_CalSoft_t0.25 ensemble model has proved to be the most capable model in predicting convoys at risk of having at least one ship sunk or zero
-    ships sunk. This section will cover the results of the FiveModel_CalSoft_t0.25 model and will encompass a deep analysis into the model and its behavior. All tests come from the
-    <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/models/Results.ipynb" target="_blank">results notebook</a> with underlying analysis code found
-    <a href="https://github.com/MAP9900/Convoy-Predictor-Project/tree/main/src/results" target="_blank">here</a>.
+    Through extensive testing, the <strong>FiveModel_CalSoft_t0.25</strong> calibrated soft-voting ensemble proved to be the most capable model for predicting whether a convoy was at risk of losing at least one ship. The final model configuration examined in this section was evaluated on a held-out test set of <strong>235 convoys</strong> at a decision threshold of <strong>0.25</strong>. This section presents the model's overall performance, threshold behavior, feature importance, and main limitations. All tests come from the <a href="https://github.com/MAP9900/Convoy-Predictor-Project/blob/main/notebooks/models/Results.ipynb" target="_blank">results notebook</a>, with the underlying analysis code found <a href="https://github.com/MAP9900/Convoy-Predictor-Project/tree/main/src/results" target="_blank">here</a>.
 <!-- 
     Guide to <a href="section1_3.html" target="_blank">ML Terminology & Metrics</a>
  -->
     </p>
-    <!--Final Model Overview -->
-    <h2 style="text-align: center;">Model Overview</h2>
-    <p style="margin-bottom:0.75rem;">
-    Final ensemble: <strong>FiveModel_CalSoft_t0.25</strong> (calibrated soft-voting),
-    evaluated on a held-out test set (<strong>n=235</strong>) at decision threshold <strong>0.25</strong>.
-    </p>
-    <br>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:0.6rem; margin-bottom:0.75rem;">
-    <div><strong>ROC AUC</strong><br>0.821</div>
-    <div><strong>Accuracy</strong><br>0.830</div>
-    <div><strong>Recall (At-Risk)</strong><br>0.680</div>
-    <div><strong>Precision (At-Risk)</strong><br>0.586</div>
-    <div><strong>F1 (At-Risk)</strong><br>0.630</div>
-    <div><strong>MCC</strong><br>0.522</div>
-    <div><strong>Balanced Accuracy</strong><br>0.775</div>
+    <!-- <p class="centered-paragraph" style="margin-bottom:0.75rem;">
+    The metrics below summarize the model's performance at the selected operating point.
+    </p> -->
+  <div class="results-kpi-grid">
+    <div class="kpi-card"><strong>ROC AUC</strong><br>0.821</div>
+    <div class="kpi-card"><strong>Accuracy</strong><br>0.830</div>
+    <div class="kpi-card"><strong>Recall (At-Risk)</strong><br>0.680</div>
+    <div class="kpi-card"><strong>Precision (At-Risk)</strong><br>0.586</div>
+    <div class="kpi-card"><strong>F1 (At-Risk)</strong><br>0.630</div>
+    <div class="kpi-card"><strong>MCC</strong><br>0.522</div>
+    <div class="kpi-card"><strong>Balanced Accuracy</strong><br>0.775</div>
+    <div class="kpi-card"><strong>FN Rate</strong><br>0.320</div>
   </div>
-    <br>
   <p class="centered-paragraph">
     <strong>Overview:</strong> The model exhibits strong class separation (AUC 0.821) with moderate risk recall/precision at the selected threshold. 
   </p>
-
-
-    <!-- Confusion Matrix -->
-    <h2 style="text-align: center;">Confusion Matrix</h2>
-    <img src="images/FiveModel_CalSoft_t0.25_CM.png" alt="Confusion Matrix" width="550" height="400">
-
-    <!-- Precision & Recall Metrics -->
-    <h2 style="text-align:center;">Classification Report</h2>
-    <div class="table-container">
-    <table>
-        <thead>
-        <tr>
-            <th>Class / Avg</th>
-            <th>Precision</th>
-            <th>Recall</th>
-            <th>F1-Score</th>
-            <th>Number of Ships</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr><td>Low Risk</td><td>0.910</td><td>0.870</td><td>0.890</td><td>185</td></tr>
-        <tr><td>At Risk</td><td>0.586</td><td>0.680</td><td>0.630</td><td>50</td></tr>
-        <tr><td>Macro Avg</td><td>0.748</td><td>0.775</td><td>0.760</td><td>235</td></tr>
-        <tr><td>Weighted Avg</td><td>0.841</td><td>0.830</td><td>0.834</td><td>235</td></tr>
-        </tbody>
-    </table>
-    </div>
-
     <p class="centered-paragraph">
-    The confusion matrix and classification report further demonstrate the model's ability to separate low risk and high risk convoys. Performance is strong on low risk convoys 
-    (class 0 recall = 0.870, precision = 0.910), while high risk detection is moderate (class 1 recall = 0.680, precision = 0.586). In practice, the model correctly captures about 
-    2 out of 3 at risk convoys, while missing about 1 out of 3 (false negative rate = 0.320). This class gap is expected under class imbalance (185 low risk vs 50 at risk cases) and 
-    reflects the model's conservative behavior. Optimization efforts focused on reducing false negatives without causing a large increase in false positives. These efforts produced a 
-    practical operating point with the FiveModel_CalSoft_t0.25 model at threshold 0.25, where at risk recall remains relatively high while overall accuracy (0.830) and weighted F1 
-    (0.834) stay stable, suggesting improved risk capture without destabilizing overall performance. Given the limited and skewed data, the inability to model certain factors (weather, 
-    day/night conditions, U-boat attack strategies, etc.), and the inherent complexity of the problem, these results represent a successful attempt to predict WWII convoy risk status. 
-    Overall, the model prioritizes catching at risk convoys, accepts some false alarms, and maintains stable overall performance.
+    The panel below summarizes the final operating point across the model's main evaluation metrics.
     </p>
+    <h2 id="Operating Point Summary" style="text-align: center;">Operating Point Summary</h2>
 
-    <!-- Precision-Recall Curve -->
-    <h2 style="text-align: center;">ROC Curve Plot</h2>
-    <img src="images/FiveModel_CalSoft_t0.25_ROC_with_Perfect_Reference.png" alt="ROC Curve Plot" width="700" height="500">
+        <figure>
+            <img class="results-figure" src="images/FiveModel_CalSoft_t0.25_Operating_Point_Panel.png" alt="Operating point summary panel for the final ensemble model" width="900" height="650">
+        </figure>
 
+        <h2 id="Precision-recall-curve" style="text-align: center;">Precision-Recall Curve</h2>
+        <figure>
+            <img class="results-figure" src="images/FiveModel_CalSoft_t0.25_PR_Curve.png" alt="Precision recall curve for the final ensemble model" width="600" height="400">
+        </figure>
+        <!-- TODO: Add 1 paragraph explaining why the precision-recall curve is useful here, especially given the class imbalance and focus on identifying at-risk convoys. -->
+
+        <h2 id="Classification-Report" style="text-align: center;">Classification Report</h2>
+        <div class="table-container wide-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class / Avg</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1-Score</th>
+                        <th>Number of Convoys</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Low Risk</td><td>0.910</td><td>0.870</td><td>0.890</td><td>185</td></tr>
+                    <tr><td>At Risk</td><td>0.586</td><td>0.680</td><td>0.630</td><td>50</td></tr>
+                    <tr><td>Macro Avg</td><td>0.748</td><td>0.775</td><td>0.760</td><td>235</td></tr>
+                    <tr><td>Weighted Avg</td><td>0.841</td><td>0.830</td><td>0.834</td><td>235</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="centered-paragraph">
+        The classification report complements the operating point panel by showing where the model performs best and where it remains weaker. In particular, it makes the gap between low-risk and at-risk convoy detection easier to see at the class level.
+        </p>
+        <!-- TODO: Add 1 paragraph interpreting the classification report and explain the class imbalance, the stronger low-risk performance, and the remaining false negative issue. -->
+
+        <h2 id="threshold-selection" style="text-align: center;">Threshold Selection</h2>
+        <figure>
+            <img class="results-figure" src="images/Threshold_Sweep_All_Metrics.png" alt="All metrics threshold sweep for the final ensemble model" width="900" height="650">
+        </figure>
+        <!-- TODO: Add 1 paragraph explaining why threshold 0.25 was selected and how lower or higher thresholds change the tradeoff between recall and false positives. -->
+
+        <h2 style="text-align: center;">Calibration and Probability Distribution</h2>
+        <figure>
+            <img class="results-figure" src="images/FiveModel_CalSoft_t0.25_Calibration_Probability_Distribution.png" alt="Calibration and probability distribution plot for the final ensemble model" width="900" height="650">
+        </figure>
+        <!-- TODO: Add 1 paragraph explaining what the calibration and probability distribution plot says about how usable the model probabilities are as risk estimates. -->
+
+        <h2 id="feature-analysis" style="text-align: center;">Feature Analysis</h2>
+        <figure>
+            <img class="results-figure" src="images/FiveModel_CalSoft_t0.25_SHAP_Importance.png" alt="SHAP importance plot for the final ensemble model" width="900" height="650">
+        </figure>
+        <figure>
+            <img class="results-figure" src="images/FiveModel_CalSoft_t0.25_Feature_Rank_Bump_Chart.png" alt="Feature rank bump chart comparing importance methods" width="900" height="650">
+        </figure>
+        <!-- TODO: Add 1-2 paragraphs summarizing the most important consensus features and explain how the rank bump chart compares the importance methods. -->
+
+        <h2 id="false-negative-analysis" style="text-align: center;">False Negative Analysis</h2>
+        <figure>
+            <img class="results-figure" src="images/FiveModel_CalSoft_t0.25_FN_Focused_Insight_View.png" alt="False negative focused SHAP insight view" width="900" height="650">
+        </figure>
+        <!-- TODO: Add 1 paragraph explaining that many false negatives appear to be structural misses rather than simple near-threshold misses, and note the role of seasonality/time context. -->
+
+        <h2 id="temporal-robustness" style="text-align: center;">Temporal Robustness</h2>
+        <figure>
+            <img class="results-figure" src="images/FiveModel_CalSoft_t0.25_Temporal_Robustness_Heatmap_Year.png" alt="Temporal robustness heatmap by year for the final ensemble model" width="900" height="650">
+        </figure>
+        <!-- TODO: Add 1 paragraph discussing how performance changes across years and why temporal drift matters for interpreting the model. -->
+
+        <h2 style="text-align: center;">Limitations and Next Steps</h2>
+        <!-- TODO: Add a short concluding paragraph or short bullet list covering the remaining limitations and the most important future improvements. -->
     </main>
 
     <!-- POSSIBLE TO ADD SECTIONS -->
