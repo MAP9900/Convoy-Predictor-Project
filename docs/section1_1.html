@@ -81,7 +81,7 @@
     <p class="centered-paragraph">
         All three regression models underperformed on the test data, highlighting their weak predictive power. 
         Linear Regression barely improved over a naive baseline (train R² 0.1197 vs. test R² 0.0947), while Random Forest 
-        and Gradient Boosting appeared to overfit the data (train R² ≈0.86 and mean accuracy ≈0.81 vs. test R² 0.0282 and mean accuracy 0.0707).
+        and Gradient Boosting appeared to overfit the data (train R² ≈0.86 and train R² ≈0.81 vs. test R² 0.0282 and test R² 0.0707).
         Combined with outliers where convoys suffered heavy losses and the many unmodeled wartime factors (weather, night/day, U-boat tactics, etc.),
         predicting a precise sink percentage is unrealistic. Going forward, the target variable will be switched to a binary value of 0 
         (no ships sunk) or 1 (at least one ship sunk). This new focus will aim at identifying high-risk convoys rather than estimating exact sink percentages. 

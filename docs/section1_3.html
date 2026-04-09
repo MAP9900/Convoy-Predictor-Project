@@ -41,7 +41,7 @@
     <h2 style="text-align: center;">Machine Learning Terminology & Metrics</h2>
 
     <p class="centered-paragraph">
-        This section intends to be a short guide to the metrics and terminology used aimed at making interpreting the results as easy and understandable as possible.
+        This section is intended to be a short guide to the metrics and terminology used, aimed at making the results as easy to interpret and understand as possible.
         <br><br>
         <strong>Confusion Matrix Metrics:</strong>
         <br>
@@ -63,8 +63,8 @@
          <strong>Accuracy (Acc):</strong>
         <br>
         Accuracy is simply the number of correct predictions divided by the total number of predictions. It provides a high level overview of a model's performance but struggles with
-        meaningfully conveying problems caused by class imbalances (Uneven distribution of data; ex: 75% of data is labeled 0 while only 25% of data labeled 1) or asymmetrical costs
-        (predicting a 0 incorrectly is worse than predicting a 1 incorrectly; ex: Medical data or my convoy problem)
+        meaningfully conveying problems caused by class imbalances (uneven distribution of data; for example, 75% of data is labeled 0 while only 25% is labeled 1) or asymmetrical costs
+        (predicting a 0 incorrectly is worse than predicting a 1 incorrectly; for example, medical data or the convoy problem).
         <br><br>
         <strong>Formula:</strong>
         <br>
@@ -98,7 +98,7 @@
         <br>
         <strong>Recall:</strong>
         <br>
-        Calculates all of the model's positive predictions that were correct. The higher the recall, the fewer the false negatives.
+        Calculates all of the actual positive cases that the model correctly identifies. The higher the recall, the fewer the false negatives.
         <br>
         Precision focuses on false positives; recall focuses on false negatives.
         <br><br>
@@ -123,21 +123,21 @@
         <strong>Threshold:</strong>
         <br>
         Binary classification models do not output the actual labels of a class (no risk vs risk) but a score or probability \( P(y=1 \mid x) = 0.00 \;\; \text{to} \;\; 1.00 \).
-        It is for this reason why binary classification labels are defined as 0 or 1 during data preprocessing. The threshold is the cutoff for predicting either positive or negative.
-        Threshold defaults to 0.50 where any output below 0.50 is predicted as negative and any output above 0.50 is predicted as positive. Threshold can be changed manually to change
-        how cautious or aggressive a model performs but this does not change the model's score/probability outputs. Therefore, lowering the threshold will increase recall but decrease
+        For this reason, binary classification labels are defined as 0 or 1 during data preprocessing. The threshold is the cutoff for predicting either positive or negative.
+        The threshold defaults to 0.50, where any output below 0.50 is predicted as negative and any output above 0.50 is predicted as positive. The threshold can be changed manually to alter
+        how cautiously or aggressively a model performs, but this does not change the model's score/probability outputs. Therefore, lowering the threshold will increase recall but decrease
         precision and vice versa for raising the threshold.
         <br><br>
         <strong>Receiver Operating Characteristic Area Under Curve (ROC_AUC):</strong>
         <br>
         Based on the ROC Curve, the ROC_AUC is the area under said curve. Formally, it measures the probability that the classifier will give a randomly chosen positive a higher score
         than a randomly chosen negative. ROC_AUC close to one indicates the model can effectively distinguish between the positive and negative class, ROC_AUC close
-        to 0 indicates the model struggles to differentiate between the two classes, and a ROC_AUC around 0.50 indicates the model is doing random guessing.
+        to 0 indicates the model struggles to differentiate between the two classes, and a ROC_AUC around 0.50 indicates the model is making random guesses.
         <br><br>
         <strong>Matthews Correlation Coefficient (MCC):</strong>
         <br>
         The MCC measures correlation between predictions and truth using all confusion matrix values. It differs from accuracy by penalizing False Positives and False Negatives
-        strongly and is more robust to class imbalances. MCC of 1 indicates perfect prediction, MCC of 0 indicates random prediction, and MCC of -1 indicates perfectly wrong prediction
+        strongly and is more robust to class imbalances. An MCC of 1 indicates perfect prediction, an MCC of 0 indicates random prediction, and an MCC of -1 indicates perfectly wrong prediction.
         <br><br>
         <strong>Formula:</strong>
         <br>
@@ -147,8 +147,8 @@
         <br><br>
         <strong>Balanced Accuracy (Bal_Acc):</strong>
         <br>
-        Aims to relieve the issues class imbalances can have on Accuracy by giving each class equal weight. Calculated with the Recall scores for the 0 and 1 score to test
-        if the model can perform well on both classes. Ignores Precision.
+        Aims to reduce the issues that class imbalances can cause for accuracy by giving each class equal weight. It is calculated with the recall scores for classes 0 and 1 to test
+        whether the model can perform well on both classes. It ignores precision.
         <br><br>
         <strong>Formula:</strong>
         <br>
