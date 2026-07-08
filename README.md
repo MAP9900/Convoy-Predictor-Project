@@ -18,7 +18,7 @@ The most complete and current workflow is the final analysis pipeline in:
 This workflow loads saved models, evaluates the calibrated ensemble, runs deeper diagnostics (thresholding, statistical testing, feature triangulation, temporal robustness, and leakage/data-quality checks), and generates final report visualizations.
 
 ## Quick Navigation
-- Script map/runbook: `SCRIPTS.md`
+- Script map/runbook: `docs/SCRIPTS.md`
 - Results module detail: `src/results/README.md`
 - Findings narrative for report writing: `results-analysis.md`
 - Repository-level engineering review: `PROJECT_CODE_REVIEW.md`
